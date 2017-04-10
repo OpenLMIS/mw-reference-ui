@@ -1,5 +1,5 @@
-# OpenLMIS Reference UI
-The OpenLMIS Reference UI is the user interface for the OpenLMIS Reference Distribution. This user interface is designed to be a single page web application that is optimized for offline and low-bandwidth environments.
+# OpenLMIS Malawi Reference UI
+This user interface is designed to be a single page web application that is optimized for offline and low-bandwidth environments.
 
 Multiple UI modules are compiled together with the OpenLMIS dev-ui to create the OpenLMIS Reference-UI. UI modules included in the OpenLMIS Reference-UI are:
 * [OpenLMIS Auth UI](https://github.com/OpenLMIS/openlmis-auth-ui)
