@@ -1,6 +1,6 @@
 {
   "service": {
-    "Name": "reference-ui",
+    "Name": "mw-reference-ui",
     "Port": 80,
     "Tags": ["openlmis-service"]
   },
