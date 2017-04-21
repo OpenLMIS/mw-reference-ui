@@ -43,7 +43,6 @@
         vm.search = search;
 		vm.openRnr = openRnr;
 		vm.toggleSelectAll = toggleSelectAll;
-		vm.setSelectAll = setSelectAll;
 		vm.viewSelectedRequisitions = viewSelectedRequisitions;
 
 		/**
@@ -140,22 +139,6 @@
             angular.forEach(vm.requisitions, function(requisition) {
                 requisition.$selected = selectAll;
             });
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-approval.controller:RequisitionApprovalListController
-         * @name setSelectAll
-         *
-         * @description
-         * Responsible for making the checkbox "select all" checked when all requisitions are selected by user.
-         */
-        function setSelectAll() {
-            var allSelected = true;
-            angular.forEach(vm.requisitions, function(requisition) {
-                allSelected = allSelected && requisition.$selected;
-            });
-            vm.selectAll = allSelected;
         }
 
         /**

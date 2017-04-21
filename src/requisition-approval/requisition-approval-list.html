@@ -36,8 +36,7 @@
         <tbody>
             <tr ng-repeat="requisition in vm.requisitions">
                 <td>
-                    <input type="checkbox" ng-model="requisition.$selected"
-                           ng-change="vm.setSelectAll()">
+                    <input type="checkbox" ng-model="requisition.$selected">
                 </td>
                 <td>{{requisition.program.name}}</td>
                 <td>{{requisition.facility.code}} - {{requisition.facility.name}}</td>
