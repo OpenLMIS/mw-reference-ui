@@ -28,27 +28,27 @@ services:
       - ui-layout
 
   auth-ui:
-    image: openlmis/auth-ui:4.0.1-SNAPSHOT
+    image: openlmis/auth-ui:5.0.0-SNAPSHOT
     volumes:
       - '/openlmis-auth-ui'
 
   fulfillment-ui:
-    image: openlmis/fulfillment-ui:4.0.1-SNAPSHOT
+    image: openlmis/fulfillment-ui:5.0.0-SNAPSHOT
     volumes:
       - '/openlmis-fulfillment-ui'
 
   referencedata-ui:
-    image: openlmis/referencedata-ui:4.1.0-SNAPSHOT
+    image: openlmis/referencedata-ui:5.0.0-SNAPSHOT
     volumes:
       - '/openlmis-referencedata-ui'
 
   report-ui:
-    image: openlmis/report-ui:4.0.1-SNAPSHOT
+    image: openlmis/report-ui:5.0.0-SNAPSHOT
     volumes:
       - '/openlmis-report-ui'
 
   requisition-ui:
-    image: openlmis/requisition-ui:4.0.1-SNAPSHOT
+    image: openlmis/requisition-ui:5.0.0-SNAPSHOT
     volumes:
       - '/openlmis-requisition-ui'
 
@@ -58,7 +58,7 @@ services:
       - '/openlmis-ui-components'
 
   ui-layout:
-    image: openlmis/ui-layout:4.1.0-SNAPSHOT
+    image: openlmis/ui-layout:5.0.0-SNAPSHOT
     volumes:
       - '/openlmis-ui-layout'
 
