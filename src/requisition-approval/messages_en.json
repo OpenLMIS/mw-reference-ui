@@ -1,0 +1,7 @@
+{
+    "requisitionApproval.all": "All",
+    "requisitionApproval.none": "None",
+    "requisitionApproval.select": "Select",
+    "requisitionApproval.selectAtLeastOneRnr": "Please select at least one requisition.",
+    "requisitionApproval.viewSelectedRequisitions": "View selected requisitions"
+}
