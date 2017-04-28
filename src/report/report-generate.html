@@ -1,0 +1,53 @@
+<h2>{{'report.chooseReportOptions' | message}}</h2>
+<form ng-submit="vm.downloadReport()">
+    <label for="{{parameter.name}}" ng-repeat-start="parameter in vm.report.templateParameters">{{parameter.displayName}}</label>
+
+    <select id="{{parameter.name}}"
+            ng-if="parameter.selectExpression != null && (vm.paramsOptions[parameter.name].length > 0 || parameter.dependencies.length > 0)"
+            ng-model="vm.selectedParamsOptions[parameter.name]"
+            ng-disabled="vm.paramsOptions[parameter.name].length == 0"
+            ng-options="option as option.name for option in vm.paramsOptions[parameter.name]"
+            ng-required="{{parameter.required}}"
+            aria-labelledby="infolabelForSelect">
+    </select>
+
+    <span ng-if="vm.paramsOptions[parameter.name].length == 0 && parameter.dependencies.length == 0"
+          ng-switch="parameter.dataType"
+          ng-repeat-end>
+        <input ng-switch-when="java.lang.Integer"
+               ng-model="vm.selectedParamsOptions[parameter.name]"
+               ng-required="{{parameter.required}}"
+               positive-integer />
+        <input ng-switch-default ng-model="vm.selectedParamsOptions[parameter.name]"
+               ng-required="{{parameter.required}}"
+               type="text"
+               aria-labelledby="infolabelForInteger"/>
+        <p class="param-info" ng-if="vm.paramsInfo[parameter.name]" id="infoLabelForInteger">
+            {{vm.paramsInfo[parameter.name] | message}}</p>
+    </span>
+
+    <p class="param-info" ng-if="vm.paramsInfo[parameter.name] && parameter.selectExpression != null" id="infolabelForSelect">
+        {{vm.paramsInfo[parameter.name] | message}}
+    </p>
+
+    <fieldset class="form-group">
+        <legend>{{'report.format' | message}}</legend>
+        <label class="radio">
+            <input type="radio" ng-model="vm.format" value="pdf" required/>
+            {{'report.pdf' | message}}
+        </label>
+        <label class="radio">
+            <input type="radio" ng-model="vm.format" value="csv" required/>
+            {{'report.csv' | message}}
+        </label>
+        <label class="radio">
+            <input type="radio" ng-model="vm.format" value="xls" required/>
+            {{'report.xls' | message}}
+        </label>
+        <label class="radio">
+            <input type="radio" ng-model="vm.format" value="html" required/>
+            {{'report.html' | message}}
+        </label>
+    </fieldset>
+    <input type="submit" value="{{'report.generate' | message}}"/>
+</form>
