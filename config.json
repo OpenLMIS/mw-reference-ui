@@ -8,5 +8,6 @@
     "/openlmis-fulfillment-ui",
     "/openlmis-requisition-ui",
     "/openlmis-stockmanagement-ui"
-  ]
+  ],
+  "REPORTING_SERVICES": "requisitions,malawi"
 }
