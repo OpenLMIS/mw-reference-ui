@@ -158,7 +158,7 @@
             });
 
             if(selectedRequisitions.length > 0) {
-                $state.go('openlmis.requisitions.modifyMultiple', {
+                $state.go('openlmis.requisitions.batchApproval', {
                     requisitions: selectedRequisitions
                 });
             } else {

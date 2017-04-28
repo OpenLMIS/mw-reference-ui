@@ -23,7 +23,7 @@
      * @description
      * Responsible for managing modyfing multiple requisitions screen.
      */
-    angular.module('requisition-modify-multiple', [
+    angular.module('requisition-batch-approval', [
         'requisition',
         'openlmis-auth',
         'openlmis-pagination',

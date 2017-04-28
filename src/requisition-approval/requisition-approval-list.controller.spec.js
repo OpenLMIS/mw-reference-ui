@@ -153,7 +153,7 @@ describe('RequisitionApprovalListController', function () {
 
             vm.viewSelectedRequisitions();
 
-            expect($state.go).toHaveBeenCalledWith('openlmis.requisitions.modifyMultiple', {
+            expect($state.go).toHaveBeenCalledWith('openlmis.requisitions.batchApproval', {
                 requisitions: [ vm.requisitions[0] ]
             });
             expect(notificationService.error).not.toHaveBeenCalled();

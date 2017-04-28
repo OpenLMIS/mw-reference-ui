@@ -1,0 +1,14 @@
+{
+    "requisitionBatchApproval.approve": "Approve",
+    "requisitionBatchApproval.approveRequisitions": "Approve Requisitions",
+    "requisitionBatchApproval.approvedQuantity": "Approved Quantity",
+    "requisitionBatchApproval.batchApproval": "Batch Approval",
+    "requisitionBatchApproval.cost": "Cost",
+    "requisitionBatchApproval.product": "Product",
+    "requisitionBatchApproval.productCode": "Product code",
+    "requisitionBatchApproval.revert" : "Revert",
+    "requisitionBatchApproval.revertConfirm": "All you sure you want to revert all changes?",
+    "requisitionBatchApproval.total": "Total",
+    "requisitionBatchApproval.totalQuantityForAllFacilities": "Total Quantity for all facilities",
+    "requisitionBatchApproval.totalCostForAllFacilities": "Total Cost for all facilities"
+}

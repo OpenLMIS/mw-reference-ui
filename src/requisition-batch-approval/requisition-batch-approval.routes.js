@@ -18,21 +18,22 @@
     'use strict';
 
     angular
-        .module('requisition-modify-multiple')
+        .module('requisition-batch-approval')
         .config(routes);
 
     routes.$inject = ['$stateProvider', 'REQUISITION_RIGHTS'];
 
     function routes($stateProvider, REQUISITION_RIGHTS) {
 
-        $stateProvider.state('openlmis.requisitions.modifyMultiple', {
-            url: '/modifyMultiple',
-            controller: 'RequisitionModifyMultipleController',
+        $stateProvider.state('openlmis.requisitions.batchApproval', {
+            label: 'requisitionBatchApproval.batchApproval',
+            url: '/batchApproval',
+            controller: 'RequisitionBatchApprovalController',
             controllerAs: 'vm',
-            templateUrl: 'requisition-modify-multiple/requisition-modify-multiple.html',
+            templateUrl: 'requisition-batch-approval/requisition-batch-approval.html',
             accessRights: [REQUISITION_RIGHTS.REQUISITION_APPROVE],
             params: {
-                requisitions: ''
+                requisitions: null
             }
         });
     }

@@ -1,0 +1,52 @@
+<h2>{{'requisitionBatchApproval.approveRequisitions' | message}}</h2>
+<div class="openlmis-table-container">
+    <table>
+        <thead>
+        <tr>
+            <th class="col-sticky"> {{'requisitionBatchApproval.productCode' | message}} </th>
+            <th class="col-sticky"> {{'requisitionBatchApproval.product' | message}} </th>
+            <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
+                <div> {{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
+                <div> {{'requisitionBatchApproval.approvedQuantity' | message}} </div>
+            </th>
+            <th ng-repeat-end>
+                <div> {{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
+                <div> {{'requisitionBatchApproval.cost' | message}} </div>
+            </th>
+            <th> {{'requisitionBatchApproval.totalQuantityForAllFacilities' | message}} </th>
+            <th> {{'requisitionBatchApproval.totalCostForAllFacilities' | message}} </th>
+        </tr>
+        </thead>
+        <tr ng-repeat="(productId, product) in vm.products track by productId">
+            <td> {{product.code}} </td>
+            <td> {{product.name}} </td>
+            <td ng-repeat-start="requisition in vm.requisitions track by requisition.id">
+                <input positive-integer
+                       ng-model="vm.lineItems[requisition.id][productId].approvedQuantity"
+                       ng-disabled="!(product.requisitions | contains: requisition.id)"
+                       ng-change="vm.updateLineItem(vm.lineItems[requisition.id][productId], requisition)"/>
+            </td>
+            <td ng-repeat-end>
+                {{vm.lineItems[requisition.id][productId].totalCost | openlmisCurrency}}
+            </td>
+            <td> {{product.totalQuantity}} </td>
+            <td> {{product.totalCost | openlmisCurrency}} </td>
+        </tr>
+        <tr>
+            <td>{{'requisitionBatchApproval.total' | message}}</th></td>
+            <td></td>
+            <td ng-repeat-start="requisition in vm.requisitions track by requisition.id">
+            </td>
+            <td ng-repeat-end>
+                {{requisition.$totalCost | openlmisCurrency}}
+            </td>
+            <td></td>
+            <td> {{vm.totalCost | openlmisCurrency}}</td>
+        </tr>
+    </table>
+</div>
+<div class="openlmis-toolbar" ng-if="vm.requisitions.length">
+    <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
+    <button class="primary" ng-click="vm.approve()">{{'requisitionBatchApproval.approve' | message}}</button>
+</div>
+
