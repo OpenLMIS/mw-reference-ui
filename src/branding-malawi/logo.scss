@@ -1,0 +1,23 @@
+
+.header > .openlmis-header > .title,
+.header > .openlmis-header.is-offline > .title {
+	background-image: url('branding-malawi/logo-header.png');
+	background-size: auto;
+	text-indent: 0px;
+	overflow: visible;
+	height: 72px;
+	padding: 0px;
+	padding-left: 72px + $space-size/2;
+	line-height: 72px;
+}
+
+.header > .openlmis-header.is-offline > .title {
+	color: $white;
+}
+
+body .login-form {
+	background-image: url('branding-malawi/logo.png');
+	background-size: auto;
+	background-position: $space-size*2 $space-size;
+	min-height: 258px + $space-size;
+}
