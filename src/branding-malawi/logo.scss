@@ -8,7 +8,7 @@
 	height: 72px;
 	padding: 0px;
 	padding-left: 72px + $space-size/2;
-	line-height: 72px;
+	padding-top: 72px - $font-size-extra-large;
 }
 
 .header > .openlmis-header.is-offline > .title {
