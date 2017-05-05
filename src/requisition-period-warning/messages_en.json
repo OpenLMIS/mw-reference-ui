@@ -1,0 +1,3 @@
+{
+	"requisitionPeriodWarning.confirm": "Period is not an ordering period and requested quantities for each product should be 0. Are you sure you want to submit this requisition?"
+}
