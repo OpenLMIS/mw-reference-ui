@@ -10,6 +10,6 @@
     "/openlmis-stockmanagement-ui"
   ],
   "REPORTING_SERVICES": "requisitions,malawi",
-  "requisitionWarningProgramCode": "PRG001",
+  "requisitionWarningProgramCode": "tb",
   "requisitionWarningPeriods": "Apr,Jul,Oct,Jan"
 }
