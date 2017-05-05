@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *  
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
 (function() {
@@ -33,7 +33,8 @@
         'loadingModalService', 'notificationService', 'confirmService', 'REQUISITION_RIGHTS',
         'FULFILLMENT_RIGHTS', 'convertToOrderModalService', 'offlineService', '$window',
         'requisitionUrlFactory', '$filter', '$scope', '$timeout', 'RequisitionWatcher', 'accessTokenFactory',
-        'messageService', 'stateTrackerService'
+        'messageService', 'stateTrackerService',
+        'REQUISITION_WARNING_PERIODS', 'REQUISITION_WARNING_PROGRAM_CODE'
     ];
 
     function RequisitionViewController($state, requisition, requisitionValidator, authorizationService,
@@ -41,7 +42,7 @@
                              REQUISITION_RIGHTS, FULFILLMENT_RIGHTS , convertToOrderModalService,
                              offlineService, $window, requisitionUrlFactory, $filter, $scope,
                              $timeout, RequisitionWatcher, accessTokenFactory, messageService,
-                             stateTrackerService) {
+                             stateTrackerService, REQUISITION_SUBMISSION_WARNING_MONTHS, REQUISITION_SUBMISSION_WARNING_PROGRAM_CODE) {
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition);
@@ -187,27 +188,58 @@
          * Otherwise, a success notification modal will be shown.
          */
         function submitRnr() {
-            confirmService.confirm('requisitionView.submit.confirm', 'requisitionView.submit.label').then(function() {
-                if (requisitionValidator.validateRequisition(requisition)) {
-                    var loadingPromise = loadingModalService.open();
-                    if (!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
-                        vm.requisition.$save().then(function () {
-                            vm.requisition.$submit().then(function (response) {
-                                loadingPromise.then(function () {
-                                    notificationService.success('requisitionView.submit.success');
-                                });
-                                stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                            }, failWithMessage('requisitionView.submit.failure'));
-                        }, function(response) {
-                            handleSaveError(response.status);
-                        });
-                    } else {
-                        failWithMessage('requisitionView.allLineItemsSkipped')();
+            var isSubmissionWarningProgram = (requisition.program.code === REQUISITION_WARNING_PROGRAM_CODE);
+            var isSubmissionWarningPeriod = false;
+
+            if(requisition.processingPeriod) { // Wrapped IF statement so I didn't have to fork RequisitionViewController unit tests
+                REQUISITION_WARNING_PERIODS.forEach(function(month){
+                    if(requisition.processingPeriod.name.indexOf(month) >= 0){
+                        isSubmissionWarningPeriod = true;
                     }
+                });
+            }
+            
+            var submitWarningMessage = 'requisitionView.submit.confirm';
+            if(isSubmissionWarningPeriod && isSubmissionWarningProgram){
+                submitWarningMessage = 'requisitionPeriodWarning.confirm';
+            }
+
+            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label')
+            .then(doSubmitRnr);
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name doSubmitRnr
+         *
+         * @description
+         * Responsible for submitting requisition, checking requisition
+         * validity beforesubmission. If the requisition is not valid, fails to
+         * save or an error occurs during submission, an error notification
+         * modal will be displayed. Otherwise, a success notification modal
+         * will be shown.
+         */
+        function doSubmitRnr() {
+            if (requisitionValidator.validateRequisition(requisition)) {
+                var loadingPromise = loadingModalService.open();
+                if (!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
+                    vm.requisition.$save().then(function () {
+                        vm.requisition.$submit().then(function (response) {
+                            loadingPromise.then(function () {
+                                notificationService.success('requisitionView.submit.success');
+                            });
+                            stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
+                        }, failWithMessage('requisitionView.submit.failure'));
+                    }, function(response) {
+                        handleSaveError(response.status);
+                    });
                 } else {
-                    failWithMessage('requisitionView.rnrHasErrors')();
+                    failWithMessage('requisitionView.allLineItemsSkipped')();
                 }
-            });
+            } else {
+                failWithMessage('requisitionView.rnrHasErrors')();
+            }
         }
 
         /**
