@@ -42,7 +42,7 @@
                              REQUISITION_RIGHTS, FULFILLMENT_RIGHTS , convertToOrderModalService,
                              offlineService, $window, requisitionUrlFactory, $filter, $scope,
                              $timeout, RequisitionWatcher, accessTokenFactory, messageService,
-                             stateTrackerService, REQUISITION_SUBMISSION_WARNING_MONTHS, REQUISITION_SUBMISSION_WARNING_PROGRAM_CODE) {
+                             stateTrackerService, REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE) {
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition);
