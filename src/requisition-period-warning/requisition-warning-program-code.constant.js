@@ -19,13 +19,13 @@
 
     /**
      * @ngdoc object
-     * @name requisition-constants.REQUISITION_SUBMISSION_WARNING_PROGRAM_CODE
+     * @name openlmis-config.REQUISITION_SUBMISSION_WARNING_PROGRAM_CODE
      *
      * @description
      * This program code will show a different submission warning.
      */
     angular
-    .module('requisition-constants')
+    .module('openlmis-config')
     .constant('REQUISITION_WARNING_PROGRAM_CODE', source());
 
     function source() {
