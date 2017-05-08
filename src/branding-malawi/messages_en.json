@@ -40,6 +40,7 @@
   "adminTemplate.configureRnrTemplate": "Configure LMIS form template",
   "requisitionApproval.noRnrPendingForApproval": "No LMIS forms pending for approval",
   "requisitionConvertToOrder.convertToOrder.confirm": "Are you sure you want to convert this LMIS forms(s) to order(s)?",
+  "requisitionInitiate.initiateReportAndRequisition": "Initiate LMIS Form",
   "requisitionInitiate.previousPending": "Previous LMIS form pending",
   "requisitionInitiate.rnrStatus": "LMIS Form Status",
   "requisitionView.approve.confirm": "Are you sure you want to approve this LMIS form?",
