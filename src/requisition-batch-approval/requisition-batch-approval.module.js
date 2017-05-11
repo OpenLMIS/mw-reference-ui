@@ -29,7 +29,8 @@
         'openlmis-pagination',
         'requisition-product-grid',
         'requisition-validation',
-        'ui.router'
+        'ui.router',
+        'openlmis-state-tracker'
     ]);
 
 })();

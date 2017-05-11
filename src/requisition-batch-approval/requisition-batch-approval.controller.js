@@ -30,10 +30,10 @@
         .controller('RequisitionBatchApprovalController', controller);
 
     controller.$inject = [
-        '$stateParams', 'calculationFactory', 'Requisition', 'confirmService'
+        '$stateParams', 'calculationFactory', 'Requisition', 'stateTrackerService', 'loadingModalService', 'messageService', 'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory', 'requisitionBatchApproveFactory'
     ];
 
-    function controller($stateParams, calculationFactory, Requisition, confirmService) {
+    function controller($stateParams, calculationFactory, Requisition, stateTrackerService, loadingModalService, messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory, requisitionBatchApproveFactory) {
 
         var vm = this;
 
@@ -171,7 +171,57 @@
          * Approves all displayed requisitions.
          */
         function approve() {
-            //TODO in MW-86
+            var errors = [],
+                reqisitions = vm.requisitions;
+
+            loadingModalService.open();
+
+            requisitionBatchSaveFactory(requisitions)
+            .catch(manageErrors)
+            .then(function(){
+                return requisitionBatchApproveFactory(requisitions);
+            })
+            .catch(manageErrors)
+            .finally(function(){
+                loadingModalService.close();
+
+                var errorUUIDs = [];
+                errors.forEach(function(error){
+                    errorUUIDs.push(error.uuid);
+                });
+
+                var approvedRequisitions = [],
+                    erroredRequisitions = [];
+                requisitions.forEach(function(requisition){
+                    if(errorUUIDs.indexOf(requisition) == -1){ // if successful requisition
+                        approvedRequisitions.push(requisition);
+                    } else {
+                        erroredRequisitions.push(requisition);
+                    }
+                });
+                requisitions = erroredRequisitions;
+
+                if(errors.length > 0){
+                    // Display error messages....
+                    var errorTitle = messageService.get("requisitionBatchApproval.approvalError", {
+                        errorCount: errors.length
+                    });
+                    alertService.error(errorTitle);
+                } else {
+                    var successMessage = messageService.get("requisitionBatchApproval.approvalSuccess", {
+                        successCount: approvedRequisitions.length
+                    });
+                    notificationService.success(successMessage);
+                    stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
+                }
+            });
+
+            function manageErrors(_errors){
+                // add errors to total errors
+                _errors.forEach(function(error){
+                    errors.push(error);
+                });
+            }
         }
 
         function calculateRequisitionTotalCost(requisition) {
