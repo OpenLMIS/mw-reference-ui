@@ -3,7 +3,7 @@
     <label for="{{parameter.name}}" ng-repeat-start="parameter in vm.report.templateParameters">{{parameter.displayName}}</label>
 
     <select id="{{parameter.name}}"
-            ng-if="parameter.selectExpression != null && (vm.paramsOptions[parameter.name].length > 0 || parameter.dependencies.length > 0)"
+            ng-if="vm.paramsOptions[parameter.name].length > 0 || parameter.dependencies.length > 0"
             ng-model="vm.selectedParamsOptions[parameter.name]"
             ng-disabled="vm.paramsOptions[parameter.name].length == 0"
             ng-options="option as option.name for option in vm.paramsOptions[parameter.name]"
