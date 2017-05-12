@@ -261,60 +261,35 @@
          * Approves all displayed requisitions.
          */
         function approve() {
-            var errors = [],
-                // successfulRequisitions will change, don't want to accidentally change original array
-                successfulRequisitions = vm.requisitions.slice(),
-                erroredRequisitions = [];
-
             loadingModalService.open();
 
-            requisitionBatchSaveFactory(successfulRequisitions)
-            .catch(manageErrors)
-            .then(function(){
-                return requisitionBatchApproveFactory(successfulRequisitions);
-            })
-            .catch(manageErrors)
-            .finally(function(){
+            // Using slice to make copy of array, so scope changes at end only
+            requisitionBatchApproveFactory(vm.requisitions.slice())
+            .finally(function(successfulRequisitions){
                 loadingModalService.close();
 
-                vm.requisitions = erroredRequisitions; // updating the list of requisitions
+                if(successfulRequisitions.length < vm.requisitions){
 
-                if(errors.length > 0){
-                    // Display error messages....
-                    var errorTitle = messageService.get("requisitionBatchApproval.approvalError", {
-                        errorCount: errors.length
+                    // Remove all successful requisitions
+                    vm.requisitions = _.filter(vm.requisitions, function(requisition){
+                        return requisition.$error;
                     });
-                    alertService.error(errorTitle);
+
+                    alertService.error(
+                        messageService.get("requisitionBatchApproval.approvalError", {
+                            errorCount: vm.requisitions.length
+                        })
+                    );
                 } else {
-                    var successMessage = messageService.get("requisitionBatchApproval.approvalSuccess", {
-                        successCount: successfulRequisitions.length
-                    });
-                    notificationService.success(successMessage);
+                    notificationService.success(
+                        messageService.get("requisitionBatchApproval.approvalSuccess", {
+                            successCount: successfulRequisitions.length
+                        })
+                    );
+
                     stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
                 }
             });
-
-            function manageErrors(newErrors){
-                // add errors to total errors
-                errors = errors.concat(newErrors);
-
-                var errorIds = [];
-                errors.forEach(function(error){
-                    errorIds.push(error.requisitionId);
-                });
-
-                // Rebuild success/error arrays
-                successfulRequisitions = [];
-                erroredRequisitions = [];
-
-                vm.requisitions.forEach(function(requisition){
-                    if(errorIds.indexOf(requisition.id) >= 0) {
-                        erroredRequisitions.push(requisition);
-                    } else {
-                        successfulRequisitions.push(requisition);
-                    }
-                });
-            }
         }
 
         function calculateRequisitionTotalCost(requisition) {

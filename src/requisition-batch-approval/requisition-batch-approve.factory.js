@@ -34,7 +34,7 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchApproveFactory', factory);
 
-    factory.$inject = ['$q', '$http'];
+    factory.$inject = ['$q', '$http', 'requisitionValidator', 'requisitionBatchSaveFactory'];
 
     function factory($q, $http) {
 
@@ -45,23 +45,48 @@
          * @methodOf requisition-batch-approval.requisitionBatchApprovalFactory
          * @name batchApprove
          *
-         * @param {Array} requisitionObjects A list of requisition objects to approve
+         * @param {Array} requisitions A list of requisition objects to approve
          *
          * @return {Promise} A promise that returns a list of errors on failure
          *
          * @description
-         * Main function of factory, which takes a list of requisitionObjects
+         * Main function of factory, which takes a list of requisitions
          * and tries to save then approve them all.
          * 
          */
-        function batchApprove(requisitionObjects) {
-            if(!Array.isArray(requisitionObjects) || requisitionObjects.length == 0){
-                return $q.resolve(); //Sending an error would complicate the contract
+        function batchApprove(requisitions) {
+
+            // Sending an error would complicate the contract, so we do
+            // nothing (and pretend like it was a success)
+            if(!Array.isArray(requisitions) || requisitions.length == 0){
+                return $q.reject([]);
             }
 
+            var deferred = $q.defer();
+
+            requisitionBatchSaveFactory(requisitions)
+            .finally(function(savedRequisitions){
+                return validateRequisitions(savedRequisitions);
+            })
+            .finally(function(validatedRequisitions){
+                return doApprove(validatedRequisitions);
+            })
+            .finally(function(approvedRequisitions){
+                if(checkRequisitionsForErrors(requisitions)){
+                    deferred.reject(approvedRequisitions);
+                } else {
+                    deferred.resolve(approvedRequisitions);
+                }
+            });
+
+            return deferred.promise;
+        }
+
+        function doApprove(requisitions) {
+
             var requisitionUUIDs = [];
-            requisitionObjects.forEach(function(requisition){
-                requisitionUUIDs.push(requisition.uuid);
+            requisitions.forEach(function(requisition){
+                requisitionUUIDs.push(requisition.id);
             });
 
             var deferred = $q.defer();
@@ -70,6 +95,33 @@
             deferred.resolve();
 
             return deferred.promise;
+
+        }
+
+        function validateRequisitions(requisitions) {
+            requisitions.forEach(function(requisition) {
+                // Check requisition validity if there isn't alreay an error
+                if(!requisition.$error && !requisitionValidator.validateRequisition(requisition)){
+                    requisition.$error = messageService.get("requisitionBatchApproval.invalidRequisition");
+                }
+            });
+
+            if(checkRequisitionsForErrors(requisitions)) {
+                return $q.reject(requisitions);
+            } else {
+                return $q.resolve(requisitions);
+            }
+        }
+
+        function checkRequisitionsForErrors(requisitions) {
+            var hasError = false;
+            requisitionObjects.forEach(function(requisition){
+                if(requisition.$error){
+                    hasError = true;
+                }
+            });
+
+            return hasError;
         }
 
     }
