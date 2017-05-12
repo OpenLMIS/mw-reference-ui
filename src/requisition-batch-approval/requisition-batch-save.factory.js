@@ -33,9 +33,9 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchSaveFactory', factory);
 
-    factory.$inject = ['$q', '$http'];
+    factory.$inject = ['$q', '$http', '$filter', 'openlmisUrlFactory'];
 
-    function factory($q, $http) {
+    function factory($q, $http, $filter, openlmisUrlFactory) {
 
         return saveRequisitions;
 
@@ -53,15 +53,29 @@
          * OpenLMIS Server.
          * 
          */
-        function saveRequisitions(requisitionObjects){
+        function saveRequisitions(requisitions){
+
+            if(!Array.isArray(requisitions) || requisitions.length == 0){
+                return $q.reject([]);
+            }
+
             var deferred = $q.defer();
 
-            // Call HTTP request & handle response
-            deferred.resolve();
+            $http.put(openlmisUrlFactory('/api/requisitions/save'), requisitions)
+            .then(function(response) {
+                deferred.resolve(response.data.requisitionDtos);
+            }, function(response) {
+                angular.forEach(requisitions, function(requisition) {
+                    var requisitionError = $filter('filter')(response.data.requisitionErrors, {requisitionId: requisition.id});
+                    if (requisitionError !== undefined) {
+                        requisition.$error = requisitionError[0].errorMessage.message;
+                    }
+                });
+                deferred.reject(response.data.requisitionDtos);
+            });
 
-            return deferred.promise;            
+            return deferred.promise;
         }
-
     }
 
 })();

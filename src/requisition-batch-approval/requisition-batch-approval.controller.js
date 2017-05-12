@@ -33,13 +33,13 @@
         '$stateParams', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
             'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope',
-            'requisitionService', '$q'
+            'requisitionService', '$q', '$filter'
     ];
 
     function controller($stateParams, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
                         requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, requisitionService,
-                        $q) {
+                        $q, $filter) {
 
         var vm = this;
 
@@ -219,33 +219,25 @@
          * Responsible for syncing requisitions with the server.
          */
         function sync() {
-            var requisitions = vm.requisitions;
-            vm.errors = [];
-
             loadingModalService.open();
 
-            requisitionBatchSaveFactory(requisitions)
-            .then(function(response){
-                vm.requisitions = response.requisitions;
+            requisitionBatchSaveFactory(vm.requisitions)
+            .then(function(savedRequisitions){
+                vm.requisitions = savedRequisitions;
                 var successMessage = messageService.get("requisitionBatchApproval.syncSuccess");
                 notificationService.success(successMessage);
-            }, function(response) {
-                var savedRequisitions = response.requisitions;
-                var errors = response.errors;
 
-                requisitions.forEach(function(requisition){
-                    var requisitionIdx = savedRequisitions.indexOf(requisition.id);
-                    if( requisitionIdx == -1) { // if not successful requisition
-                        var error = errors[errors.indexOf({requisitionId: requisition.id})];
-                        requisition.$error = error.message;
-                    } else {
-                        requisition = savedRequisitions[requisitionIdx];
+            }, function(savedRequisitions) {
+                angular.forEach(vm.requisitions, function(requisition){
+                    var savedRequisition = $filter('filter')(savedRequisitions, {id: requisition.id});
+                    if(savedRequisition !== undefined) { // if successful requisition
+                        requisition = savedRequisition;
                     }
                 });
 
-                // Display error message....
+                var successes = savedRequisitions ? savedRequisitions.length : 0;
                 var errorTitle = messageService.get("requisitionBatchApproval.syncError", {
-                    errorCount: errors.length
+                    errorCount: vm.requisitions.length - successes
                 });
                 alertService.error(errorTitle);
             })
