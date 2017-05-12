@@ -13,6 +13,34 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-describe('RequisitionBatchApproveFactory', function () {
+describe('RequisitionBatchApproveFactory', function() {
+
+	it('returns an empty array if input is invalid', function() {
+
+	});
+
+	it('always saves all requisitions', function() {
+
+	});
+
+	it('when successful, it returns an array of all requisitions', function() {
+
+	});
+
+	it('it validates requisitions and does not return invalid requisitions', function() {
+
+	});
+
+	it('only returns requisitions that were successfully approved', function() {
+
+	});
+
+	it('it adds errors to requisitions that fail validation', function() {
+
+	});
+
+	it('it adds errors to requisitions that can not be approved', function() {
+
+	});
 
 });
