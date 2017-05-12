@@ -125,6 +125,7 @@
                 promises.push(requisitionService.get(requisition.id));
             });
 
+<<<<<<< dd39dcb46465102ec59a54d00eaa4d2087054f19
             $q.all(promises).then(function(requisitions) {
                 prepareDataToDisplay(requisitions);
             }).finally(loadingModalService.close);
@@ -133,6 +134,10 @@
         function prepareDataToDisplay(requisitions) {
             vm.totalCost = 0;
             vm.requisitions = [];
+=======
+            // This will need to be re-run when vm.requisitions changes...
+
+>>>>>>> MW-86: Added client side requisition validation
             vm.products = {};
             vm.lineItems = [];
 
@@ -220,10 +225,24 @@
          */
         function approve() {
             var errors = [],
-                successfulRequisitions = vm.requisitions.slice(), // lets say all requisitions pass
+                successfulRequisitions = [],
                 erroredRequisitions = [];
 
             loadingModalService.open();
+
+            vm.requisitions.forEach(function(requisition){
+                if(requisitionValidator.validateRequisition(requisition)){
+                    successfulRequisitions.push(requisition);
+                } else {
+                    erroredRequisitions.push(requisition);
+                    errors.push({
+                        requisitionId: requisition.id,
+                        error: {
+                            messageKey: "requisitionBatchApproval.invalidRequisition"
+                        }
+                    })
+                }
+            });
 
             requisitionBatchSaveFactory(successfulRequisitions)
             .catch(manageErrors)
