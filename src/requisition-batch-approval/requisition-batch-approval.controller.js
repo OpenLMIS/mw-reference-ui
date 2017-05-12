@@ -33,13 +33,13 @@
         '$stateParams', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
             'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope',
-            'requisitionService', '$q', 'requisitionBatchApprovalService'
+            'requisitionService', '$q'
     ];
 
     function controller($stateParams, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
                         requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, requisitionService,
-                        $q, requisitionBatchApprovalService) {
+                        $q) {
 
         var vm = this;
 
