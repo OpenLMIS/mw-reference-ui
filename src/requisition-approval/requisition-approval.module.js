@@ -17,26 +17,19 @@
 
     'use strict';
 
-    angular
-        .module('requisition-batch-approval')
-        .config(routes);
-
-    routes.$inject = ['$stateProvider', 'REQUISITION_RIGHTS'];
-
-    function routes($stateProvider, REQUISITION_RIGHTS) {
-
-        $stateProvider.state('openlmis.requisitions.batchApproval', {
-            isOffline: true,
-            label: 'requisitionBatchApproval.batchApproval',
-            url: '/batchApproval',
-            controller: 'RequisitionBatchApprovalController',
-            controllerAs: 'vm',
-            templateUrl: 'requisition-batch-approval/requisition-batch-approval.html',
-            accessRights: [REQUISITION_RIGHTS.REQUISITION_APPROVE],
-            params: {
-                requisitions: null
-            }
-        });
-    }
+    /**
+     * @module
+     *
+     * @description
+     * Responsible for managing requisition for approval list screen.
+     */
+    angular.module('requisition-approval', [
+        'requisition',
+        'openlmis-auth',
+        'openlmis-pagination',
+        'openlmis-local-storage',
+        'referencedata-program',
+        'ui.router'
+    ]);
 
 })();

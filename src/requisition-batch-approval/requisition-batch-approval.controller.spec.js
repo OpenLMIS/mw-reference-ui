@@ -16,7 +16,8 @@
 describe('RequisitionBatchApprovalController', function () {
 
     //injects
-    var vm, $stateParams, $rootScope, $q, confirmService, $controller, calculationFactory, confirmDeferred;
+    var vm, $stateParams, $rootScope, $q, confirmService, $controller,
+        calculationFactory, confirmDeferred, $scope, requisitionService;
 
     //variables
     var requisition, products, lineItems;
@@ -82,57 +83,66 @@ describe('RequisitionBatchApprovalController', function () {
         lineItems[requisition.id][requisitionLineItems[0].orderable.id] = requisitionLineItems[0];
         lineItems[requisition.id][requisitionLineItems[1].orderable.id] = requisitionLineItems[1];
 
-        var requisitionFactoryMock = jasmine.createSpy('Requisition').andReturn(requisition);
-        calculationFactory = jasmine.createSpyObj('calculationFactory', ['totalCost']);
-        calculationFactory.totalCost.andReturn(100);
-
+        var requisitionWatcherMock = jasmine.createSpy('RequisitionWatcher');
         module(function($provide){
-            $provide.factory('Requisition', function() {
-                return requisitionFactoryMock;
+            $provide.factory('RequisitionWatcher', function() {
+                return requisitionWatcherMock;
             });
         });
 
-        inject(function (_$controller_, _$stateParams_, _confirmService_, _$rootScope_, _$q_) {
+        inject(function (_$controller_, _confirmService_, _$rootScope_, _$q_, _requisitionService_, _$stateParams_) {
             $controller = _$controller_;
-            $stateParams = _$stateParams_;
             confirmService = _confirmService_;
             $rootScope = _$rootScope_;
             $q = _$q_;
+            $scope = _$rootScope_.$new();
+            requisitionService = _requisitionService_;
+            $stateParams = _$stateParams_;
             $stateParams.requisitions = [requisition];
 
         });
+
+        calculationFactory = jasmine.createSpyObj('calculationFactory', ['totalCost']);
+        calculationFactory.totalCost.andReturn(100);
+        spyOn(requisitionService, 'get').andReturn($q.when(requisition));
     });
 
     describe('$onInit', function() {
 
         beforeEach(function() {
             vm = $controller('RequisitionBatchApprovalController', {
-                $stateParams: $stateParams
+                $stateParams: $stateParams,
+                $scope: $scope
             });
         });
 
         it('should expose requisitions', function() {
             vm.$onInit();
+            $rootScope.$apply();
             expect(vm.requisitions).toEqual([requisition]);
         });
 
         it('should calculate total cost of requisition', function() {
             vm.$onInit();
+            $rootScope.$apply();
             expect(vm.requisitions[0].$totalCost).toEqual(110);
         });
 
         it('should calculate total cost of all requisitions', function() {
             vm.$onInit();
+            $rootScope.$apply();
             expect(vm.totalCost).toEqual(110);
         });
 
         it('should expose list of products', function() {
             vm.$onInit();
+            $rootScope.$apply();
             expect(vm.products).toEqual(products);
         });
 
         it('should expose list of line items', function() {
             vm.$onInit();
+            $rootScope.$apply();
             expect(vm.lineItems).toEqual(lineItems);
         });
     });
@@ -158,7 +168,6 @@ describe('RequisitionBatchApprovalController', function () {
 
             confirmDeferred = $q.defer();
             spyOn(confirmService, 'confirm').andReturn(confirmDeferred.promise);
-            spyOn(vm, '$onInit');
         });
 
         it('should ask user for confirmation', function() {
@@ -171,21 +180,25 @@ describe('RequisitionBatchApprovalController', function () {
                 'requisitionBatchApproval.revertConfirm', 'requisitionBatchApproval.revert');
         });
 
-        it('should call onInit method', function() {
-            vm.revert();
+        it('should revert requisitions to original state', function() {
+            vm.requisitions[0].requisitionLineItems[0].approvedQuantity = 1000;
 
+            vm.revert();
             confirmDeferred.resolve();
             $rootScope.$apply();
 
-            expect(vm.$onInit).toHaveBeenCalled();
+            expect(vm.requisitions[0].requisitionLineItems[0].approvedQuantity).toBe(10);
+            expect(vm.requisitions).toEqual(vm.requisitionsCopy);
         });
     });
 
     function initController() {
         vm = $controller('RequisitionBatchApprovalController', {
             $stateParams: $stateParams,
-            calculationFactory: calculationFactory
+            calculationFactory: calculationFactory,
+            $scope: $scope
         });
         vm.$onInit();
+        $rootScope.$apply();
     }
 });

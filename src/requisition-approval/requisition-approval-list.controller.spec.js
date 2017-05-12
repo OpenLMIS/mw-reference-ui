@@ -16,20 +16,25 @@
 describe('RequisitionApprovalListController', function () {
 
     //injects
-    var vm, $state, $stateParams, notificationService, $controller;
+    var vm, $state, $stateParams, notificationService, $controller, offlineService, confirmService, $rootScope, $q;
 
     //variables
-    var requisitions, programs;
+    var requisitions, programs, confirmDeferred;
 
     beforeEach(function() {
         module('requisition-approval');
 
-        inject(function (_$controller_, _$state_, _$stateParams_, _notificationService_) {
+        inject(function (_$controller_, _$state_, _$stateParams_, _notificationService_,
+                         _offlineService_, _confirmService_, _$rootScope_, _$q_) {
 
             $controller = _$controller_;
             $state = _$state_;
             $stateParams = _$stateParams_;
             notificationService = _notificationService_;
+            offlineService = _offlineService_;
+            confirmService = _confirmService_;
+            $rootScope = _$rootScope_;
+            $q = _$q_;
 
             programs = [
                 {
@@ -88,6 +93,11 @@ describe('RequisitionApprovalListController', function () {
             expect(vm.selectedProgram).toBe(programs[0]);
         });
 
+        it('should expose offline flag', function() {
+            vm.$onInit();
+            expect(vm.offline).toBe(false);
+        });
+
     });
 
     describe ('search', function() {
@@ -104,7 +114,20 @@ describe('RequisitionApprovalListController', function () {
             vm.search();
 
             expect($state.go).toHaveBeenCalledWith('openlmis.requisitions.approvalList', {
-                program: vm.selectedProgram.id
+                program: vm.selectedProgram.id,
+                offline: false
+            }, {reload: true});
+        });
+
+        it('should set offline flag correctly', function() {
+            vm.selectedProgram = programs[0];
+            vm.offline = true;
+
+            vm.search();
+
+            expect($state.go).toHaveBeenCalledWith('openlmis.requisitions.approvalList', {
+                program: vm.selectedProgram.id,
+                offline: true
             }, {reload: true});
         });
 
@@ -158,6 +181,58 @@ describe('RequisitionApprovalListController', function () {
             });
             expect(notificationService.error).not.toHaveBeenCalled();
         });
+    });
+
+    describe ('isOfflineDisabled', function() {
+
+        beforeEach(function() {
+            initController();
+        });
+
+        it('should return true if application is offline', function () {
+            vm.offline = false;
+            spyOn(offlineService, 'isOffline').andReturn(true);
+
+            expect(vm.isOfflineDisabled()).toBe(true);
+            expect(vm.offline).toBe(true);
+        });
+
+        it('should return false if application is online', function () {
+            vm.offline = false;
+            spyOn(offlineService, 'isOffline').andReturn(false);
+
+            expect(vm.isOfflineDisabled()).toBe(false);
+            expect(vm.offline).toBe(false);
+        });
+    });
+
+    describe ('removeOfflineRequisition', function() {
+
+        beforeEach(function() {
+           initController();
+           confirmDeferred = $q.defer();
+           spyOn(confirmService, 'confirmDestroy').andReturn(confirmDeferred.promise);
+        });
+
+        it('should ask for confirmation before removing', function () {
+            vm.removeOfflineRequisition(vm.requisitions[0]);
+
+            confirmDeferred.resolve();
+            $rootScope.$apply();
+
+            expect(confirmService.confirmDestroy).toHaveBeenCalledWith('requisitionApproval.removeOfflineRequisitionConfirm');
+        });
+
+        it('should set false for requisition $availableOffline flag', function () {
+            vm.requisitions[0].$availableOffline = true;
+            vm.removeOfflineRequisition(vm.requisitions[0]);
+
+            confirmDeferred.resolve();
+            $rootScope.$apply();
+
+            expect(vm.requisitions[0].$availableOffline).toBe(false);
+        });
+
     });
 
     function initController() {

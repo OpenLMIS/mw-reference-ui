@@ -8,6 +8,8 @@
   "requisitionBatchApproval.productCode": "Product code",
   "requisitionBatchApproval.revert" : "Revert",
   "requisitionBatchApproval.revertConfirm": "All you sure you want to revert all changes?",
+  "requisitionBatchApproval.sync": "Sync with server",
+  "requisitionBatchApproval.syncSuccess": "LMIS form has been synchronized!",
   "requisitionBatchApproval.total": "Total",
   "requisitionBatchApproval.totalQuantityForAllFacilities": "Total Quantity for all facilities",
   "requisitionBatchApproval.totalCostForAllFacilities": "Total Cost for all facilities",

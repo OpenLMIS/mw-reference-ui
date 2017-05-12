@@ -1,5 +1,6 @@
 <h2>{{'requisitionBatchApproval.approveRequisitions' | message}}</h2>
 <div class="openlmis-table-container">
+    <saving-indicator class="requisition-indicator" object="vm.requisitions"/>
     <table>
         <thead>
         <tr>
@@ -45,8 +46,11 @@
         </tr>
     </table>
 </div>
-<div class="openlmis-toolbar" ng-if="vm.requisitions.length">
-    <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
-    <button class="primary" ng-click="vm.approve()">{{'requisitionBatchApproval.approve' | message}}</button>
+<div class="openlmis-toolbar button-group" ng-if="vm.requisitions.length">
+    <button ng-disabled="vm.isOffline()" ng-click="vm.sync()">{{'requisitionBatchApproval.sync' | message}}</button>
+    <div class="button-group primary">
+        <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
+        <button class="primary" ng-disabled="vm.isOffline()" ng-click="vm.approve()">{{'requisitionBatchApproval.approve' | message}}</button>
+    </div>
 </div>
 

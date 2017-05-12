@@ -30,16 +30,25 @@
         .controller('RequisitionBatchApprovalController', controller);
 
     controller.$inject = [
-        '$stateParams', 'calculationFactory', 'Requisition', 'stateTrackerService', 'loadingModalService', 'messageService', 'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory', 'requisitionBatchApproveFactory'
+        '$stateParams', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
+            'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
+            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope',
+            'requisitionService', '$q', 'requisitionBatchApprovalService'
     ];
 
-    function controller($stateParams, calculationFactory, Requisition, stateTrackerService, loadingModalService, messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory, requisitionBatchApproveFactory) {
+    function controller($stateParams, calculationFactory, stateTrackerService, loadingModalService,
+                        messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
+                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, requisitionService,
+                        $q, requisitionBatchApprovalService) {
 
         var vm = this;
 
         vm.$onInit = onInit;
         vm.updateLineItem = updateLineItem;
         vm.revert = revert;
+        vm.sync = sync;
+        vm.approve = approve;
+        vm.isOffline = offlineService.isOffline;
 
         /**
          * @ngdoc property
@@ -88,6 +97,18 @@
         vm.totalCost = undefined;
 
         /**
+         * @ngdoc property
+         * @propertyOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name requisitionsCopy
+         * @type {Array}
+         *
+         * @description
+         * Holds copy of original requisitions that can be approved on the view.
+         * It is used to provide 'revert' functionality.
+         */
+        vm.requisitionsCopy = undefined;
+
+        /**
          * @ngdoc method
          * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
          * @name $onInit
@@ -97,17 +118,29 @@
          * setting data to be available on the view.
          */
         function onInit() {
-            vm.totalCost = 0;
-            vm.requisitions = [];
+            loadingModalService.open();
+            var promises = [];
 
             angular.forEach($stateParams.requisitions, function (requisition) {
-                calculateRequisitionTotalCost(requisition);
-                vm.requisitions.push(new Requisition(requisition, {}));
+                promises.push(requisitionService.get(requisition.id));
             });
 
+            $q.all(promises).then(function(requisitions) {
+                prepareDataToDisplay(requisitions);
+            }).finally(loadingModalService.close);
+        }
+
+        function prepareDataToDisplay(requisitions) {
+            vm.totalCost = 0;
+            vm.requisitions = [];
             vm.products = {};
             vm.lineItems = [];
-            angular.forEach(vm.requisitions, function(requisition) {
+
+            angular.forEach(requisitions, function(requisition) {
+                calculateRequisitionTotalCost(requisition);
+                new RequisitionWatcher($scope, requisition);
+                vm.requisitions.push(requisition);
+
                 vm.lineItems[requisition.id] = [];
                 angular.forEach(requisition.requisitionLineItems, function(lineItem) {
                     if (!(lineItem.skipped)) {
@@ -128,8 +161,10 @@
                             };
                         }
                     }
-               });
+                });
             });
+
+            vm.requisitionsCopy = angular.copy(vm.requisitions);
         }
 
         /**
@@ -157,9 +192,22 @@
          */
         function revert() {
             confirmService.confirm('requisitionBatchApproval.revertConfirm', 'requisitionBatchApproval.revert').then(function() {
-                vm.$onInit();
+                prepareDataToDisplay(vm.requisitionsCopy);
             });
 
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name sync
+         *
+         * @description
+         * Responsible for syncing requisitions with the server. If the any of the requisitions fails to sync,
+         * an error notification will be displayed. Otherwise, a success notification will be shown.
+         */
+        function sync() {
+            //todo
         }
 
         /**
@@ -172,7 +220,7 @@
          */
         function approve() {
             var errors = [],
-                reqisitions = vm.requisitions;
+                requisitions = vm.requisitions;
 
             loadingModalService.open();
 
@@ -245,6 +293,12 @@
                     }
                 });
             });
+        }
+
+        function saveToStorage(requisition) {
+            requisition.$modified = false;
+            requisition.$availableOffline = true;
+            offlineRequisitions.put(requisition);
         }
     }
 

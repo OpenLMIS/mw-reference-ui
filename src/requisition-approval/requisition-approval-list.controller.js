@@ -31,21 +31,27 @@
 
 	controller.$inject = [
 		'$controller', '$state', 'requisitions', 'messageService',
-        '$stateParams', '$filter', 'programs', 'selectedProgram', 'notificationService'
+        '$stateParams', '$filter', 'programs', 'selectedProgram',
+        'notificationService', 'offlineService', 'localStorageFactory', 'confirmService'
 	];
 
 	function controller($controller, $state, requisitions, messageService,
-                        $stateParams, $filter, programs, selectedProgram, notificationService) {
+                        $stateParams, $filter, programs, selectedProgram,
+                        notificationService, offlineService, localStorageFactory, confirmService) {
 
-		var vm = this;
+		var vm = this,
+            offlineRequisitions = localStorageFactory('requisitions');
 
         vm.$onInit = onInit;
         vm.search = search;
 		vm.openRnr = openRnr;
 		vm.toggleSelectAll = toggleSelectAll;
 		vm.viewSelectedRequisitions = viewSelectedRequisitions;
+        vm.isOfflineDisabled = isOfflineDisabled;
+        vm.removeOfflineRequisition = removeOfflineRequisition;
 
-		/**
+
+        /**
          * @ngdoc property
          * @propertyOf requisition-approval.controller:RequisitionApprovalListController
          * @name requisitions
@@ -79,6 +85,17 @@
         vm.selectedProgram = undefined;
 
         /**
+         * @ngdoc property
+         * @propertyOf requisition-approval.controller:RequisitionApprovalListController
+         * @name offline
+         * @type {Boolean}
+         *
+         * @description
+         * Indicates if requisitions will be searched offline or online.
+         */
+        vm.offline = undefined;
+
+        /**
          * @ngdoc method
          * @methodOf requisition-approval.controller:RequisitionApprovalListController
          * @name $onInit
@@ -91,6 +108,7 @@
             vm.requisitions = requisitions;
             vm.programs = programs;
             vm.selectedProgram = selectedProgram;
+            vm.offline = $stateParams.offline === 'true' || offlineService.isOffline();
         }
 
         /**
@@ -105,6 +123,7 @@
             var stateParams = angular.copy($stateParams);
 
             stateParams.program = vm.selectedProgram ? vm.selectedProgram.id : null;
+            stateParams.offline = vm.offline;
 
             $state.go('openlmis.requisitions.approvalList', stateParams, {
                 reload: true
@@ -165,6 +184,42 @@
                 notificationService.error('requisitionApproval.selectAtLeastOneRnr');
             }
         }
-	}
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-approval.controller:RequisitionApprovalListController
+         * @name isOfflineDisabled
+         *
+         * @description
+         * Check if "Search offline" checkbox should be disabled. It will set the searchOffline
+         * flag to true if app goes in the offline mode.
+         *
+         * @return {Boolean} true if offline is disabled, false otherwise
+         */
+        function isOfflineDisabled() {
+            if(offlineService.isOffline()) {
+                vm.offline = true;
+            }
+            return offlineService.isOffline();
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-approval.controller:RequisitionApprovalListController
+         * @name removeOfflineRequisition
+         *
+         * @description
+         * Removes requisition from local storage.
+         *
+         * @param {Resource} requisition Requisition to remove
+         */
+        function removeOfflineRequisition(requisition) {
+            confirmService.confirmDestroy('requisitionApproval.removeOfflineRequisitionConfirm').then(function() {
+                offlineRequisitions.removeBy('id', requisition.id);
+                requisition.$availableOffline = false;
+            });
+        }
+
+    }
 
 })();
