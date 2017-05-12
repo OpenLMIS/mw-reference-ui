@@ -232,25 +232,11 @@
          */
         function approve() {
             var errors = [],
-                successfulRequisitions = [],
+                // successfulRequisitions will change, don't want to accidentally change original array
+                successfulRequisitions = vm.requisitions.slice(),
                 erroredRequisitions = [];
 
             loadingModalService.open();
-
-            vm.requisitions.forEach(function(requisition){
-                if(requisitionValidator.validateRequisition(requisition)){
-                    successfulRequisitions.push(requisition);
-                } else {
-                    erroredRequisitions.push(requisition);
-                    errors.push({
-                        requisitionId: requisition.id,
-                        error: {
-                            messageKey: "requisitionBatchApproval.invalidRequisition",
-                            message: messageService.get("requisitionBatchApproval.invalidRequisition")
-                        }
-                    })
-                }
-            });
 
             requisitionBatchSaveFactory(successfulRequisitions)
             .catch(manageErrors)
