@@ -64,6 +64,17 @@
         /**
          * @ngdoc property
          * @propertyOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name errors
+         * @type {Array}
+         *
+         * @description
+         * Keeps a list of all current errors on the view.
+         */
+        vm.errors = [];
+
+        /**
+         * @ngdoc property
+         * @propertyOf requisition-batch-approval.controller:RequisitionBatchApprovalController
          * @name products
          * @type {Array}
          *
@@ -125,7 +136,6 @@
                 promises.push(requisitionService.get(requisition.id));
             });
 
-<<<<<<< dd39dcb46465102ec59a54d00eaa4d2087054f19
             $q.all(promises).then(function(requisitions) {
                 prepareDataToDisplay(requisitions);
             }).finally(loadingModalService.close);
@@ -134,10 +144,7 @@
         function prepareDataToDisplay(requisitions) {
             vm.totalCost = 0;
             vm.requisitions = [];
-=======
-            // This will need to be re-run when vm.requisitions changes...
 
->>>>>>> MW-86: Added client side requisition validation
             vm.products = {};
             vm.lineItems = [];
 
@@ -238,7 +245,8 @@
                     errors.push({
                         requisitionId: requisition.id,
                         error: {
-                            messageKey: "requisitionBatchApproval.invalidRequisition"
+                            messageKey: "requisitionBatchApproval.invalidRequisition",
+                            message: messageService.get("requisitionBatchApproval.invalidRequisition")
                         }
                     })
                 }
@@ -291,6 +299,34 @@
                     }
                 });
             }
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name requisitionHasErrors
+         *
+         * @param {Object} requisition Requisition object
+         *
+         * @return {Boolean} If the requisition has errors
+         *
+         * @description
+         * Approves all displayed requisitions.
+         */
+        function requisitionHasErrors(requisition) {
+            var errors = [];
+            vm.errors.forEach(function(error){
+                if(requisition.id === error.requisitionId){
+                    errors.push(error);
+                }
+            });
+
+            if(errors.length > 0) {
+                return true;
+            } else {
+                return false;
+            }
+
         }
 
         function calculateRequisitionTotalCost(requisition) {

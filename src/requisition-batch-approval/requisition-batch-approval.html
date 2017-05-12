@@ -7,7 +7,8 @@
             <th class="col-sticky"> {{'requisitionBatchApproval.productCode' | message}} </th>
             <th class="col-sticky"> {{'requisitionBatchApproval.product' | message}} </th>
             <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
-                <div> {{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
+                <div popover="">{{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
+                <div ng-if="vm.requisitionHasErrors(requisition)">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
                 <div> {{'requisitionBatchApproval.approvedQuantity' | message}} </div>
             </th>
             <th ng-repeat-end>
