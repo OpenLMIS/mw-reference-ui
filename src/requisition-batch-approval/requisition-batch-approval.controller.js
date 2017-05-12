@@ -220,34 +220,21 @@
          */
         function approve() {
             var errors = [],
-                requisitions = vm.requisitions;
+                successfulRequisitions = vm.requisitions.slice(), // lets say all requisitions pass
+                erroredRequisitions = [];
 
             loadingModalService.open();
 
-            requisitionBatchSaveFactory(requisitions)
+            requisitionBatchSaveFactory(successfulRequisitions)
             .catch(manageErrors)
             .then(function(){
-                return requisitionBatchApproveFactory(requisitions);
+                return requisitionBatchApproveFactory(successfulRequisitions);
             })
             .catch(manageErrors)
             .finally(function(){
                 loadingModalService.close();
 
-                var errorUUIDs = [];
-                errors.forEach(function(error){
-                    errorUUIDs.push(error.uuid);
-                });
-
-                var approvedRequisitions = [],
-                    erroredRequisitions = [];
-                requisitions.forEach(function(requisition){
-                    if(errorUUIDs.indexOf(requisition) == -1){ // if successful requisition
-                        approvedRequisitions.push(requisition);
-                    } else {
-                        erroredRequisitions.push(requisition);
-                    }
-                });
-                requisitions = erroredRequisitions;
+                vm.requisitions = erroredRequisitions; // updating the list of requisitions
 
                 if(errors.length > 0){
                     // Display error messages....
@@ -257,17 +244,32 @@
                     alertService.error(errorTitle);
                 } else {
                     var successMessage = messageService.get("requisitionBatchApproval.approvalSuccess", {
-                        successCount: approvedRequisitions.length
+                        successCount: successfulRequisitions.length
                     });
                     notificationService.success(successMessage);
                     stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
                 }
             });
 
-            function manageErrors(_errors){
+            function manageErrors(newErrors){
                 // add errors to total errors
-                _errors.forEach(function(error){
-                    errors.push(error);
+                errors = errors.concat(newErrors);
+
+                var errorIds = [];
+                errors.forEach(function(error){
+                    errorIds.push(error.requisitionId);
+                });
+
+                // Rebuild success/error arrays
+                successfulRequisitions = [];
+                erroredRequisitions = [];
+
+                vm.requisitions.forEach(function(requisition){
+                    if(errorIds.indexOf(requisition.id) >= 0) {
+                        erroredRequisitions.push(requisition);
+                    } else {
+                        successfulRequisitions.push(requisition);
+                    }
                 });
             }
         }
