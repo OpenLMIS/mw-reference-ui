@@ -4,15 +4,24 @@
     <table>
         <thead>
         <tr>
+            <th class="col-sticky"></th>
+            <th class="col-sticky"></th>
+            <th colspan="2" ng-repeat="requisition in vm.requisitions track by requisition.id"
+                popover="{{requisition.$error}}"
+                ng-class="{'requisition-error': requisition.$error}">
+                <div> {{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
+                <div ng-if="requisition.$error">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
+            </th>
+            <th></th>
+            <th></th>
+        </tr>
+        <tr>
             <th class="col-sticky"> {{'requisitionBatchApproval.productCode' | message}} </th>
             <th class="col-sticky"> {{'requisitionBatchApproval.product' | message}} </th>
             <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
-                <div popover="">{{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
-                <div ng-if="vm.requisitionHasErrors(requisition)">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
-                <div> {{'requisitionBatchApproval.approvedQuantity' | message}} </div>
+               <div> {{'requisitionBatchApproval.approvedQuantity' | message}} </div>
             </th>
             <th ng-repeat-end>
-                <div> {{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
                 <div> {{'requisitionBatchApproval.cost' | message}} </div>
             </th>
             <th> {{'requisitionBatchApproval.totalQuantityForAllFacilities' | message}} </th>

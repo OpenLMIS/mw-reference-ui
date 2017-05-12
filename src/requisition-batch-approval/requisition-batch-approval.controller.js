@@ -147,6 +147,7 @@
 
             vm.products = {};
             vm.lineItems = [];
+            vm.errors = [];
 
             angular.forEach(requisitions, function(requisition) {
                 calculateRequisitionTotalCost(requisition);
@@ -215,11 +216,40 @@
          * @name sync
          *
          * @description
-         * Responsible for syncing requisitions with the server. If the any of the requisitions fails to sync,
-         * an error notification will be displayed. Otherwise, a success notification will be shown.
+         * Responsible for syncing requisitions with the server.
          */
         function sync() {
-            //todo
+            var requisitions = vm.requisitions;
+            vm.errors = [];
+
+            loadingModalService.open();
+
+            requisitionBatchSaveFactory(requisitions)
+            .then(function(response){
+                vm.requisitions = response.requisitions;
+                var successMessage = messageService.get("requisitionBatchApproval.syncSuccess");
+                notificationService.success(successMessage);
+            }, function(response) {
+                var savedRequisitions = response.requisitions;
+                var errors = response.errors;
+
+                requisitions.forEach(function(requisition){
+                    var requisitionIdx = savedRequisitions.indexOf(requisition.id);
+                    if( requisitionIdx == -1) { // if not successful requisition
+                        var error = errors[errors.indexOf({requisitionId: requisition.id})];
+                        requisition.$error = error.message;
+                    } else {
+                        requisition = savedRequisitions[requisitionIdx];
+                    }
+                });
+
+                // Display error message....
+                var errorTitle = messageService.get("requisitionBatchApproval.syncError", {
+                    errorCount: errors.length
+                });
+                alertService.error(errorTitle);
+            })
+            .finally(loadingModalService.close);
         }
 
         /**
@@ -285,34 +315,6 @@
                     }
                 });
             }
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
-         * @name requisitionHasErrors
-         *
-         * @param {Object} requisition Requisition object
-         *
-         * @return {Boolean} If the requisition has errors
-         *
-         * @description
-         * Approves all displayed requisitions.
-         */
-        function requisitionHasErrors(requisition) {
-            var errors = [];
-            vm.errors.forEach(function(error){
-                if(requisition.id === error.requisitionId){
-                    errors.push(error);
-                }
-            });
-
-            if(errors.length > 0) {
-                return true;
-            } else {
-                return false;
-            }
-
         }
 
         function calculateRequisitionTotalCost(requisition) {
