@@ -10,7 +10,7 @@
   "requisitionBatchApproval.revertConfirm": "Are you sure you want to revert all changes?",
   "requisitionBatchApproval.sync": "Sync with server",
   "requisitionBatchApproval.syncError": "There were ${errorCount} errors",
-  "requisitionBatchApproval.syncSuccess": "LMIS form has been synchronized!",
+  "requisitionBatchApproval.syncSuccess": "${successCount} LMIS Forms were synchronized!",
   "requisitionBatchApproval.total": "Total",
   "requisitionBatchApproval.totalQuantityForAllFacilities": "Total Quantity for all facilities",
   "requisitionBatchApproval.totalCostForAllFacilities": "Total Cost for all facilities",

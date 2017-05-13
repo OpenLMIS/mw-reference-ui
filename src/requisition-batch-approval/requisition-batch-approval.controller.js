@@ -213,7 +213,10 @@
             requisitionBatchSaveFactory(vm.requisitions)
             .then(function(savedRequisitions){
                 prepareDataToDisplay(savedRequisitions);
-                var successMessage = messageService.get("requisitionBatchApproval.syncSuccess");
+
+                var successMessage = messageService.get("requisitionBatchApproval.syncSuccess", {
+                    successCount: savedRequisitions.length
+                });
                 notificationService.success(successMessage);
 
             }, function(savedRequisitions) {

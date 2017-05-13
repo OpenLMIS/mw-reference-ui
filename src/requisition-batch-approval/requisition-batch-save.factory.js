@@ -71,7 +71,7 @@
             }, function(response) {
                 angular.forEach(requisitions, function(requisition) {
                     var requisitionError = $filter('filter')(response.data.requisitionErrors, {requisitionId: requisition.id});
-                    if (requisitionError !== undefined) {
+                    if (requisitionError.length > 0) {
                         requisition.$error = requisitionError[0].errorMessage.message;
                     }
                 });
