@@ -33,10 +33,9 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchSaveFactory', factory);
 
-    factory.$inject = ['$q', '$http', '$filter', 'openlmisUrlFactory'];
+    factory.$inject = ['$q', '$http', '$filter', 'openlmisUrlFactory', 'Requisition', 'COLUMN_SOURCES', 'dateUtils'];
 
-    function factory($q, $http, $filter, openlmisUrlFactory) {
-
+    function factory($q, $http, $filter, openlmisUrlFactory, Requisition, COLUMN_SOURCES, dateUtils) {
         return saveRequisitions;
 
         /**
@@ -61,9 +60,14 @@
 
             var deferred = $q.defer();
 
-            $http.put(openlmisUrlFactory('/api/requisitions/save'), requisitions)
+            var requisitionDtos = [];
+            requisitions.forEach(function(requisition){
+                requisitionDtos.push(transformRequisition(requisition));
+            });
+
+            $http.put(openlmisUrlFactory('/api/requisitions/save'), requisitionDtos)
             .then(function(response) {
-                deferred.resolve(response.data.requisitionDtos);
+                deferred.resolve(transformDtos(response.data.requisitionDtos, requisitions));
             }, function(response) {
                 angular.forEach(requisitions, function(requisition) {
                     var requisitionError = $filter('filter')(response.data.requisitionErrors, {requisitionId: requisition.id});
@@ -71,11 +75,54 @@
                         requisition.$error = requisitionError[0].errorMessage.message;
                     }
                 });
-                deferred.reject(response.data.requisitionDtos);
+                deferred.reject(transformDtos(response.data.requisitionDtos, requisitions));
             });
 
             return deferred.promise;
         }
+
+        function transformDtos(dtos, requisitions){
+            var newRequisitions = [];
+            if(dtos && Array.isArray(dtos)){
+                dtos.forEach(function(dto) {
+                    requisitions.forEach(function(requisition){
+                        if(requisition.id === dto.id){
+                            dto.template = requisition.template;
+                        }
+                    });
+                    newRequisitions.push(new Requisition(dto));
+                });
+            }
+            return newRequisitions;
+        }
+
+        function transformRequisition(requisition) {
+            var columns = requisition.template.columnsMap,
+                requestBody = angular.copy(requisition);
+
+            angular.forEach(requestBody.requisitionLineItems, function(lineItem) {
+                transformLineItem(lineItem, columns);
+            });
+
+            requestBody.processingPeriod.startDate = dateUtils.toStringDate(
+                requestBody.processingPeriod.startDate
+            );
+            requestBody.processingPeriod.endDate = dateUtils.toStringDate(
+                requestBody.processingPeriod.endDate
+            );
+
+            return requestBody;
+        }
+
+
+        function transformLineItem(lineItem, columns) {
+            angular.forEach(columns, function(column) {
+                if (!column.$display || column.source === COLUMN_SOURCES.CALCULATED) {
+                    lineItem[column.name] = null;
+                }
+            });
+        }
+
     }
 
 })();

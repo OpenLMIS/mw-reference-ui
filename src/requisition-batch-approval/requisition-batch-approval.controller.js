@@ -223,7 +223,7 @@
 
             requisitionBatchSaveFactory(vm.requisitions)
             .then(function(savedRequisitions){
-                vm.requisitions = savedRequisitions;
+                prepareDataToDisplay(savedRequisitions);
                 var successMessage = messageService.get("requisitionBatchApproval.syncSuccess");
                 notificationService.success(successMessage);
 
@@ -257,32 +257,34 @@
 
             // Using slice to make copy of array, so scope changes at end only
             requisitionBatchApproveFactory(vm.requisitions.slice())
-            .finally(function(successfulRequisitions){
-                loadingModalService.close();
-
-                if(successfulRequisitions.length < vm.requisitions){
-
-                    // Remove all successful requisitions
-                    vm.requisitions = _.filter(vm.requisitions, function(requisition){
-                        return requisition.$error;
-                    });
-
-                    alertService.error(
-                        messageService.get("requisitionBatchApproval.approvalError", {
-                            errorCount: vm.requisitions.length
-                        })
-                    );
-                } else {
-                    notificationService.success(
-                        messageService.get("requisitionBatchApproval.approvalSuccess", {
-                            successCount: successfulRequisitions.length
-                        })
-                    );
-
-                    stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                }
-            });
+            .then(handleApprove, handleApprove);
         }
+
+        function handleApprove(successfulRequisitions){
+            loadingModalService.close();
+
+            if(successfulRequisitions.length < vm.requisitions){
+
+                // Remove all successful requisitions
+                vm.requisitions = _.filter(vm.requisitions, function(requisition){
+                    return requisition.$error;
+                });
+
+                alertService.error(
+                    messageService.get("requisitionBatchApproval.approvalError", {
+                        errorCount: vm.requisitions.length
+                    })
+                );
+            } else {
+                notificationService.success(
+                    messageService.get("requisitionBatchApproval.approvalSuccess", {
+                        successCount: successfulRequisitions.length
+                    })
+                );
+
+                stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
+            }
+        };
 
         function calculateRequisitionTotalCost(requisition) {
             requisition.$totalCost = 0;
