@@ -242,7 +242,7 @@
          * Approves all displayed requisitions.
          */
         function approve() {
-            confirmService('').then(function(){
+            confirmService.confirm('requisitionBatchApproval.approvalConfirm').then(function(){
                 loadingModalService.open();
 
                 // Using slice to make copy of array, so scope changes at end only
