@@ -234,7 +234,7 @@ describe('RequisitionBatchSaveFactory', function() {
         requisitions[1].requisitionLineItems[0].totalCost = null;
         requisitions[1].requisitionLineItems[1].totalCost = null;
 
-        expect($http.put).toHaveBeenCalledWith('/api/requisitions/save', requisitions);
+        expect($http.put).toHaveBeenCalledWith(openlmisUrlFactory('/api/requisitions/save'), requisitions);
     });
 
     it ('it calls toStringDates method to format dates', function() {
