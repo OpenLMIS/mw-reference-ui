@@ -34,9 +34,9 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchApproveFactory', factory);
 
-    factory.$inject = ['$q', '$http', 'requisitionValidator', 'requisitionBatchSaveFactory'];
+    factory.$inject = ['$q', '$http', 'requisitionUrlFactory', 'requisitionValidator', 'requisitionBatchSaveFactory', 'messageService'];
 
-    function factory($q, $http) {
+    function factory($q, $http, requisitionUrlFactory, requisitionValidator, requisitionBatchSaveFactory, messageService) {
 
         return batchApprove;
 
@@ -62,66 +62,65 @@
                 return $q.reject([]);
             }
 
-            var deferred = $q.defer();
-
-            requisitionBatchSaveFactory(requisitions)
-            .finally(function(savedRequisitions){
-                return validateRequisitions(savedRequisitions);
-            })
-            .finally(function(validatedRequisitions){
-                return doApprove(validatedRequisitions);
-            })
-            .finally(function(approvedRequisitions){
-                if(checkRequisitionsForErrors(requisitions)){
-                    deferred.reject(approvedRequisitions);
-                } else {
-                    deferred.resolve(approvedRequisitions);
-                }
-            });
-
-            return deferred.promise;
+            return requisitionBatchSaveFactory(requisitions)
+            .then(validateRequisitions, validateRequisitions)
+            .then(approveRequisitions, approveRequisitions);
         }
 
-        function doApprove(requisitions) {
+        function approveRequisitions(requisitions) {
 
-            var requisitionUUIDs = [];
+            var requisitionsObject = {};
             requisitions.forEach(function(requisition){
-                requisitionUUIDs.push(requisition.id);
+                requisitionsObject[requisition.id] = requisition;
             });
 
             var deferred = $q.defer();
 
-            // HTTP Call
-            deferred.resolve();
+            $http.post(requisitionUrlFactory('/api/requisitions/approve'), Object.keys(requisitionsObject))
+            .then(function(response){
+                return deferred.resolve(requisitions);
+            })
+            .catch(function(response){
+                if(response.status === 400){
+                    // process errors
+                    if(response.data.errors){
+                        response.data.errors.forEach(function(error){
+                            if(requisitionsObject[error.requisitionId]){
+                                requisitionsObject[error.requisitionId].$error = error.errorMessage.message;
+                            }
+                        });
+                    }
+
+                    requisitions = _.filter(requisitions, function(requisition){
+                        return requisition.$error;
+                    });
+                    
+                    return deferred.resolve(requisitions);
+                } else {
+                    return deferred.reject([]);
+                }
+            });
 
             return deferred.promise;
 
         }
 
         function validateRequisitions(requisitions) {
+            var successfulRequisitions = [];
+
             requisitions.forEach(function(requisition) {
-                // Check requisition validity if there isn't alreay an error
-                if(!requisition.$error && !requisitionValidator.validateRequisition(requisition)){
+                if(!requisitionValidator.validateRequisition(requisition)){
                     requisition.$error = messageService.get("requisitionBatchApproval.invalidRequisition");
+                } else {
+                    successfulRequisitions.push(requisition);
                 }
             });
 
-            if(checkRequisitionsForErrors(requisitions)) {
+            if(successfulRequisitions.length < requisitions.length) {
                 return $q.reject(requisitions);
             } else {
                 return $q.resolve(requisitions);
             }
-        }
-
-        function checkRequisitionsForErrors(requisitions) {
-            var hasError = false;
-            requisitionObjects.forEach(function(requisition){
-                if(requisition.$error){
-                    hasError = true;
-                }
-            });
-
-            return hasError;
         }
 
     }
