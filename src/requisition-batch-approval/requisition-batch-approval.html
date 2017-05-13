@@ -32,9 +32,9 @@
             <td> {{product.code}} </td>
             <td> {{product.name}} </td>
             <td ng-repeat-start="requisition in vm.requisitions track by requisition.id" class="numeric">
-                <input positive-integer
+                <input ng-if="(product.requisitions | contains: requisition.id)"
+                       positive-integer
                        ng-model="vm.lineItems[requisition.id][productId].approvedQuantity"
-                       ng-disabled="!(product.requisitions | contains: requisition.id)"
                        ng-change="vm.updateLineItem(vm.lineItems[requisition.id][productId], requisition)"/>
             </td>
             <td class="numeric" ng-repeat-end>
