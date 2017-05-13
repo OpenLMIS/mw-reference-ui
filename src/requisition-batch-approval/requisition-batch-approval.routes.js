@@ -28,15 +28,26 @@
         $stateProvider.state('openlmis.requisitions.batchApproval', {
             isOffline: true,
             label: 'requisitionBatchApproval.batchApproval',
-            url: '/batchApproval',
+            url: '/batchApproval?ids',
             controller: 'RequisitionBatchApprovalController',
             controllerAs: 'vm',
             templateUrl: 'requisition-batch-approval/requisition-batch-approval.html',
             accessRights: [REQUISITION_RIGHTS.REQUISITION_APPROVE],
-            params: {
-                requisitions: null
+            resolve: {
+                requisitions: getRequisitions
             }
         });
+    }
+
+    getRequisitions.$inject = ['$q', '$stateParams', 'requisitionService'];
+    function getRequisitions($q, $stateParams, requisitionService) {
+        var promises = []
+        
+        angular.forEach($stateParams.ids.split(','), function (requisition) {
+            promises.push(requisitionService.get(requisition.id));
+        });
+
+        return $q.all(promises);
     }
 
 })();

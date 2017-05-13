@@ -16,7 +16,7 @@
 describe('RequisitionApprovalListController', function () {
 
     //injects
-    var vm, $state, $stateParams, notificationService, $controller, offlineService, confirmService, $rootScope, $q;
+    var vm, $state, $stateParams, alertService, $controller, offlineService, confirmService, $rootScope, $q;
 
     //variables
     var requisitions, programs, confirmDeferred;
@@ -24,13 +24,13 @@ describe('RequisitionApprovalListController', function () {
     beforeEach(function() {
         module('requisition-approval');
 
-        inject(function (_$controller_, _$state_, _$stateParams_, _notificationService_,
+        inject(function (_$controller_, _$state_, _$stateParams_, _alertService_,
                          _offlineService_, _confirmService_, _$rootScope_, _$q_) {
 
             $controller = _$controller_;
             $state = _$state_;
             $stateParams = _$stateParams_;
-            notificationService = _notificationService_;
+            alertService = _alertService_;
             offlineService = _offlineService_;
             confirmService = _confirmService_;
             $rootScope = _$rootScope_;
@@ -161,14 +161,14 @@ describe('RequisitionApprovalListController', function () {
             initController();
 
             spyOn($state, 'go');
-            spyOn(notificationService, 'error');
+            spyOn(alertService, 'error');
         });
 
         it('should show error when trying to call with no requisition selected', function() {
             vm.viewSelectedRequisitions();
 
             expect($state.go).not.toHaveBeenCalled();
-            expect(notificationService.error).toHaveBeenCalledWith('requisitionApproval.selectAtLeastOneRnr');
+            expect(alertService.error).toHaveBeenCalledWith('requisitionApproval.selectAtLeastOneRnr');
         });
 
         it('should not show error when trying to call with requisition selected', function() {
@@ -177,9 +177,9 @@ describe('RequisitionApprovalListController', function () {
             vm.viewSelectedRequisitions();
 
             expect($state.go).toHaveBeenCalledWith('openlmis.requisitions.batchApproval', {
-                requisitions: [ vm.requisitions[0] ]
+                ids: [ vm.requisitions[0].id ].join(',')
             });
-            expect(notificationService.error).not.toHaveBeenCalled();
+            expect(alertService.error).not.toHaveBeenCalled();
         });
     });
 

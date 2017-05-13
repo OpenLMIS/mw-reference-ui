@@ -32,12 +32,12 @@
 	controller.$inject = [
 		'$controller', '$state', 'requisitions', 'messageService',
         '$stateParams', '$filter', 'programs', 'selectedProgram',
-        'notificationService', 'offlineService', 'localStorageFactory', 'confirmService'
+        'alertService', 'offlineService', 'localStorageFactory', 'confirmService'
 	];
 
 	function controller($controller, $state, requisitions, messageService,
                         $stateParams, $filter, programs, selectedProgram,
-                        notificationService, offlineService, localStorageFactory, confirmService) {
+                        alertService, offlineService, localStorageFactory, confirmService) {
 
 		var vm = this,
             offlineRequisitions = localStorageFactory('requisitions');
@@ -169,19 +169,19 @@
          * Redirects to page for modyfing all selected requisitions.
          */
         function viewSelectedRequisitions() {
-            var selectedRequisitions = [];
+            var selectedRequisitionIds = [];
             angular.forEach(vm.requisitions, function(requisition) {
                if (requisition.$selected) {
-                   selectedRequisitions.push(requisition);
+                   selectedRequisitionIds.push(requisition.id);
                }
             });
 
-            if(selectedRequisitions.length > 0) {
+            if(selectedRequisitionIds.length > 0) {
                 $state.go('openlmis.requisitions.batchApproval', {
-                    requisitions: selectedRequisitions
+                    ids: selectedRequisitionIds.join(',')
                 });
             } else {
-                notificationService.error('requisitionApproval.selectAtLeastOneRnr');
+                alertService.error('requisitionApproval.selectAtLeastOneRnr');
             }
         }
 

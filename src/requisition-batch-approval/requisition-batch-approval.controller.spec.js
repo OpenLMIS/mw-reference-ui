@@ -20,7 +20,7 @@ describe('RequisitionBatchApprovalController', function () {
         calculationFactory, confirmDeferred, $scope, requisitionService;
 
     //variables
-    var requisition, products, lineItems;
+    var requisitions, products, lineItems;
 
     beforeEach(function() {
         module('requisition-batch-approval');
@@ -50,7 +50,7 @@ describe('RequisitionBatchApprovalController', function () {
             }
         ];
 
-        requisition = {
+        var requisition = {
             id: 1,
             status: 'AUTHORIZED',
             requisitionLineItems: requisitionLineItems,
@@ -61,6 +61,8 @@ describe('RequisitionBatchApprovalController', function () {
                 name: 'Facility name 1'
             }
         };
+
+        requisitions = [requisition];
 
         products = {};
         products[requisitionLineItems[0].orderable.id] = {
@@ -97,8 +99,6 @@ describe('RequisitionBatchApprovalController', function () {
             $q = _$q_;
             $scope = _$rootScope_.$new();
             requisitionService = _requisitionService_;
-            $stateParams = _$stateParams_;
-            $stateParams.requisitions = [requisition];
 
         });
 
@@ -111,7 +111,7 @@ describe('RequisitionBatchApprovalController', function () {
 
         beforeEach(function() {
             vm = $controller('RequisitionBatchApprovalController', {
-                $stateParams: $stateParams,
+                requisitions: requisitions,
                 $scope: $scope
             });
         });
@@ -119,7 +119,7 @@ describe('RequisitionBatchApprovalController', function () {
         it('should expose requisitions', function() {
             vm.$onInit();
             $rootScope.$apply();
-            expect(vm.requisitions).toEqual([requisition]);
+            expect(vm.requisitions).toEqual(requisitions);
         });
 
         it('should calculate total cost of requisition', function() {
@@ -154,7 +154,7 @@ describe('RequisitionBatchApprovalController', function () {
         });
 
         it('should call calculation factory method', function() {
-            vm.updateLineItem(lineItems[1][1], requisition);
+            vm.updateLineItem(lineItems[1][1], requisitions[0]);
 
             expect(calculationFactory.totalCost).toHaveBeenCalled();
             expect(lineItems[1][1].totalCost).toBe(100);
@@ -194,7 +194,7 @@ describe('RequisitionBatchApprovalController', function () {
 
     function initController() {
         vm = $controller('RequisitionBatchApprovalController', {
-            $stateParams: $stateParams,
+            requisitions: requisitions,
             calculationFactory: calculationFactory,
             $scope: $scope
         });

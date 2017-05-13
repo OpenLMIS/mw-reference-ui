@@ -30,16 +30,14 @@
         .controller('RequisitionBatchApprovalController', controller);
 
     controller.$inject = [
-        '$stateParams', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
+        'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
-            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope',
-            'requisitionService', '$q', '$filter'
+            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter'
     ];
 
-    function controller($stateParams, calculationFactory, stateTrackerService, loadingModalService,
+    function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
-                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, requisitionService,
-                        $q, $filter) {
+                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter) {
 
         var vm = this;
 
@@ -129,16 +127,7 @@
          * setting data to be available on the view.
          */
         function onInit() {
-            loadingModalService.open();
-            var promises = [];
-
-            angular.forEach($stateParams.requisitions, function (requisition) {
-                promises.push(requisitionService.get(requisition.id));
-            });
-
-            $q.all(promises).then(function(requisitions) {
-                prepareDataToDisplay(requisitions);
-            }).finally(loadingModalService.close);
+            prepareDataToDisplay(requisitions);
         }
 
         function prepareDataToDisplay(requisitions) {
@@ -253,11 +242,13 @@
          * Approves all displayed requisitions.
          */
         function approve() {
-            loadingModalService.open();
+            confirmService('').then(function(){
+                loadingModalService.open();
 
-            // Using slice to make copy of array, so scope changes at end only
-            requisitionBatchApproveFactory(vm.requisitions.slice())
-            .then(handleApprove, handleApprove);
+                // Using slice to make copy of array, so scope changes at end only
+                requisitionBatchApproveFactory(vm.requisitions.slice())
+                .then(handleApprove, handleApprove);
+            });
         }
 
         function handleApprove(successfulRequisitions){
