@@ -43,8 +43,8 @@
     function getRequisitions($q, $stateParams, requisitionService) {
         var promises = []
         
-        angular.forEach($stateParams.ids.split(','), function (requisition) {
-            promises.push(requisitionService.get(requisition.id));
+        angular.forEach($stateParams.ids.split(','), function (id) {
+            promises.push(requisitionService.get(id));
         });
 
         return $q.all(promises);
