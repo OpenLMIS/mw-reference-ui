@@ -60,8 +60,8 @@
 <div class="openlmis-toolbar button-group" ng-if="vm.requisitions.length">
     <button ng-disabled="vm.isOffline()" ng-click="vm.sync()">{{'requisitionBatchApproval.sync' | message}}</button>
     <div class="button-group primary">
-        <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
         <button class="primary" ng-disabled="vm.isOffline()" ng-click="vm.approve()">{{'requisitionBatchApproval.approve' | message}}</button>
+        <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
     </div>
 </div>
 
