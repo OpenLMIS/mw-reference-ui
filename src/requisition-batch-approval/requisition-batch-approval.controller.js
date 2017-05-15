@@ -257,7 +257,7 @@
         function handleApprove(successfulRequisitions){
             loadingModalService.close();
 
-            if(successfulRequisitions.length < vm.requisitions){
+            if(successfulRequisitions.length < vm.requisitions.length){
 
                 // Remove all successful requisitions
                 vm.requisitions = _.filter(vm.requisitions, function(requisition){
