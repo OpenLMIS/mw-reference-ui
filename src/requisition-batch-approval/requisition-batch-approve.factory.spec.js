@@ -15,32 +15,172 @@
 
 describe('RequisitionBatchApproveFactory', function() {
 
+	var $rootScope, $httpBackend, requisitionBatchApproveFactory, requisitionSaveSpy, requisitions;
+
+	beforeEach(module('requisition-batch-approval', function($provide) {
+		requisitionSaveSpy = {
+			'save': function(requisitions){
+				return [];
+			}
+		}
+		$provide.factory('requisitionBatchSaveFactory', function(){
+			return requisitionSaveSpy.save;
+		});
+
+		$provide.factory('requisitionUrlFactory', function(){
+			return function(url){
+				return url;
+			}
+		});
+	}));
+
+	beforeEach(inject(function($q){
+		spyOn(requisitionSaveSpy, 'save').andCallFake(function(requisitions){
+			return $q.resolve(requisitions);
+		});
+	}));
+
+	beforeEach(inject(function(requisitionValidator) {
+		spyOn(requisitionValidator, 'validateRequisition')
+		.andCallFake(function(requisition){
+			if(requisition.id.indexOf('invalid') > -1){
+				return false;
+			}
+
+			return true;
+		});
+	}));
+
+	beforeEach(inject(function(_$rootScope_, _requisitionBatchApproveFactory_, $q){
+		$rootScope = _$rootScope_;
+		requisitionBatchApproveFactory = _requisitionBatchApproveFactory_;
+	}));
+
+	beforeEach(inject(function(_$httpBackend_){
+		$httpBackend = _$httpBackend_;
+
+		$httpBackend.whenPOST('/api/requisitions/approve')
+		.respond(function(method, url, data){
+			var errors = [];
+
+			data = JSON.parse(data);
+
+			if(Array.isArray(data)){
+				data.forEach(function(id){
+					if(id.indexOf('dontapprove') >= 0){
+						errors.push({
+							requisitionId: id,
+							errorMessage: {
+								message: 'Error message'
+							}
+						});
+					}
+				});
+			}
+
+			if(errors.length == 0){
+				return [200, data];
+			} else {
+				return [400, {
+					errors: errors
+				}];
+			}
+		});
+	}));
+
+	beforeEach(inject(function(Requisition) {
+		requisitions = [{
+			id: "requisition-1"
+		}, {
+			id: "requisition-2"
+		}]; // See bottom of file for variable definition
+	}));
+
 	it('returns an empty array if input is invalid', function() {
+		var response;
+		
+		requisitionBatchApproveFactory([])
+		.catch(function(requisitions){
+			response = requisitions;
+		});
+		$rootScope.$apply();
+
+		expect(Array.isArray(response)).toBe(true);
+		expect(response.length).toEqual(0);
+
+		requisitionBatchApproveFactory(false)
+		.catch(function(requisitions){
+			response = requisitions;
+		});
+		$rootScope.$apply();
+
+		expect(Array.isArray(response)).toBe(true);
+		expect(response.length).toEqual(0);
 
 	});
 
 	it('always saves all requisitions', function() {
+		requisitionBatchApproveFactory(requisitions);
+		$rootScope.$apply();
 
+		expect(requisitionSaveSpy.save).toHaveBeenCalledWith(requisitions);
 	});
 
 	it('when successful, it returns an array of all requisitions', function() {
+		var response;
+		
+		requisitionBatchApproveFactory(requisitions)
+		.then(function(returnedRequisitions){
+			response = returnedRequisitions;
+		});
 
+		$rootScope.$apply();
+		$httpBackend.flush();
+
+		expect(response.length).toEqual(requisitions.length);
+		expect(response[0].id).toEqual(requisitions[0].id);
 	});
 
-	it('it validates requisitions and does not return invalid requisitions', function() {
+	it('invalid requisitions are not returned, and have error message applied', function() {
+		var invalidRequisition = {
+			id: 'requisition-invalid'
+		};
+		requisitions.push(invalidRequisition);
 
+		var response;
+		requisitionBatchApproveFactory(requisitions)
+		.then(function(returnedRequisitions){
+			response = returnedRequisitions;
+		});
+
+		$rootScope.$apply();
+		$httpBackend.flush();
+
+		expect(response.length).toEqual(requisitions.length - 1);
+		
+		// We mutated the original object...
+		expect(invalidRequisition.$error).toBeTruthy();
 	});
 
-	it('only returns requisitions that were successfully approved', function() {
+	it('unapproved requisitions are not returned, and have error message applied', function() {
+		var unapprovableRequisition = {
+			id: 'requisition-dontapprove'
+		};
+		requisitions.push(unapprovableRequisition);
 
-	});
+		var response;
+		requisitionBatchApproveFactory(requisitions)
+		.then(function(returnedRequisitions){
+			response = returnedRequisitions;
+		});
 
-	it('it adds errors to requisitions that fail validation', function() {
+		$rootScope.$apply();
+		$httpBackend.flush();
 
-	});
-
-	it('it adds errors to requisitions that can not be approved', function() {
-
+		expect(response.length).toEqual(requisitions.length - 1);
+		
+		// We mutated the original object...
+		expect(unapprovableRequisition.$error).toBeTruthy();
 	});
 
 });

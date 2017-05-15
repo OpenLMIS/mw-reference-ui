@@ -68,8 +68,8 @@
         }
 
         function approveRequisitions(requisitions) {
-
             var requisitionsObject = {};
+
             requisitions.forEach(function(requisition){
                 requisitionsObject[requisition.id] = requisition;
             });
@@ -91,11 +91,14 @@
                         });
                     }
 
-                    requisitions = _.filter(requisitions, function(requisition){
-                        return requisition.$error;
+                    var successfulRequisitions = [];
+                    requisitions.forEach(function(requisition){
+                        if(!requisition.$error){
+                            successfulRequisitions.push(requisition);
+                        }
                     });
                     
-                    return deferred.resolve(requisitions);
+                    return deferred.resolve(successfulRequisitions);
                 } else {
                     return deferred.reject([]);
                 }
@@ -117,9 +120,9 @@
             });
 
             if(successfulRequisitions.length < requisitions.length) {
-                return $q.reject(requisitions);
+                return $q.reject(successfulRequisitions);
             } else {
-                return $q.resolve(requisitions);
+                return $q.resolve(successfulRequisitions);
             }
         }
 
