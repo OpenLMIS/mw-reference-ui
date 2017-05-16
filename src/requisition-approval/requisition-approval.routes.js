@@ -38,8 +38,12 @@
 				requisitions: function(paginationService, requisitionService, $stateParams) {
 					return paginationService.registerUrl($stateParams, function(stateParams) {
 						if (stateParams.program) {
-							stateParams.requisitionStatus = [REQUISITION_STATUS.AUTHORIZED];
-                            return requisitionService.search(stateParams.offline == 'true', stateParams);
+                            if (stateParams.offline == 'true') {
+                            	stateParams.requisitionStatus = [REQUISITION_STATUS.AUTHORIZED, REQUISITION_STATUS.IN_APPROVAL];
+                                return requisitionService.search(stateParams.offline == 'true', stateParams);
+                            } else {
+                                return requisitionService.forApproval(stateParams);
+                            }
                         }
                         return undefined;
 					});
