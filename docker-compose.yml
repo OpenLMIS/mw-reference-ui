@@ -33,7 +33,7 @@ services:
       - '/openlmis-auth-ui'
 
   fulfillment-ui:
-    image: openlmis/fulfillment-ui:5.0.0
+    image: openlmis/fulfillment-ui:5.0.1-SNAPSHOT
     volumes:
       - '/openlmis-fulfillment-ui'
 
