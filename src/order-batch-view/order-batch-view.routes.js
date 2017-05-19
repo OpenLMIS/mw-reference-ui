@@ -28,11 +28,15 @@
         $stateProvider.state('openlmis.orders.batchView', {
             label: 'orderBatchView.viewBatchOrders',
             showInNavigation: true,
-            templateUrl: 'order-batch-view/order-batch-view.html',
             url: '/batchView',
-            accessRights: [
-                FULFILLMENT_RIGHTS.ORDERS_VIEW
-            ]
+            accessRights: [FULFILLMENT_RIGHTS.ORDERS_VIEW],
+            controller: ['$state',
+                function($state) {
+                    $state.go('openlmis.reports.list.generate', {
+                        module: 'malawi',
+                        report: 'f28d0ebd-7276-4453-bc3c-48556a4bd25a'
+                    });
+                }]
         });
 
     }
