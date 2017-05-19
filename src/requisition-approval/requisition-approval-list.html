@@ -7,13 +7,6 @@
                 ng-options="program as program.name for program in vm.programs"
                 required>
         </select>
-        <!--
-        <label class="checkbox">
-            <input id="offlineSearch" type="checkbox" ng-model="vm.offline"
-                   ng-disabled="vm.isOfflineDisabled()"/>
-            {{'requisitionApproval.offline' | message}}
-        </label>
-        -->
         <input class="btn btn-primary" type="submit" value="{{'requisitionApproval.search' | message}}"/>
     </form>
     <h4>{{ 'requisitionApproval.select' | message }}</h4>
@@ -62,11 +55,6 @@
                     <button class="primary" ng-click="vm.openRnr(requisition.id)">
                         {{'requisitionApproval.viewRequisition' | message}}
                     </button>
-                    <!--
-                    <button class="danger" ng-if="requisition.$availableOffline"
-                            ng-click="vm.removeOfflineRequisition(requisition)">{{'requisitionApproval.removeOfflineRequisition' | message}}
-                    </button>
-                    -->
                 </td>
             </tr>
         </tbody>

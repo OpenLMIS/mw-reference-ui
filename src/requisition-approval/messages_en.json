@@ -4,7 +4,5 @@
 	"requisitionApproval.offline": "Offline",
 	"requisitionApproval.select": "Select",
 	"requisitionApproval.selectAtLeastOneRnr": "Please select at least one LMIS Form.",
-	"requisitionApproval.removeOfflineRequisition": "Remove LMIS Form offline",
-	"requisitionApproval.removeOfflineRequisitionConfirm": "Are you sure you want to remove this LMIS Form from offline storage?",
 	"requisitionApproval.viewSelectedRequisitions": "View selected LMIS Forms"
 }

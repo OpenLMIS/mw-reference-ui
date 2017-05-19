@@ -183,58 +183,6 @@ describe('RequisitionApprovalListController', function () {
         });
     });
 
-    describe ('isOfflineDisabled', function() {
-
-        beforeEach(function() {
-            initController();
-        });
-
-        it('should return true if application is offline', function () {
-            vm.offline = false;
-            spyOn(offlineService, 'isOffline').andReturn(true);
-
-            expect(vm.isOfflineDisabled()).toBe(true);
-            expect(vm.offline).toBe(true);
-        });
-
-        it('should return false if application is online', function () {
-            vm.offline = false;
-            spyOn(offlineService, 'isOffline').andReturn(false);
-
-            expect(vm.isOfflineDisabled()).toBe(false);
-            expect(vm.offline).toBe(false);
-        });
-    });
-
-    describe ('removeOfflineRequisition', function() {
-
-        beforeEach(function() {
-           initController();
-           confirmDeferred = $q.defer();
-           spyOn(confirmService, 'confirmDestroy').andReturn(confirmDeferred.promise);
-        });
-
-        it('should ask for confirmation before removing', function () {
-            vm.removeOfflineRequisition(vm.requisitions[0]);
-
-            confirmDeferred.resolve();
-            $rootScope.$apply();
-
-            expect(confirmService.confirmDestroy).toHaveBeenCalledWith('requisitionApproval.removeOfflineRequisitionConfirm');
-        });
-
-        it('should set false for requisition $availableOffline flag', function () {
-            vm.requisitions[0].$availableOffline = true;
-            vm.removeOfflineRequisition(vm.requisitions[0]);
-
-            confirmDeferred.resolve();
-            $rootScope.$apply();
-
-            expect(vm.requisitions[0].$availableOffline).toBe(false);
-        });
-
-    });
-
     function initController() {
         vm = $controller('RequisitionApprovalListController', {
             requisitions: requisitions,

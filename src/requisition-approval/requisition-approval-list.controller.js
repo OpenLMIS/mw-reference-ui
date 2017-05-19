@@ -30,14 +30,14 @@
 		.controller('RequisitionApprovalListController', controller);
 
 	controller.$inject = [
-		'$controller', '$state', 'requisitions', 'messageService',
-        '$stateParams', '$filter', 'programs', 'selectedProgram',
-        'alertService', 'offlineService', 'localStorageFactory', 'confirmService'
+		'$controller', '$state', 'requisitions',
+        '$stateParams', 'programs', 'selectedProgram',
+        'alertService', 'offlineService', 'localStorageFactory'
 	];
 
-	function controller($controller, $state, requisitions, messageService,
-                        $stateParams, $filter, programs, selectedProgram,
-                        alertService, offlineService, localStorageFactory, confirmService) {
+	function controller($controller, $state, requisitions,
+                        $stateParams, programs, selectedProgram,
+                        alertService, offlineService, localStorageFactory) {
 
 		var vm = this,
             offlineRequisitions = localStorageFactory('requisitions');
@@ -47,9 +47,6 @@
 		vm.openRnr = openRnr;
 		vm.toggleSelectAll = toggleSelectAll;
 		vm.viewSelectedRequisitions = viewSelectedRequisitions;
-        vm.isOfflineDisabled = isOfflineDisabled;
-        vm.removeOfflineRequisition = removeOfflineRequisition;
-
 
         /**
          * @ngdoc property
@@ -183,41 +180,6 @@
             } else {
                 alertService.error('requisitionApproval.selectAtLeastOneRnr');
             }
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-approval.controller:RequisitionApprovalListController
-         * @name isOfflineDisabled
-         *
-         * @description
-         * Check if "Search offline" checkbox should be disabled. It will set the searchOffline
-         * flag to true if app goes in the offline mode.
-         *
-         * @return {Boolean} true if offline is disabled, false otherwise
-         */
-        function isOfflineDisabled() {
-            if(offlineService.isOffline()) {
-                vm.offline = true;
-            }
-            return offlineService.isOffline();
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-approval.controller:RequisitionApprovalListController
-         * @name removeOfflineRequisition
-         *
-         * @description
-         * Removes requisition from local storage.
-         *
-         * @param {Resource} requisition Requisition to remove
-         */
-        function removeOfflineRequisition(requisition) {
-            confirmService.confirmDestroy('requisitionApproval.removeOfflineRequisitionConfirm').then(function() {
-                offlineRequisitions.removeBy('id', requisition.id);
-                requisition.$availableOffline = false;
-            });
         }
 
     }
