@@ -14,5 +14,7 @@
   "requisitionWarningPeriods": "Feb,Mar,May,Jun,Aug,Sep,Nov,Dec",
   "currencyCode": "MWK",
   "currencySymbol": "MK",
-  "currencySymbolSide": "right"
+  "currencySymbolSide": "right",
+  "applicationLoadingMessage": "Starting Malawi OpenLMIS",
+  "applicationTitle": "Malawi OpenLMIS"
 }

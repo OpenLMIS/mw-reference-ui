@@ -1,6 +1,6 @@
 {
-  "openlmisHeader.appHeader": "OpenLMIS",
-  "openlmisLogin.appHeader": "OpenLMIS",
+  "openlmisHeader.appHeader": "Malawi OpenLMIS",
+  "openlmisLogin.appHeader": "Malawi OpenLMIS",
   "adminTemplateList.requisitionTemplate": "LMIS Form template",
   "requisitionApproval.approveRequisitions": "Approve LMIS Form",
   "requisitionApproval.viewRequisition": "View LMIS Form",
