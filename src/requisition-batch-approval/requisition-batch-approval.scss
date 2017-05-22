@@ -16,7 +16,7 @@
     }
 
     td.total-cell,
-    tr.total-row > td,
+    tr.total-row > th,
     tr:nth-child(2n+1) > td.total-cell {
         background-color: $light-gray;
         color: $black;
@@ -26,7 +26,8 @@
         background-color: $background-color-alt;
     }
 
-    tr.total-row > td {
+    tr.total-row > th {
         font-weight: bold;
     }
+
 } 

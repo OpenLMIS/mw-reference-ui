@@ -43,17 +43,19 @@
             <td class="total-cell numeric"> {{product.totalQuantity}} </td>
             <td class="total-cell numeric"> {{product.totalCost | openlmisCurrency}} </td>
         </tr>
-        <tr class="total-row">
-            <td>{{'requisitionBatchApproval.total' | message}}</th></td>
-            <td></td>
-            <td ng-repeat-start="requisition in vm.requisitions track by requisition.id">
-            </td>
-            <td class="numeric" ng-repeat-end>
-                {{requisition.$totalCost | openlmisCurrency}}
-            </td>
-            <td></td>
-            <td class="numeric"> {{vm.totalCost | openlmisCurrency}}</td>
-        </tr>
+        <tfoot>
+            <tr class="total-row">
+                <th class="col-sticky">{{'requisitionBatchApproval.total' | message}}</th></td>
+                <th class="col-sticky"></th>
+                <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
+                </th>
+                <th class="numeric" ng-repeat-end>
+                    {{requisition.$totalCost | openlmisCurrency}}
+                </th>
+                <th></th>
+                <th class="numeric"> {{vm.totalCost | openlmisCurrency}}</th>
+            </tr>
+        </tfoot>
     </table>
 </div>
 <br /><br />
