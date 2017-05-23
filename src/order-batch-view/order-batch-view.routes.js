@@ -12,7 +12,6 @@
  * the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
-
 (function() {
 
     'use strict';
@@ -30,13 +29,17 @@
             showInNavigation: true,
             url: '/batchView',
             accessRights: [FULFILLMENT_RIGHTS.ORDERS_VIEW],
-            controller: ['$state',
-                function($state) {
-                    $state.go('openlmis.reports.list.generate', {
-                        module: 'malawi',
-                        report: 'f28d0ebd-7276-4453-bc3c-48556a4bd25a'
-                    });
-                }]
+            controller: 'ReportGenerateController',
+            controllerAs: 'vm',
+            templateUrl: 'report/report-generate.html',
+            resolve: {
+                report: function(reportFactory) {
+                    return reportFactory.getReport('malawi', 'f28d0ebd-7276-4453-bc3c-48556a4bd25a');
+                },
+                reportParamsOptions: function(report, reportFactory) {
+                    return reportFactory.getReportParamsOptions(report);
+                }
+            }
         });
 
     }
