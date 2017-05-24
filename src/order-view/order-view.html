@@ -1,0 +1,62 @@
+<h2>{{'orderView.viewOrders' | message}}</h2>
+<section class="openlmis-table-container">
+    <form ng-submit="vm.loadOrders()" >
+        <label for="supplyingFacility">{{'orderView.supplyingFacility' | message}}</label>
+        <select id="supplyingFacility"
+                ng-model="vm.supplyingFacility"
+                ng-options="facility.name for facility in vm.supplyingFacilities"
+                required></select>
+        <label for="requestingFacility">{{'orderView.requestingFacility' | message}}</label>
+        <select id="requestingFacility"
+                ng-model="vm.requestingFacility"
+                ng-options="facility.name for facility in vm.requestingFacilities"></select>
+        <label>{{'orderView.program' | message}}</label>
+        <select id="program"
+                ng-model="vm.program"
+                ng-options="program.name for program in vm.programs"></select>
+        <input type="submit" class="btn btn-primary" value="{{'orderView.search' | message}}"/>
+    </form>
+    <table>
+        <caption ng-if="!vm.orders.length">{{'orderView.noOrdersFound' | message}}</caption>
+        <thead>
+        <tr>
+            <th>{{'orderView.orderNumber' | message}}</th>
+            <th>{{'orderView.facility' | message}}</th>
+            <th>{{'orderView.district' | message}}</th>
+            <th>{{'orderView.program' | message}}</th>
+            <th>{{'orderView.period' | message}}</th>
+            <th>{{'orderView.startDate' | message}}</th>
+            <th>{{'orderView.endDate' | message}}</th>
+            <th>{{'orderView.status' | message}}</th>
+            <th>{{'orderView.emergency' | message}}</th>
+            <th class="col-sticky sticky-right">{{'orderView.actions' | message}}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="order in vm.orders">
+            <td>{{order.orderCode}}</td>
+            <td>{{order.facility.code}} - {{order.facility.name}}</td>
+            <td>{{order.facility.geographicZone.name}}</td>
+            <td>{{order.program.name}}</td>
+            <td>{{order.processingPeriod.name}}</td>
+            <td>{{order.processingPeriod.startDate | openlmisDate}}</td>
+            <td>{{order.processingPeriod.endDate | openlmisDate}}</td>
+            <td>{{order.status}}</td>
+            <td class="col-emergency">
+                <i ng-class="{'icon-ok': order.emergency}"></i>
+            </td>
+            <td>
+                <button class="print"
+                        openlmis-download="{{vm.getMalawiPrintUrl(order)}}">
+                    {{'orderView.print'|message}}
+                </button>
+                <button class="download"
+                        openlmis-download="{{vm.getMalawiDownloadUrl(order)}}">
+                    {{'orderView.download'|message}}
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <openlmis-pagination/>
+</section>
