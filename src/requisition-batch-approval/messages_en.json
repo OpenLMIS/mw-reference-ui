@@ -8,6 +8,7 @@
   "requisitionBatchApproval.productCode": "Product code",
   "requisitionBatchApproval.revert" : "Revert",
   "requisitionBatchApproval.revertConfirm": "Are you sure you want to revert all changes?",
+  "requisitionBatchApproval.skipped": "Skipped",
   "requisitionBatchApproval.sync": "Sync with server",
   "requisitionBatchApproval.syncError": "There were ${errorCount} errors",
   "requisitionBatchApproval.syncSuccess": "${successCount} LMIS Forms were synchronized!",

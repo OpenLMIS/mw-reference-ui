@@ -32,10 +32,11 @@
             <td> {{product.code}} </td>
             <td> {{product.name}} </td>
             <td ng-repeat-start="requisition in vm.requisitions track by requisition.id" class="numeric">
-                <input ng-if="(product.requisitions | contains: requisition.id)"
+                <input ng-if="(product.requisitions | contains: requisition.id) && !(product.skipped)"
                        positive-integer
                        ng-model="vm.lineItems[requisition.id][productId].approvedQuantity"
                        ng-change="vm.updateLineItem(vm.lineItems[requisition.id][productId], requisition)"/>
+                <p ng-if="product.skipped">{{'requisitionBatchApproval.skipped' | message}}</p>
             </td>
             <td class="numeric" ng-repeat-end>
                 {{vm.lineItems[requisition.id][productId].totalCost | openlmisCurrency}}
