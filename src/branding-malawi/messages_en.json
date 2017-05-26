@@ -43,6 +43,7 @@
   "requisitionInitiate.initiateReportAndRequisition": "Initiate LMIS Form",
   "requisitionInitiate.previousPending": "Previous LMIS Form pending",
   "requisitionInitiate.rnrStatus": "LMIS Form Status",
+  "requisitionInitiate.rnrType": "LMIS Form Type",
   "requisitionView.approve.confirm": "Are you sure you want to approve this LMIS Form?",
   "requisitionView.authorize.confirm": "Are you sure you want to authorize this LMIS Form?",
   "requisitionView.delete.confirm": "Are you sure you want to delete this LMIS Form?",
