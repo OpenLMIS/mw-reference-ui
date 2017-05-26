@@ -1,1 +1,15 @@
-{}
+{
+  "name": "mw-reference-ui",
+  "dependencies": {
+    "perfect-scrollbar": "^0.7.0"
+  },
+  "overrides": {
+  	"perfect-scrollbar": {
+		"main": [
+			"css/perfect-scrollbar.css",
+			"js/perfect-scrollbar.js",
+			"js/perfect-scrollbar.jquery.js"
+		]
+  	}
+  }
+}

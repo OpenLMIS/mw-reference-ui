@@ -1,0 +1,13 @@
+.ps__scrollbar-x{
+	z-index: 5;
+}
+
+.ps__scrollbar-x-rail{
+	opacity: 1.0 !important;
+	bottom: calc(var(--bottom-offset) * 1px) !important;
+}
+
+//default bottom-offset
+html {
+	--bottom-offset: 0;
+}
