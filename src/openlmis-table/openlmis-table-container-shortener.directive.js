@@ -78,13 +78,10 @@
                 var windowHeight = window.height(),
                     containerOffset = parent[0].getBoundingClientRect().bottom;
 
-                //remove height of scrollbar
-                containerOffset += xScrollbar.height();
-
                 // remove height of floating toolbar
                 jQuery('.openlmis-toolbar').each(function(){
                     var div = jQuery(this);
-                    containerOffset += div.height();
+                    containerOffset += div.outerHeight();
                 });
 
                 if(containerOffset < windowHeight) {
