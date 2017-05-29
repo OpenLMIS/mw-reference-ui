@@ -1,0 +1,4 @@
+{
+  "requisitionConvertToOrder.filter": "Filter",
+  "requisitionConvertToOrder.info": "In order to filter requisitions type in one of the following parameters: Program Name, Facility Name or Facility Code and click 'Search' button."
+}
