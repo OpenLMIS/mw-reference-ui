@@ -70,16 +70,14 @@ describe('RequisitionBatchApprovalController', function () {
             name: requisitionLineItems[0].orderable.fullProductName,
             totalCost: requisitionLineItems[0].totalCost,
             totalQuantity: requisitionLineItems[0].approvedQuantity,
-            requisitions: [requisition.id],
-            skipped: requisitionLineItems[0].skipped
+            requisitions: [requisition.id]
         };
         products[requisitionLineItems[1].orderable.id] = {
             code: requisitionLineItems[1].orderable.productCode,
             name: requisitionLineItems[1].orderable.fullProductName,
             totalCost: requisitionLineItems[1].totalCost,
             totalQuantity: requisitionLineItems[1].approvedQuantity,
-            requisitions: [requisition.id],
-            skipped: requisitionLineItems[1].skipped
+            requisitions: [requisition.id]
         };
 
         lineItems = [];

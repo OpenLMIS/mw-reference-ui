@@ -152,16 +152,13 @@
                         vm.products[lineItem.orderable.id].requisitions.push(requisition.id);
                         vm.products[lineItem.orderable.id].totalCost += lineItem.totalCost;
                         vm.products[lineItem.orderable.id].totalQuantity += lineItem.approvedQuantity;
-                        vm.products[lineItem.orderable.id].approvedQuantity = lineItem.approvedQuantity;
-                        vm.products[lineItem.orderable.id].skipped = lineItem.skipped;
                     } else {
                         vm.products[lineItem.orderable.id] = {
                             code: lineItem.orderable.productCode,
                             name: lineItem.orderable.fullProductName,
                             totalCost: lineItem.totalCost,
                             totalQuantity: lineItem.approvedQuantity,
-                            requisitions: [requisition.id],
-                            skipped: lineItem.skipped
+                            requisitions: [requisition.id]
                         };
                     }
 
