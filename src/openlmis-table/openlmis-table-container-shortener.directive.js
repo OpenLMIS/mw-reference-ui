@@ -56,7 +56,6 @@
                     surpressScrollY: true,
                     wheelPropagation: true
                 });
-
                 xScrollbar = jQuery('.ps__scrollbar-x-rail', element);
             });
 
@@ -73,23 +72,25 @@
                 blit();
             }
 
-            function blit(){
-                var parent = xScrollbar.parent();
-                var windowHeight = window.height(),
-                    containerOffset = parent[0].getBoundingClientRect().bottom;
+            function blit() {
+                if (xScrollbar) {
+                    var parent = xScrollbar.parent();
+                    var windowHeight = window.height(),
+                        containerOffset = parent[0].getBoundingClientRect().bottom;
 
-                // remove height of floating toolbar
-                jQuery('.openlmis-toolbar').each(function(){
-                    var div = jQuery(this);
-                    containerOffset += div.outerHeight();
-                });
+                    // remove height of floating toolbar
+                    jQuery('.openlmis-toolbar').each(function () {
+                        var div = jQuery(this);
+                        containerOffset += div.outerHeight();
+                    });
 
-                if(containerOffset < windowHeight) {
-                    xScrollbar[0].style.setProperty('--bottom-offset', 0);
-                    return;
+                    if (containerOffset < windowHeight) {
+                        xScrollbar[0].style.setProperty('--bottom-offset', 0);
+                        return;
+                    }
+
+                    xScrollbar[0].style.setProperty('--bottom-offset', (containerOffset - windowHeight));
                 }
-
-                xScrollbar[0].style.setProperty('--bottom-offset', (containerOffset - windowHeight));
             }
         }
     }
