@@ -97,6 +97,7 @@
 
         vm.syncRnr = syncRnr;
         vm.syncRnrAndPrint = syncRnrAndPrint;
+        vm.syncRnrAndMalawiPrint = syncRnrAndMalawiPrint;
         vm.submitRnr = submitRnr;
         vm.authorizeRnr = authorizeRnr;
         vm.removeRnr = removeRnr;
@@ -113,6 +114,7 @@
         vm.displaySync = displaySync;
         vm.isOffline = offlineService.isOffline;
         vm.getPrintUrl = getPrintUrl;
+        vm.getMalawiPrintUrl = getMalawiPrintUrl;
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
 
@@ -168,6 +170,38 @@
               });
             } else {
                 $window.open(accessTokenFactory.addAccessToken(vm.getPrintUrl()), '_blank');
+            }
+        }
+
+         /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name syncRnrAndMalawiPrint
+         *
+         * @description
+         * Responsible for syncing requisition with the server. If the requisition fails to sync,
+         * an error notification will be displayed. Otherwise, a success notification will be shown
+         * and the requisition will be printed.
+         * If the error status is 409 (conflict), the requisition will be reloaded, since this
+         * indicates a version conflict.
+         */
+        function syncRnrAndMalawiPrint() {
+            if (displaySync()) {
+                var popup = $window.open('', '_blank');
+                popup.document.write(messageService.get('requisitionView.sync.pending'));
+                var loadingPromise = loadingModalService.open();
+                saveRnr().then(function() {
+                    loadingPromise.then(function() {
+                        notificationService.success('requisitionView.sync.success');
+                    });
+                    popup.location.href = accessTokenFactory.addAccessToken(vm.getMalawiPrintUrl());
+                    reloadState();
+                }, function(response) {
+                  handleSaveError(response.status);
+                  popup.close();
+              });
+            } else {
+                $window.open(accessTokenFactory.addAccessToken(vm.getMalawiPrintUrl()), '_blank');
             }
         }
 
@@ -540,6 +574,20 @@
          */
         function getPrintUrl() {
             return requisitionUrlFactory('/api/requisitions/' + vm.requisition.id + '/print');
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name getMalawiPrintUrl
+         *
+         * @description
+         * Prepares a print URL for the given requisition.
+         *
+         * @return {String} the prepared URL
+         */
+        function getMalawiPrintUrl() {
+            return requisitionUrlFactory('/api/reports/requisitions/' + vm.requisition.id + '/print');
         }
 
         /**
