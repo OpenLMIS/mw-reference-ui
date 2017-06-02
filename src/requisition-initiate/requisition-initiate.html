@@ -1,7 +1,7 @@
 <h2>{{'requisitionInitiate.initiateReportAndRequisition' | message}}</h2>
 <div ng-if="vm.error" class="alert is-error" ng-show="vm.error">{{vm.error}}</div>
 <section class="openlmis-table-container">
-    <form ng-submit="vm.loadPeriods()">
+    <form name="filterForm" ng-submit="vm.loadPeriods()">
         <fieldset class="form-group">
             <legend>{{'requisitionInitiate.facilityType' | message}}</legend>
             <label class="radio">
@@ -56,9 +56,12 @@
         </fieldset>
         <input type="submit" value="{{'requisitionInitiate.search'|message}}"/>
     </form>
-    <table>
+    <table ng-class="{changed:filterForm.$dirty}">
         <caption ng-if="!vm.periods.length">
             {{'requisitionInitiate.selectRequiredFields' | message}}
+        </caption>
+        <caption ng-if="vm.periods.length && filterForm.$dirty">
+            {{'requisitionInitiate.hasBeenChanged' | message}}
         </caption>
         <thead>
             <tr>
