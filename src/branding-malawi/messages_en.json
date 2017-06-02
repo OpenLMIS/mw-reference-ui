@@ -37,6 +37,7 @@
   "requisitionView.updateForbidden": "This LMIS Form has changed status or you lost the rights required for syncing it; the server version will be used.",
   "requisitionView.versionMismatch": "This LMIS Form has a newer version on the server; the server version will be used, and you will need to remake your changes.",
   "requisitionView.viewRequisition": "View LMIS Form",
+  "requisitionValidation.calculationMismatch": "Close bal must equal Open bal + Qty rec - Qty used +/- Loss/Adj",
   "requisition.requisitions": "LMIS Forms",
   "adminTemplate.configureRnrTemplate": "Configure LMIS Form template",
   "requisitionApproval.noRnrPendingForApproval": "No LMIS Forms pending for approval",
