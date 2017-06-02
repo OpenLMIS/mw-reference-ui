@@ -18,6 +18,7 @@
   "requisitionStatusMessages.requisitionHistory": "LMIS Form history",
   "requisitionSummary.requisitionCost": "LMIS Form cost",
   "requisitionSummary.totalRequisitionCost": "Total LMIS Form cost",
+  "requisitionValidation.calculationMismatch": "Close bal must equal Open bal + Qty rec - Qty used +/- Loss/Adj",
   "requisitionView.allLineItemsSkipped": "Cannot submit LMIS Form with all line items skipped.",
   "requisitionView.approve.failure": "Failed to approve LMIS Form!",
   "requisitionView.approve.success": "LMIS Form has been approved!",
