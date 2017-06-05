@@ -1,0 +1,85 @@
+<h2>{{'requisitionSearch.viewRequisitions' | message}}</h2>
+<div ng-if="vm.error" class="alert is-info" ng-show="vm.error">
+    {{vm.error | message}}
+</div>
+<section class="openlmis-table-container">
+    <form class="openlmis-table-filters" ng-submit="vm.search()">
+        <label for="facility">{{'requisitionSearch.facility' | message}}</label>
+        <select id="facility" placeholder="{{'requisitionSearch.selectFacility' | message}}"
+                ng-model="vm.selectedFacility"
+                ng-options="facility as facility.name for facility in vm.facilities"
+                required>
+        </select>
+        <label for=program>{{'requisitionSearch.program' | message}}</label>
+        <select id="program" placeholder="{{'requisitionSearch.selectProgram' | message}}" ng-required
+                ng-options="program as program.name for program in vm.selectedFacility.supportedPrograms"
+                ng-model="vm.selectedProgram">
+        </select>
+        <label class="checkbox">
+            <input id="offlineSearch" type="checkbox" ng-model="vm.offline"
+                   ng-disabled="vm.isOfflineDisabled()"/>
+            {{'requisitionSearch.offline' | message}}
+        </label>
+        <fieldset>
+            <legend>{{'requisitionSearch.date' | message}}</legend>
+            <label for=startDate>{{'requisitionSearch.from' | message}}</label>
+            <openlmis-datepicker input-id="startDate" value="vm.startDate" max-date="vm.endDate"></openlmis-datepicker>
+            <label for=endDate>{{'requisitionSearch.to' | message}}</label>
+            <openlmis-datepicker input-id="endDate" value="vm.endDate" min-date="vm.startDate"></openlmis-datepicker>
+        </fieldset>
+        <input class="btn btn-primary" type="submit" value="{{'requisitionSearch.search' | message}}"/>
+    </form>
+    <table>
+        <caption ng-if="!vm.requisitions.length">
+            {{'requisitionSearch.noRequisitionsFound' | message}}
+        </caption>
+        <caption ng-if="!vm.facilities.length">
+            {{'requisitionSearch.noFacilitiesFound' | message}}
+        </caption>
+        <caption ng-if="vm.selectedFacility && !vm.selectedFacility.supportedPrograms">
+            {{'requisitionSearch.noProgramsForFacility' | message}}
+        </caption>
+        <thead>
+            <tr>
+                <th>{{'requisitionSearch.program' | message}}</th>
+                <th>{{'requisitionSearch.facility' | message}}</th>
+                <th>{{'requisitionSearch.period' | message}}</th>
+                <th>{{'requisitionSearch.startDate' | message}}</th>
+                <th>{{'requisitionSearch.endDate' | message}}</th>
+                <th>{{'requisitionSearch.status' | message}}</th>
+                <th>{{'requisitionSearch.dateSubmitted' | message}}</th>
+                <th>{{'requisitionSearch.dateAuthorized' | message}}</th>
+                <th>{{'requisitionSearch.dateApproved' | message}}</th>
+                <th>{{'requisitionSearch.emergency' | message}}</th>
+                <th>{{'requisitionSearch.offline' | message}}</th>
+                <th class="col-sticky sticky-right">{{'requisitionSearch.actions'| message}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="requisition in vm.requisitions">
+                <td>{{requisition.program.name}}</td>
+                <td>{{requisition.facility.code}} - {{requisition.facility.name}}</th>
+                <td>{{requisition.processingPeriod.name}}</td>
+                <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
+                <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
+                <td>{{requisition.status}}</td>
+                <td>{{requisition.statusChanges.SUBMITTED.changeDate | openlmisDate}}</td>
+                <td>{{requisition.statusChanges.AUTHORIZED.changeDate | openlmisDate}}</td>
+                <td>{{requisition.statusChanges.APPROVED.changeDate | openlmisDate}}</td>
+                <td class="col-emergency">
+                    <i ng-class="{'icon-ok': requisition.emergency}"></i>
+                </td>
+                <td class="col-emergency">
+                    <i ng-class="{'icon-ok': requisition.$availableOffline}"></i>
+                </td>
+                <td>
+                    <button class="primary" ng-click="vm.openRnr(requisition.id)">{{'requisitionSearch.viewRequisition' | message}}</button>
+                    <button class="danger" ng-if="requisition.$availableOffline"
+                        ng-click="vm.removeOfflineRequisition(requisition)">{{'requisitionSearch.removeOfflineRequisition.label' | message}}
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <openlmis-pagination/>
+</section>
