@@ -1,6 +1,7 @@
 {
 	"requisitionApproval.all": "All",
 	"requisitionApproval.none": "None",
+	"requisitionApproval.noRnrPendingForApproval": "No LMIS Forms pending for approval",
 	"requisitionApproval.offline": "Offline",
 	"requisitionApproval.select": "Select",
 	"requisitionApproval.selectAtLeastOneRnr": "Please select at least one LMIS Form.",

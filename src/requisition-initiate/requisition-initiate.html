@@ -20,7 +20,7 @@
             <label for="facilityName">{{'requisitionInitiate.facility' | message}}</label>
             <select id="facilityName" ng-model="vm.selectedFacilityId"
                     ng-options="facility.id as facility.name for facility in vm.facilities"
-                    placeholder="{{requisitionInitiate.selectFacility | message}}" required>
+                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" required>
             </select>
             <label for="programListMyFacility">{{'requisitionInitiate.program' | message}}</label>
             <select id="programListMyFacility" ng-model="vm.selectedProgramId"
