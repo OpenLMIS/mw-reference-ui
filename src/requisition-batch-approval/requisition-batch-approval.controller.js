@@ -32,12 +32,12 @@
     controller.$inject = [
         'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
-            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter'
+            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS'
     ];
 
     function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
-                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter) {
+                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS) {
 
         var vm = this;
 
@@ -46,6 +46,7 @@
         vm.revert = revert;
         vm.sync = sync;
         vm.approve = approve;
+        vm.isInApproval = isInApproval;
         vm.isOffline = offlineService.isOffline;
 
         /**
@@ -251,6 +252,22 @@
                 requisitionBatchApproveFactory(vm.requisitions.slice())
                 .then(handleApprove, handleApprove);
             });
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name isInApproval
+         *
+         * @param {Object} requisition
+         *
+         * @return {boolean} true if requisition is in status IN_APPROVAL, false otherwise
+         *
+         * @description
+         * Determines whether requisition is IN_APPROVAL status.
+         */
+        function isInApproval(requisition) {
+            return requisition.status === REQUISITION_STATUS.IN_APPROVAL;
         }
 
         function handleApprove(successfulRequisitions){

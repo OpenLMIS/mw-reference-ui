@@ -17,7 +17,7 @@ describe('RequisitionBatchApprovalController', function () {
 
     //injects
     var vm, $stateParams, $rootScope, $q, confirmService, $controller,
-        calculationFactory, confirmDeferred, $scope, requisitionService;
+        calculationFactory, confirmDeferred, $scope, requisitionService, requisitionStatus;
 
     //variables
     var requisitions, products, lineItems;
@@ -92,13 +92,14 @@ describe('RequisitionBatchApprovalController', function () {
             });
         });
 
-        inject(function (_$controller_, _confirmService_, _$rootScope_, _$q_, _requisitionService_, _$stateParams_) {
+        inject(function (_$controller_, _confirmService_, _$rootScope_, _$q_, _requisitionService_, _$stateParams_, _REQUISITION_STATUS_) {
             $controller = _$controller_;
             confirmService = _confirmService_;
             $rootScope = _$rootScope_;
             $q = _$q_;
             $scope = _$rootScope_.$new();
             requisitionService = _requisitionService_;
+            requisitionStatus = _REQUISITION_STATUS_;
 
         });
 
@@ -191,6 +192,26 @@ describe('RequisitionBatchApprovalController', function () {
             expect(vm.requisitions).toEqual(vm.requisitionsCopy);
         });
     });
+
+    describe('isInApproval', function() {
+
+        beforeEach(function() {
+            initController();
+        });
+
+        it('should return true if in approval', function() {
+            vm.requisitions[0].status = requisitionStatus.IN_APPROVAL;
+
+            expect(vm.isInApproval(vm.requisitions[0])).toBe(true);
+        });
+
+        it('should return false if not in approval', function() {
+            vm.requisitions[0].status = requisitionStatus.AUTHORIZED;
+
+            expect(vm.isInApproval(vm.requisitions[0])).toBe(false);
+        });
+    });
+
 
     function initController() {
         vm = $controller('RequisitionBatchApprovalController', {
