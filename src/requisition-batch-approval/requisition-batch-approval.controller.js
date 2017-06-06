@@ -259,7 +259,7 @@
          * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
          * @name isInApproval
          *
-         * @param {Object} requisition
+         * @param {Object} requisition Requisition with status to check
          *
          * @return {boolean} true if requisition is in status IN_APPROVAL, false otherwise
          *
