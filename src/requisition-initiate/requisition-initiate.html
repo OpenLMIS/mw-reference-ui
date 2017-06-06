@@ -68,7 +68,6 @@
                 <th>{{'requisitionInitiate.periods' | message}}</th>
                 <th>{{'requisitionInitiate.startDate' | message}}</th>
                 <th>{{'requisitionInitiate.endDate' | message}}</th>
-                <th>{{'requisitionInitiate.rnrType' | message}}</th>
                 <th>{{'requisitionInitiate.rnrStatus' | message}}</th>
                 <th class="col-sticky sticky-right">{{'requisitionInitiate.actions' | message}}</th>
             </tr>
@@ -78,10 +77,6 @@
                 <td>{{period.name}}</td>
                 <td>{{period.startDate | openlmisDate}}</td>
                 <td>{{period.endDate | openlmisDate}}</td>
-                <td>
-                    <span ng-if="!period.emergency">{{'requisitionInitiate.regular' | message}}</span>
-                    <span ng-if="period.emergency">{{'requisitionInitiate.emergency' | message}}</span>
-                </td>
                 <td>{{period.rnrStatus}}</td>
                 <td>
                     <input id="proceedButton" type="button" ng-click="vm.initRnr(period)"
