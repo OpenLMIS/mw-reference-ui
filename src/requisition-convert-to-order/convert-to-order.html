@@ -1,10 +1,10 @@
 <h2>{{'requisitionConvertToOrder.convertRequisitionsToOrder' | message}}</h2>
 <section class="openlmis-table-container">
 	<form ng-submit="vm.search()">
-		<label for="searchFor">{{'requisitionConvertToOrder.filter' | message}}</label>
+		<label for="searchFor">{{'requisitionConvertToOrder.search' | message}}</label>
 		<input id="searchFor" type="text" ng-model="vm.filterValue"
 			   maxlength="50" aria-labelledby="filtersInfo"/>
-		<p class="filters-info" id="filtersInfo">{{'requisitionConvertToOrder.info' | message}}</p>
+		<p class="filters-info" id="filtersInfo">{{'requisitionConvertToOrder.searchInfo' | message}}</p>
 		<input type="submit" value="{{'requisitionConvertToOrder.search' | message}}"/>
 	</form>
 	<table>
