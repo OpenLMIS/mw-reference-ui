@@ -146,24 +146,8 @@ describe('ProductGridCell', function() {
 
         scope.requisition.$isApproved.andReturn(false);
         scope.requisition.$isReleased.andReturn(false);
-        scope.requisition.$isInApproval.andReturn(true);
-        scope.requisition.$isAuthorized.andReturn(false);
-
-        directiveElem = getCompiledElement();
-
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
-    });
-
-    it('should produce read-only cell if in approval and column is approved quantity', function() {
-        scope.column.name = TEMPLATE_COLUMNS.APPROVED_QUANTITY;
-
-        authorizationServiceSpy.hasRight.andReturn(false);
-
-        scope.requisition.$isApproved.andReturn(false);
-        scope.requisition.$isReleased.andReturn(false);
-        scope.requisition.$isInApproval.andReturn(true);
-        scope.requisition.$isAuthorized.andReturn(false);
+        scope.requisition.$isInApproval.andReturn(false);
+        scope.requisition.$isAuthorized.andReturn(true);
 
         directiveElem = getCompiledElement();
 

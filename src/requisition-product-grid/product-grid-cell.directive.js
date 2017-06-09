@@ -130,7 +130,8 @@
 
             function isReadOnly() {
                 if (requisition.$isInApproval() || requisition.$isApproved() || requisition.$isReleased()) return true;
-                if (requisition.$isAuthorized() || requisition.$isInApproval()) {
+                if (requisition.$isAuthorized())
+                {
                     return !hasApproveRightForProgram() ||
                             [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS]
                             .indexOf(column.name) === -1;
