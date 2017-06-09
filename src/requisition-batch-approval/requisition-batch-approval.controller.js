@@ -32,14 +32,17 @@
     controller.$inject = [
         'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
-            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS'
+            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
+            'localStorageFactory'
     ];
 
     function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
-                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS) {
+                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
+                        localStorageFactory) {
 
-        var vm = this;
+        var vm = this,
+            offlineRequisitions = localStorageFactory('requisitions');
 
         vm.$onInit = onInit;
         vm.updateLineItem = updateLineItem;
@@ -272,6 +275,10 @@
 
         function handleApprove(successfulRequisitions){
             loadingModalService.close();
+
+            angular.forEach(successfulRequisitions, function(requisition) {
+               saveToStorage(requisition);
+            });
 
             if(successfulRequisitions.length < vm.requisitions.length){
 
