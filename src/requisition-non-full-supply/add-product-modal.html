@@ -13,7 +13,7 @@
 		<select id="product"
             ng-model="vm.selectedProduct"
 			ng-disabled="!vm.selectedCategory"
-			ng-options="product as (product.fullProductName + '(' + product.productCode + ')') for product in vm.selectedCategory.products | filter:vm.productVisible"
+			ng-options="product as (product.fullProductName + ' (' + product.productCode + ')') for product in vm.selectedCategory.products | filter:vm.productVisible"
 			required>
 		</select>
 	</fieldset>
