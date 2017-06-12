@@ -110,8 +110,6 @@
             var deferred = $q.defer(),
                 requisition;
 
-            console.log("Getting the requisition: " + id);
-
             if (offlineService.isOffline()) {
                 requisition = offlineRequisitions.getBy('id', id);
 
