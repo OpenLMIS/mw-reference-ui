@@ -390,12 +390,15 @@
                 'requisitionView.reject.label'
             ).then(function() {
                 var loadingPromise = loadingModalService.open();
-                vm.requisition.$reject().then(function(response) {
-                    loadingPromise.then(function() {
-                        notificationService.success('requisitionView.reject.success');
-                    });
-                    stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                }, failWithMessage('requisitionView.reject.failure'));
+                vm.requisition.$save().then(function() {
+                    vm.requisition.$reject().then().then(function(response) {
+                        loadingPromise.then(function() {
+                            notificationService.success('requisitionView.reject.success');
+                        });
+                        stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
+                    }, failWithMessage('requisitionView.reject.failure'));
+                });
+
             });
         }
 
