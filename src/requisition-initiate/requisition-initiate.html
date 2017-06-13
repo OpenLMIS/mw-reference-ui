@@ -16,31 +16,31 @@
                 {{'requisitionInitiate.supervisedFacility' | message}}
             </label>
         </fieldset>
-        <fieldset ng-show="!vm.isSupervised">
+        <fieldset ng-if="!vm.isSupervised">
             <label for="facilityName">{{'requisitionInitiate.facility' | message}}</label>
             <select id="facilityName" ng-model="vm.selectedFacilityId"
                     ng-options="facility.id as facility.name for facility in vm.facilities"
-                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" required>
+                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" no-auto-select required>
             </select>
             <label for="programListMyFacility">{{'requisitionInitiate.program' | message}}</label>
             <select id="programListMyFacility" ng-model="vm.selectedProgramId"
                     ng-options="program.id as program.name for program in vm.programs"
-                    placeholder="{{'requisitionInitiate.selectProgram' | message}}" required>
+                    placeholder="{{'requisitionInitiate.selectProgram' | message}}" no-auto-select required>
             </select>
         </fieldset>
-        <fieldset ng-show="vm.isSupervised">
+        <fieldset ng-if="vm.isSupervised">
             <label for="programListSupervisedFacility">{{'requisitionInitiate.program' | message}}</label>
             <select id="programListSupervisedFacility" ng-model="vm.selectedProgramId"
                     ng-options="program.id as program.name for program in vm.programs"
                     ng-change="vm.loadFacilitiesForProgram(vm.selectedProgramId)"
-                    placeholder="{{'requisitionInitiate.selectProgram' | message}}" required>
+                    placeholder="{{'requisitionInitiate.selectProgram' | message}}" no-auto-select required>
             </select>
             <label for="supervisedFacilityName">
                 {{'requisitionInitiate.facility' | message}}
             </label>
             <select id="supervisedFacilityName" ng-model="vm.selectedFacilityId"
                     ng-options="facility.id as facility.name for facility in vm.facilities | unique:'id'"
-                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" required>
+                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" no-auto-select required>
             </select>
         </fieldset>
         <fieldset class="form-group">
