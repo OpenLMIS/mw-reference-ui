@@ -116,6 +116,10 @@
                     element.replaceWith(cell);
 
                     element = cell;
+
+                    if(column.name === TEMPLATE_COLUMNS.PRODUCT_NAME) {
+                        element.wrapInner('<div class="collapsable"></div>');
+                    }
                 });
             }
 

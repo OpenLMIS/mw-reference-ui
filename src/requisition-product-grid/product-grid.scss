@@ -1,0 +1,9 @@
+table{
+	td.requisition-product-grid-cell {
+		vertical-align: top !important;
+		> .collapsable {
+			white-space: normal;
+			width: 240px;
+		}
+	}
+}
