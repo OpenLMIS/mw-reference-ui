@@ -90,7 +90,8 @@
             search: search,
             forApproval: forApproval,
             forConvert: forConvert,
-            convertToOrder: convertToOrder
+            convertToOrder: convertToOrder,
+            removeOfflineRequisition: removeOfflineRequisition
         };
 
         return service;
@@ -304,6 +305,20 @@
             return promise;
         }
 
+        /**
+         * @ngdoc method
+         * @methodOf requisition.requisitionService
+         * @name removeOfflineRequisition
+         *
+         * @description
+         * Removes a specific requistion from the offline store.
+         *
+         * @param {String} requisitionId Id of requisition to remove
+         */
+        function removeOfflineRequisition(requisitionId) {
+            offlineRequisitions.removeBy('id', requisitionId);
+        }
+
         function getRequisition(id) {
             return resource.get({
                 id: id
@@ -393,8 +408,8 @@
         }
 
         function transformRequisition(requisition) {
-            if (offlineRequisitions.getBy('id', requisition.id)) {
-                requisition.$availableOffline = true;
+            if (requisition.modifiedDate) {
+                requisition.modifiedDate = dateUtils.toDate(requisition.modifiedDate);
             }
             if (requisition.createdDate) {
                 requisition.createdDate = dateUtils.toDate(requisition.createdDate);
@@ -412,6 +427,25 @@
                 requisition.processingPeriod.processingSchedule.modifiedDate = dateUtils.toDate(
                     requisition.processingPeriod.processingSchedule.modifiedDate
                 );
+            }
+
+            transformRequisitionOffline(requisition);
+        }
+
+        function transformRequisitionOffline(requisition) {
+            var offlineRequisition = offlineRequisitions.getBy('id', requisition.id);
+            if (offlineRequisition) {
+                requisition.$availableOffline = true;
+            }
+            if(offlineRequisition && requisition.modifiedDate && requisition.modifiedDate.getTime) {
+                var offlineDate = dateUtils.toDate(offlineRequisition.modifiedDate);
+
+                if(offlineDate.getTime() !== requisition.modifiedDate.getTime()) {
+                    offlineRequisition.$outdated = true;
+                } else {
+                    delete offlineRequisition.$outdated;
+                }
+                offlineRequisitions.put(offlineRequisition);
             }
         }
     }

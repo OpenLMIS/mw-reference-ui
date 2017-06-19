@@ -29,16 +29,16 @@
         .controller('RequisitionViewController', RequisitionViewController);
 
     RequisitionViewController.$inject = [
-        '$state', 'requisition', 'requisitionValidator', 'authorizationService',
-        'loadingModalService', 'notificationService', 'confirmService', 'REQUISITION_RIGHTS',
+        '$state', 'requisition', 'requisitionValidator', 'authorizationService', 'requisitionService',
+        'loadingModalService', 'alertService', 'notificationService', 'confirmService', 'REQUISITION_RIGHTS',
         'FULFILLMENT_RIGHTS', 'convertToOrderModalService', 'offlineService', '$window',
         'requisitionUrlFactory', '$filter', '$scope', '$timeout', 'RequisitionWatcher', 'accessTokenFactory',
         'messageService', 'stateTrackerService',
         'REQUISITION_WARNING_PERIODS', 'REQUISITION_WARNING_PROGRAM_CODE'
     ];
 
-    function RequisitionViewController($state, requisition, requisitionValidator, authorizationService,
-                             loadingModalService, notificationService, confirmService,
+    function RequisitionViewController($state, requisition, requisitionValidator, authorizationService, requisitionService,
+                             loadingModalService, alertService, notificationService, confirmService,
                              REQUISITION_RIGHTS, FULFILLMENT_RIGHTS , convertToOrderModalService,
                              offlineService, $window, requisitionUrlFactory, $filter, $scope,
                              $timeout, RequisitionWatcher, accessTokenFactory, messageService,
@@ -95,6 +95,7 @@
 
         // Functions
 
+        vm.updateRequisition = updateRequisition;
         vm.syncRnr = syncRnr;
         vm.syncRnrAndPrint = syncRnrAndPrint;
         vm.syncRnrAndMalawiPrint = syncRnrAndMalawiPrint;
@@ -118,7 +119,35 @@
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
 
-         /**
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name updateRequisition
+         *
+         * @description
+         * After confirming with the user, the offline requisition is removed,
+         * and the state is reloaded. This will fetch a fresh version of the
+         * requisition.
+         *
+         * If the browser is offline, an error will be thrown, and nothing will
+         * change.
+         *
+         */
+        function updateRequisition() {
+            if(offlineService.isOffline()) {
+                alertService.error('requisitionView.updateOffline');
+                return;
+            }
+
+            confirmService.confirm('requisitionView.updateWarning', 'requisitionView.update')
+                .then(function(){
+                    requisitionService.removeOfflineRequisition(requisition.id);
+                    $state.reload();
+                });
+        }
+
+        /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
          * @name syncRnr
