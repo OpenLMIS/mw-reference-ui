@@ -2,47 +2,11 @@
 <div ng-if="vm.error" class="alert is-error" ng-show="vm.error">{{vm.error}}</div>
 <section class="openlmis-table-container">
     <form name="filterForm" ng-submit="vm.loadPeriods()">
-        <fieldset class="form-group">
-            <legend>{{'requisitionInitiate.facilityType' | message}}</legend>
-            <label class="radio">
-                <input type="radio" ng-model="vm.isSupervised" ng-value="false"
-                       ng-change="vm.updateFacilityType(vm.isSupervised)"/>
-                {{'requisitionInitiate.myFacility' | message}}
-            </label>
-            <label class="radio">
-                <input type="radio" ng-model="vm.isSupervised" ng-value="true"
-                       ng-change="vm.updateFacilityType(vm.isSupervised)"
-                       ng-disabled="vm.supervisedFacilitiesDisabled"/>
-                {{'requisitionInitiate.supervisedFacility' | message}}
-            </label>
-        </fieldset>
-        <fieldset ng-if="!vm.isSupervised">
-            <label for="facilityName">{{'requisitionInitiate.facility' | message}}</label>
-            <select id="facilityName" ng-model="vm.selectedFacilityId"
-                    ng-options="facility.id as facility.name for facility in vm.facilities"
-                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" no-auto-select required>
-            </select>
-            <label for="programListMyFacility">{{'requisitionInitiate.program' | message}}</label>
-            <select id="programListMyFacility" ng-model="vm.selectedProgramId"
-                    ng-options="program.id as program.name for program in vm.programs"
-                    placeholder="{{'requisitionInitiate.selectProgram' | message}}" no-auto-select required>
-            </select>
-        </fieldset>
-        <fieldset ng-if="vm.isSupervised">
-            <label for="programListSupervisedFacility">{{'requisitionInitiate.program' | message}}</label>
-            <select id="programListSupervisedFacility" ng-model="vm.selectedProgramId"
-                    ng-options="program.id as program.name for program in vm.programs"
-                    ng-change="vm.loadFacilitiesForProgram(vm.selectedProgramId)"
-                    placeholder="{{'requisitionInitiate.selectProgram' | message}}" no-auto-select required>
-            </select>
-            <label for="supervisedFacilityName">
-                {{'requisitionInitiate.facility' | message}}
-            </label>
-            <select id="supervisedFacilityName" ng-model="vm.selectedFacilityId"
-                    ng-options="facility.id as facility.name for facility in vm.facilities | unique:'id'"
-                    placeholder="{{'requisitionInitiate.selectFacility' | message}}" no-auto-select required>
-            </select>
-        </fieldset>
+        <openlmis-facility-program-select
+                is-supervised="vm.isSupervised"
+                facility="vm.facility"
+                program="vm.program">
+        </openlmis-facility-program-select>
         <fieldset class="form-group">
             <legend>{{'requisitionInitiate.type' | message}}</legend>
             <label class="radio">
