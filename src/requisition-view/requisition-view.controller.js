@@ -483,7 +483,7 @@
          * @return {Boolean} should submit button be displayed
          */
         function displaySubmit() {
-            return vm.requisition.$isInitiated() && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
+            return (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
         }
 
         /**
@@ -515,7 +515,7 @@
          */
         function displayDelete() {
             if (hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_DELETE)) {
-                if (vm.requisition.$isInitiated()) {
+                if (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) {
                     return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
                 }
                 if (vm.requisition.$isSubmitted()) {
@@ -552,7 +552,7 @@
          * @return {Boolean} true if skip button should be visible, false otherwise
          */
         function displaySkip() {
-            return vm.requisition.$isInitiated() &&
+            return (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) &&
                 vm.requisition.program.periodsSkippable &&
                 !vm.requisition.emergency &&
                 hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
@@ -570,7 +570,7 @@
          * @return {Boolean} true if sync button should be visible, false otherwise
          */
         function displaySync() {
-            if (vm.requisition.$isInitiated()) {
+            if (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) {
                 return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
             }
             if (vm.requisition.$isSubmitted()) {
