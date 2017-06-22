@@ -30,7 +30,7 @@
         </thead>
         <tr ng-repeat="(productId, product) in vm.products track by productId">
             <td> {{product.code}} </td>
-            <td> {{product.name}} </td>
+            <td class="requisition-product-grid-cell"><div class="collapsable">{{product.name}}</div></td>
             <td ng-repeat-start="requisition in vm.requisitions track by requisition.id" class="numeric">
                 <input ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][productId].skipped) && !(vm.isInApproval(requisition))"
                        positive-integer
