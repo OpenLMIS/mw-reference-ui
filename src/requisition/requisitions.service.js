@@ -203,10 +203,21 @@
             .$promise.then(function(requisition) {
                 requisition.$availableOffline = true;
                 requisition.$modified = true;
-                offlineRequisitions.put(requisition);
 
-                deferred.resolve(new Requisition(requisition));
-                
+                $q.all([
+                    getStockAdjustmentReasons(requisition),
+                    getStatusMessages(requisition)
+                ]).then(function(responses) {
+                    if (requisition.$availableOffline) {
+                        storeResponses(requisition, responses[0], responses[1]);
+                    }
+                    deferred.resolve(new Requisition(requisition, responses[0], responses[1]));
+                }, function() {
+                    if (requisition.$availableOffline) {
+                        offlineRequisitions.put(requisition);
+                    }
+                    deferred.resolve(new Requisition(requisition));
+                });                
             }).catch(function(){
                 deferred.reject();
             });
