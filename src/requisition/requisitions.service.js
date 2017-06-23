@@ -451,7 +451,7 @@
             if(offlineRequisition && requisition.modifiedDate && requisition.modifiedDate.getTime) {
                 var offlineDate = dateUtils.toDate(offlineRequisition.modifiedDate);
 
-                if(offlineDate.getTime() !== requisition.modifiedDate.getTime()) {
+                if(!offlineDate || offlineDate.getTime() !== requisition.modifiedDate.getTime()) {
                     offlineRequisition.$outdated = true;
                 } else {
                     delete offlineRequisition.$outdated;
