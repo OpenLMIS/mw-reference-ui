@@ -131,7 +131,8 @@
                 }
             } else {
                 requisition = offlineRequisitions.search({
-                    id: id
+                    id: id,
+                    $modified: true
                 });
                 if (!requisition || !requisition.length) {
                     var i = 0;
