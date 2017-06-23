@@ -133,22 +133,55 @@
             }
 
             function isReadOnly() {
-                if (requisition.$isInApproval() || requisition.$isApproved() || requisition.$isReleased()) return true;
-                if (requisition.$isAuthorized())
-                {
-                    return !hasApproveRightForProgram() ||
-                            [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS]
-                            .indexOf(column.name) === -1;
+                if (requisition.$isInApproval() || requisition.$isApproved() || requisition.$isReleased()){
+                    return true;
                 }
-                return column.source !== COLUMN_SOURCES.USER_INPUT;
+                if (requisition.$isAuthorized()) {
+                    if (hasApproveRightForProgram() && isApprovalColumn()) {
+                        return false;
+                    }
+                }
+                if (column.source === COLUMN_SOURCES.USER_INPUT) {
+                    if (hasAuthorizeRightForProgram() && requisition.$isSubmitted()) {
+                        return false;
+                    }
+                    if (hasSubmitRightForProgram() && (requisition.$isInitiated() || requisition.$isRejected())) {
+                        return false;
+                    }
+                }
+
+                // If we don't know that the field is editable, its read only
+                return true;
             }
 
             function canNotSkip() {
                 return !lineItem.canBeSkipped(scope.requisition);
             }
 
+            function isApprovalColumn() {
+                var approvalColumns = [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS];
+
+                if(approvalColumns.indexOf(column.name) === -1){
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
             function hasApproveRightForProgram() {
                 return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_APPROVE, {
+                    programCode: requisition.program.code
+                });
+            }
+
+            function hasAuthorizeRightForProgram() {
+                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
+                    programCode: requisition.program.code
+                });
+            }
+
+            function hasSubmitRightForProgram() {
+                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_SUBMIT, {
                     programCode: requisition.program.code
                 });
             }
