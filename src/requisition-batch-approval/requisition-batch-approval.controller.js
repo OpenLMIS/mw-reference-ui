@@ -150,6 +150,9 @@
                 vm.lineItems[requisition.id] = [];
                 angular.forEach(requisition.requisitionLineItems, function(lineItem) {
                     vm.lineItems[requisition.id][lineItem.orderable.id] = lineItem;
+                    lineItem.totalCost = lineItem.totalCost ? lineItem.totalCost : 0;
+                    lineItem.approvedQuantity = lineItem.approvedQuantity ? lineItem.approvedQuantity : 0;
+
                     vm.totalCost += lineItem.totalCost;
 
                     if (vm.products[lineItem.orderable.id] !== undefined) {
