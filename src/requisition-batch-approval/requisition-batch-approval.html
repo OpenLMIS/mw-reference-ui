@@ -4,28 +4,31 @@
     <table>
         <thead>
         <tr class="not-bottom">
-            <th class="col-sticky is-hidden"></th>
-            <th class="col-sticky is-hidden"></th>
-            <th colspan="2" ng-repeat="requisition in vm.requisitions track by requisition.id"
-                popover="{{requisition.$error}}"
-                ng-class="{'requisition-error': requisition.$error}">
-                <div> {{requisition.facility.name}} - {{requisition.processingPeriod.name}} </div>
-                <div ng-if="requisition.$error">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
+            <th ng-repeat-start="column in vm.columns track by column.id"
+                popover="{{column.requisition.$error}}"
+                ng-class="{'requisition-error': column.requisition.$error,
+                           'col-sticky': column.sticky,
+                           'sticky-right': column.right,
+                           'is-hidden': !(column.requisition),
+                           'merged-cell-right': column.requisition}">
+                <div ng-if="column.requisition"> {{column.requisition.facility.name}} - {{column.requisition.processingPeriod.name}} </div>
+                <div ng-if="column.requisition.$error">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
             </th>
-            <th class="is-hidden"></th>
-            <th class="is-hidden"></th>
+            <th ng-repeat-end ng-if="column.requisition" class="merged-cell-left"
+                ng-class="{'requisition-error': column.requisition.$error,
+                           'col-sticky': column.sticky,
+                           'sticky-right': column.right}">
+            </th>
         </tr>
         <tr>
-            <th class="col-sticky"> {{'requisitionBatchApproval.productCode' | message}} </th>
-            <th class="col-sticky"> {{'requisitionBatchApproval.product' | message}} </th>
-            <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
-               <div> {{'requisitionBatchApproval.approvedQuantity' | message}} </div>
+            <th ng-repeat-start="column in vm.columns track by column.id"
+                ng-class="{'col-sticky': column.sticky, 'sticky-right': column.right}">
+                {{column.names[0] | message}}
             </th>
-            <th ng-repeat-end>
-                <div> {{'requisitionBatchApproval.cost' | message}} </div>
+            <th ng-repeat-end ng-if="column.requisition"
+                ng-class="{'col-sticky': column.sticky, 'sticky-right': column.right}">
+                {{column.names[1] | message}}
             </th>
-            <th> {{'requisitionBatchApproval.totalQuantityForAllFacilities' | message}} </th>
-            <th> {{'requisitionBatchApproval.totalCostForAllFacilities' | message}} </th>
         </tr>
         </thead>
         <tr ng-repeat="(productId, product) in vm.products track by productId">

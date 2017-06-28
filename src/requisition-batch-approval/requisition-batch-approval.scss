@@ -9,6 +9,12 @@
         &.is-hidden {
             border-bottom-width: 0px !important;
         }
+        &.merged-cell-left {
+            border-left-width: 0px !important;
+        }
+        &.merged-cell-right {
+            border-right-width: 0px !important;
+        }
     }
 
     td.numeric {

@@ -122,6 +122,17 @@
         vm.requisitionsCopy = undefined;
 
         /**
+         * @ngdoc property
+         * @propertyOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name columns
+         * @type {Array}
+         *
+         * @description
+         * Holds columns that will be displayed in the batch approval table.
+         */
+        vm.columns = [];
+
+        /**
          * @ngdoc method
          * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
          * @name $onInit
@@ -141,13 +152,19 @@
             vm.products = {};
             vm.lineItems = [];
             vm.errors = [];
+            vm.columns = [];
+
+            addNewColumn(true, false, ['requisitionBatchApproval.productCode']);
+            addNewColumn(true, false, ['requisitionBatchApproval.product']);
 
             angular.forEach(requisitions, function(requisition) {
                 calculateRequisitionTotalCost(requisition);
                 new RequisitionWatcher($scope, requisition);
                 vm.requisitions.push(requisition);
-
                 vm.lineItems[requisition.id] = [];
+
+                addNewColumn(false, false, ['requisitionBatchApproval.approvedQuantity', 'requisitionBatchApproval.cost'], requisition);
+
                 angular.forEach(requisition.requisitionLineItems, function(lineItem) {
                     vm.lineItems[requisition.id][lineItem.orderable.id] = lineItem;
                     lineItem.totalCost = lineItem.totalCost ? lineItem.totalCost : 0;
@@ -171,6 +188,9 @@
 
                 });
             });
+
+            addNewColumn(true, true, ['requisitionBatchApproval.totalQuantityForAllFacilities']);
+            addNewColumn(true, true, ['requisitionBatchApproval.totalCostForAllFacilities']);
 
             vm.requisitionsCopy = angular.copy(vm.requisitions);
         }
@@ -333,6 +353,16 @@
             requisition.$modified = false;
             requisition.$availableOffline = true;
             offlineRequisitions.put(requisition);
+        }
+
+        function addNewColumn(isSticky, isStickyRight, names, requisition) {
+            vm.columns.push({
+                id: requisition ? requisition.id : vm.columns.length,
+                requisition: requisition,
+                sticky: isSticky,
+                right: isStickyRight,
+                names: names
+            });
         }
     }
 
