@@ -1,9 +1,9 @@
 {
-  "name": "openlmis-mw-reference-ui",
+  "name": "mw-ui",
   "version": "1.0.0-SNAPSHOT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenLMIS/mw-reference-ui"
+    "url": "https://github.com/OpenLMIS-Malawi/mw-ui"
   },
   "license": "AGPL-3.0",
   "devDependencies": {
