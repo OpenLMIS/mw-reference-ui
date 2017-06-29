@@ -1,3 +1,4 @@
 {
+  "requisitionView.rejectMissingCommentError": "You must enter a comment to explain the rejection.",
   "requisitionView.region": "District"
 }

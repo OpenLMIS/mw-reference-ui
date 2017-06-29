@@ -414,21 +414,25 @@
          * Otherwise, a success notification modal will be shown.
          */
         function rejectRnr() {
-            confirmService.confirmDestroy(
-                'requisitionView.reject.confirm',
-                'requisitionView.reject.label'
-            ).then(function() {
-                var loadingPromise = loadingModalService.open();
-                vm.requisition.$save().then(function() {
-                    vm.requisition.$reject().then().then(function(response) {
-                        loadingPromise.then(function() {
-                            notificationService.success('requisitionView.reject.success');
-                        });
-                        stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                    }, failWithMessage('requisitionView.reject.failure'));
-                });
+            if (!(vm.requisition.draftStatusMessage)) {
+                alertService.error('requisitionView.rejectMissingCommentError');
+            } else {
+                confirmService.confirmDestroy(
+                    'requisitionView.reject.confirm',
+                    'requisitionView.reject.label'
+                ).then(function () {
+                    var loadingPromise = loadingModalService.open();
+                    vm.requisition.$save().then(function () {
+                        vm.requisition.$reject().then().then(function (response) {
+                            loadingPromise.then(function () {
+                                notificationService.success('requisitionView.reject.success');
+                            });
+                            stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
+                        }, failWithMessage('requisitionView.reject.failure'));
+                    });
 
-            });
+                });
+            }
         }
 
         /**
