@@ -64,4 +64,4 @@ services:
 
   image:
     build: .
-    image: openlmismw/reference-ui
+    image: openlmismw/ui
