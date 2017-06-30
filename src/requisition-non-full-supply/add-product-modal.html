@@ -4,7 +4,7 @@
 		<select id="category"
             ng-model="vm.selectedCategory"
 			ng-disabled="!vm.categories.length"
-			ng-options="category.name for category in vm.categories | filter:vm.categoryVisible"
+			ng-options="category.name for category in vm.categories | filter:vm.categoryVisible | orderBy:'name'"
 			required>
 		</select>
 	</fieldset>
@@ -13,7 +13,7 @@
 		<select id="product"
             ng-model="vm.selectedProduct"
 			ng-disabled="!vm.selectedCategory"
-			ng-options="product as (product.fullProductName + ' (' + product.productCode + ')') for product in vm.selectedCategory.products | filter:vm.productVisible"
+			ng-options="product as (product.fullProductName + ' (' + product.productCode + ')') for product in vm.selectedCategory.products | filter:vm.productVisible | orderBy:'fullProductName'"
 			required>
 		</select>
 	</fieldset>
