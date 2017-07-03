@@ -63,7 +63,7 @@
                 return placeholderValues.join(' - ');
             }, updateSelect);
 
-            
+
             jQuery(document).on('show.bs.modal', redrawIfModal);
 
             /**
@@ -133,7 +133,7 @@
              * @name redrawIfModal
              *
              * @description
-             * If the element's parents change such that the element in
+             * If the element's parents change such that the element is
              * embedded in a modal, the select element is redrawn to
              * so that dropdownParent is the modal.
              *
@@ -142,7 +142,7 @@
                 if(element.parents('.modal').length == 0){
                     return ;
                 }
-                if(!element.data('select2')){
+                if(element.data('select2')){
                     element.select2('destroy');
                 }
                 createSelect();
