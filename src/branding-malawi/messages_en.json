@@ -25,6 +25,8 @@
   "requisitionView.allLineItemsSkipped": "Cannot submit LMIS Form with all line items skipped.",
   "requisitionView.approve.failure": "Failed to approve LMIS Form!",
   "requisitionView.approve.success": "LMIS Form has been approved!",
+  "requisitionView.authorize.success": "LMIS Form has been authorized!",
+  "requisitionView.authorize.failure": "Failed to authorize LMIS Form!",
   "requisitionView.delete.failure": "Failed to delete LMIS Form!",
   "requisitionView.delete.success": "LMIS Form has been deleted!",
   "requisitionView.reject.failure": "Failed to reject LMIS Form",   
