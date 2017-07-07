@@ -42,7 +42,7 @@
                         localStorageFactory) {
 
         var vm = this,
-            offlineRequisitions = localStorageFactory('requisitions');
+            offlineRequisitions = localStorageFactory('batchApproveRequisitions');
 
         vm.$onInit = onInit;
         vm.updateLineItem = updateLineItem;

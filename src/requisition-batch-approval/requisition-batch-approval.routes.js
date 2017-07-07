@@ -39,15 +39,9 @@
         });
     }
 
-    getRequisitions.$inject = ['$q', '$stateParams', 'requisitionService'];
-    function getRequisitions($q, $stateParams, requisitionService) {
-        var promises = []
-        
-        angular.forEach($stateParams.ids.split(','), function (id) {
-            promises.push(requisitionService.get(id));
-        });
-
-        return $q.all(promises);
+    getRequisitions.$inject = ['$stateParams', 'requisitionBatchApprovalService'];
+    function getRequisitions($stateParams, requisitionBatchApprovalService) {
+        return requisitionBatchApprovalService.get($stateParams.ids.split(','));
     }
 
 })();

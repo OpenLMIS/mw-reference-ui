@@ -34,9 +34,9 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchApproveFactory', factory);
 
-    factory.$inject = ['$q', '$http', 'requisitionUrlFactory', 'requisitionValidator', 'requisitionBatchSaveFactory', 'messageService'];
+    factory.$inject = ['$q', '$http', 'requisitionUrlFactory', 'requisitionBatchSaveFactory', 'messageService', 'MAX_INTEGER_VALUE', 'TEMPLATE_COLUMNS'];
 
-    function factory($q, $http, requisitionUrlFactory, requisitionValidator, requisitionBatchSaveFactory, messageService) {
+    function factory($q, $http, requisitionUrlFactory, requisitionBatchSaveFactory, messageService, MAX_INTEGER_VALUE, TEMPLATE_COLUMNS) {
 
         return batchApprove;
 
@@ -76,7 +76,7 @@
 
             var deferred = $q.defer();
 
-            $http.post(requisitionUrlFactory('/api/requisitions/approve'), Object.keys(requisitionsObject))
+            $http.post(requisitionUrlFactory('/api/requisitions/batch/approve'), Object.keys(requisitionsObject))
             .then(function(response){
                 return deferred.resolve(requisitions);
             })
@@ -112,7 +112,7 @@
             var successfulRequisitions = [];
 
             requisitions.forEach(function(requisition) {
-                if(!requisitionValidator.validateRequisition(requisition)){
+                if(!validateRequisition(requisition)){
                     requisition.$error = messageService.get("requisitionBatchApproval.invalidRequisition");
                 } else {
                     successfulRequisitions.push(requisition);
@@ -126,6 +126,31 @@
             }
         }
 
+        function validateRequisition(requisition) {
+            var valid = true;
+            angular.forEach(requisition.requisitionLineItems, function (lineItem) {
+               valid = validateApprovedQuantity(lineItem) && valid;
+            });
+
+            return valid;
+        }
+
+        function validateApprovedQuantity(lineItem) {
+            var column = TEMPLATE_COLUMNS.APPROVED_QUANTITY,
+                error;
+
+            if (isEmpty(lineItem.approvedQuantity)) {
+                error = messageService.get('requisitionBatchApproval.required');
+            } else if (lineItem.approvedQuantity > MAX_INTEGER_VALUE) {
+                error = messageService.get('requisitionBatchApproval.numberTooLarge')
+            }
+
+            return isEmpty(error);
+        }
+
+        function isEmpty(value) {
+            return value === null || value === undefined || value === '';
+        }
     }
 
 })();
