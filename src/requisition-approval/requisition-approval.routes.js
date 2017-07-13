@@ -40,6 +40,7 @@
 						if (stateParams.program) {
                             if (stateParams.offline == 'true') {
                             	stateParams.requisitionStatus = [REQUISITION_STATUS.AUTHORIZED, REQUISITION_STATUS.IN_APPROVAL];
+                            	stateParams.showBatchRequisitions = true;
                                 return requisitionService.search(stateParams.offline == 'true', stateParams);
                             } else {
                                 return requisitionService.forApproval(stateParams);

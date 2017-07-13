@@ -19,7 +19,7 @@
 
     /**
      * @ngdoc service
-     * @name requisition.requisitionService
+     * @name requisition-batch-approval.requisitionBatchApprovalService
      *
      * @description
      * Responsible for retrieving all information from server.
@@ -48,7 +48,7 @@
 
         /**
          * @ngdoc method
-         * @methodOf requisition.requisitionService
+         * @methodOf requisition-batch-approval.requisitionBatchApprovalService
          * @name get
          *
          * @description
@@ -81,22 +81,27 @@
                         id: id,
                         $modified: true
                     });
-                    if (requisition || !requisition.length) {
+                    if (!requisition || !requisition.length) {
                         requestBody.push(id);
                     } else {
-                        offlineResponse.push(requisition);
+                        offlineResponse.push(requisition[0]);
                     }
                 });
 
-                getRequisitions(requestBody).then(function(response) {
-                    var requisitionDtos = response.requisitionDtos;
-                    angular.forEach(requisitionDtos, function(requisitionDto) {
-                        requisitionDto.$avaliableOffline = true;
-                        offlineRequisitions.put(requisitionDto);
-                    });
-                    requisitionDtos.concat(offlineResponse);
-                    deferred.resolve(requisitionDtos);
-                }, deferred.reject);
+                if (requestBody.length > 0) {
+                    getRequisitions(requestBody).then(function(response) {
+                        var requisitionDtos = response.requisitionDtos;
+
+                        angular.forEach(requisitionDtos, function(requisitionDto) {
+                            saveToLocalStorage(requisitionDto);
+                        });
+                        requisitionDtos = requisitionDtos.concat(offlineResponse);
+                        deferred.resolve(requisitionDtos);
+                    }, deferred.reject);
+                } else {
+                    deferred.resolve(offlineResponse);
+                }
+
             }
 
             return deferred.promise;
@@ -104,6 +109,12 @@
 
         function getRequisitions(ids) {
             return resource.get({}, ids).$promise;
+        }
+
+        function saveToLocalStorage(requisition) {
+            requisition.$availableOffline = true;
+            requisition.$modified = false;
+            offlineRequisitions.put(requisition);
         }
     }
 })();

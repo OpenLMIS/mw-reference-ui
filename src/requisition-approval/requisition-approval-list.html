@@ -52,7 +52,7 @@
                     <i ng-class="{'icon-ok': requisition.$availableOffline}"></i>
                 </td>
                 <td>
-                    <button class="primary" ng-click="vm.openRnr(requisition.id)">
+                    <button ng-if="vm.isFullRequisitionAvailable(requisition.id)" class="primary" ng-click="vm.openRnr(requisition.id)">
                         {{'requisitionApproval.viewRequisition' | message}}
                     </button>
                 </td>

@@ -12,7 +12,7 @@
  * the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
-/*
+
 
 describe('RequisitionBatchSaveFactory', function() {
 
@@ -166,7 +166,7 @@ describe('RequisitionBatchSaveFactory', function() {
     it('when successful, it returns an array of all requisitions', function() {
         var data;
 
-        $httpBackend.when('PUT', openlmisUrlFactory('/api/requisitions/save')).respond(200, {requisitionDtos: requisitions});
+        $httpBackend.when('PUT', openlmisUrlFactory('/api/requisitions/batch/save')).respond(200, {requisitionDtos: requisitions});
         requisitionBatchSaveFactory(requisitions).then(function(response) {
             data = response;
         });
@@ -180,7 +180,7 @@ describe('RequisitionBatchSaveFactory', function() {
     it('when errors, it returns only requisitions that were successfully saved', function() {
         var data;
 
-        $httpBackend.when('PUT', openlmisUrlFactory('/api/requisitions/save')).respond(400, {
+        $httpBackend.when('PUT', openlmisUrlFactory('/api/requisitions/batch/save')).respond(400, {
             requisitionDtos: [requisitions[0]],
             requisitionErrors: [{
                 requisitionId: requisitions[1].id,
@@ -204,7 +204,7 @@ describe('RequisitionBatchSaveFactory', function() {
     it('it adds errors to requisitions that cannot be saved', function() {
         var data;
 
-        $httpBackend.when('PUT', openlmisUrlFactory('/api/requisitions/save')).respond(400, {
+        $httpBackend.when('PUT', openlmisUrlFactory('/api/requisitions/batch/save')).respond(400, {
             requisitionDtos: [requisitions[0]],
             requisitionErrors: [{
                 requisitionId: requisitions[1].id,
@@ -224,26 +224,4 @@ describe('RequisitionBatchSaveFactory', function() {
         expect(requisitions[0].$error).toBe(undefined);
         expect(requisitions[1].$error).toBe('This requisition is invalid!');
     });
-
-    it ('it sets all calculated columns to null before sending request', function() {
-        spyOn($http, 'put').andReturn($q.when({requisitionDtos: requisitions}));
-
-        requisitionBatchSaveFactory(requisitions);
-
-        requisitions[0].requisitionLineItems[0].totalCost = null;
-        requisitions[0].requisitionLineItems[1].totalCost = null;
-        requisitions[1].requisitionLineItems[0].totalCost = null;
-        requisitions[1].requisitionLineItems[1].totalCost = null;
-
-        expect($http.put).toHaveBeenCalledWith(openlmisUrlFactory('/api/requisitions/save'), requisitions);
-    });
-
-    it ('it calls toStringDates method to format dates', function() {
-        requisitionBatchSaveFactory(requisitions);
-
-        expect(dateUtilsMock.toStringDate).toHaveBeenCalledWith(requisitions[0].processingPeriod.startDate);
-        expect(dateUtilsMock.toStringDate).toHaveBeenCalledWith(requisitions[0].processingPeriod.endDate);
-        expect(dateUtilsMock.toStringDate).toHaveBeenCalledWith(requisitions[1].processingPeriod.startDate);
-        expect(dateUtilsMock.toStringDate).toHaveBeenCalledWith(requisitions[1].processingPeriod.endDate);
-    })
-});*/
+});

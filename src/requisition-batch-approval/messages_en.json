@@ -4,6 +4,7 @@
   "requisitionBatchApproval.approvedQuantity": "Approved Quantity",
   "requisitionBatchApproval.batchApproval": "Batch Approval",
   "requisitionBatchApproval.cost": "Cost",
+  "requisitionBatchApproval.errorApprove": "Server was unable to approve this requisition",
   "requisitionBatchApproval.numberTooLarge": "This number is larger than what can be saved",
   "requisitionBatchApproval.product": "Product",
   "requisitionBatchApproval.productCode": "Product code",

@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-/*
+
 describe('RequisitionBatchApproveFactory', function() {
 
 	var $rootScope, $httpBackend, requisitionBatchApproveFactory, requisitionSaveSpy, requisitions;
@@ -23,7 +23,7 @@ describe('RequisitionBatchApproveFactory', function() {
 			'save': function(requisitions){
 				return [];
 			}
-		}
+		};
 		$provide.factory('requisitionBatchSaveFactory', function(){
 			return requisitionSaveSpy.save;
 		});
@@ -41,17 +41,6 @@ describe('RequisitionBatchApproveFactory', function() {
 		});
 	}));
 
-	beforeEach(inject(function(requisitionValidator) {
-		spyOn(requisitionValidator, 'validateRequisition')
-		.andCallFake(function(requisition){
-			if(requisition.id.indexOf('invalid') > -1){
-				return false;
-			}
-
-			return true;
-		});
-	}));
-
 	beforeEach(inject(function(_$rootScope_, _requisitionBatchApproveFactory_, $q){
 		$rootScope = _$rootScope_;
 		requisitionBatchApproveFactory = _requisitionBatchApproveFactory_;
@@ -60,16 +49,16 @@ describe('RequisitionBatchApproveFactory', function() {
 	beforeEach(inject(function(_$httpBackend_){
 		$httpBackend = _$httpBackend_;
 
-		$httpBackend.whenPOST('/api/requisitions/approve')
+		$httpBackend.whenPOST('/api/requisitions/batch/approve')
 		.respond(function(method, url, data){
-			var errors = [];
+			var requisitionErrors = [];
 
 			data = JSON.parse(data);
 
 			if(Array.isArray(data)){
 				data.forEach(function(id){
 					if(id.indexOf('dontapprove') >= 0){
-						errors.push({
+                        requisitionErrors.push({
 							requisitionId: id,
 							errorMessage: {
 								message: 'Error message'
@@ -79,11 +68,11 @@ describe('RequisitionBatchApproveFactory', function() {
 				});
 			}
 
-			if(errors.length == 0){
+			if(requisitionErrors.length == 0){
 				return [200, data];
 			} else {
 				return [400, {
-					errors: errors
+                    requisitionErrors: requisitionErrors
 				}];
 			}
 		});
@@ -99,7 +88,7 @@ describe('RequisitionBatchApproveFactory', function() {
 
 	it('returns an empty array if input is invalid', function() {
 		var response;
-		
+
 		requisitionBatchApproveFactory([])
 		.catch(function(requisitions){
 			response = requisitions;
@@ -129,7 +118,7 @@ describe('RequisitionBatchApproveFactory', function() {
 
 	it('when successful, it returns an array of all requisitions', function() {
 		var response;
-		
+
 		requisitionBatchApproveFactory(requisitions)
 		.then(function(returnedRequisitions){
 			response = returnedRequisitions;
@@ -144,7 +133,10 @@ describe('RequisitionBatchApproveFactory', function() {
 
 	it('invalid requisitions are not returned, and have error message applied', function() {
 		var invalidRequisition = {
-			id: 'requisition-invalid'
+			id: 'requisition-invalid',
+			requisitionLineItems: [{
+                id: 'noApprovedQuantity'
+            }]
 		};
 		requisitions.push(invalidRequisition);
 
@@ -158,7 +150,7 @@ describe('RequisitionBatchApproveFactory', function() {
 		$httpBackend.flush();
 
 		expect(response.length).toEqual(requisitions.length - 1);
-		
+
 		// We mutated the original object...
 		expect(invalidRequisition.$error).toBeTruthy();
 	});
@@ -179,9 +171,9 @@ describe('RequisitionBatchApproveFactory', function() {
 		$httpBackend.flush();
 
 		expect(response.length).toEqual(requisitions.length - 1);
-		
+
 		// We mutated the original object...
 		expect(unapprovableRequisition.$error).toBeTruthy();
 	});
 
-});*/
+});

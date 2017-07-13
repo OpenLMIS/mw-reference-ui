@@ -32,17 +32,17 @@
     controller.$inject = [
         'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
-            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
+            'requisitionBatchApproveFactory', 'offlineService', 'BatchRequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
             'localStorageFactory'
     ];
 
     function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
-                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
+                        requisitionBatchApproveFactory, offlineService, BatchRequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
                         localStorageFactory) {
 
         var vm = this,
-            offlineRequisitions = localStorageFactory('batchApproveRequisitions');
+            offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions');
 
         vm.$onInit = onInit;
         vm.updateLineItem = updateLineItem;
@@ -158,12 +158,8 @@
             addNewColumn(true, false, ['requisitionBatchApproval.product']);
 
             angular.forEach(requisitions, function(requisition) {
-                calculateRequisitionTotalCost(requisition);
-                new RequisitionWatcher($scope, requisition);
-                vm.requisitions.push(requisition);
-                vm.lineItems[requisition.id] = [];
-
                 addNewColumn(false, false, ['requisitionBatchApproval.approvedQuantity', 'requisitionBatchApproval.cost'], requisition);
+                vm.lineItems[requisition.id] = [];
 
                 angular.forEach(requisition.requisitionLineItems, function(lineItem) {
                     vm.lineItems[requisition.id][lineItem.orderable.id] = lineItem;
@@ -187,6 +183,12 @@
                     }
 
                 });
+
+                //used in calculation factory
+                requisition.$isAfterAuthorize = isAfterAuthorize;
+                calculateRequisitionTotalCost(requisition);
+                new BatchRequisitionWatcher($scope, requisition);
+                vm.requisitions.push(requisition);
             });
 
             addNewColumn(true, true, ['requisitionBatchApproval.totalQuantityForAllFacilities']);
@@ -250,6 +252,7 @@
                     var savedRequisition = $filter('filter')(savedRequisitions, {id: requisition.id});
                     if(savedRequisition !== undefined) { // if successful requisition
                         requisition = savedRequisition;
+                        saveToStorage(requisition);
                     }
                 });
 
@@ -299,8 +302,10 @@
         function handleApprove(successfulRequisitions){
             loadingModalService.close();
 
+
             angular.forEach(successfulRequisitions, function(requisition) {
-               saveToStorage(requisition);
+                //requisition was approved and is removed from batchRequisitions storage
+                removeFromStorage(requisition);
             });
 
             if(successfulRequisitions.length < vm.requisitions.length){
@@ -324,7 +329,7 @@
 
                 stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
             }
-        };
+        }
 
         function calculateRequisitionTotalCost(requisition) {
             requisition.$totalCost = 0;
@@ -352,7 +357,11 @@
         function saveToStorage(requisition) {
             requisition.$modified = false;
             requisition.$availableOffline = true;
-            offlineRequisitions.put(requisition);
+            offlineBatchRequisitions.put(requisition);
+        }
+
+        function removeFromStorage(requisition) {
+            offlineBatchRequisitions.removeBy('id', requisition.id);
         }
 
         function addNewColumn(isSticky, isStickyRight, names, requisition) {
@@ -363,6 +372,12 @@
                 right: isStickyRight,
                 names: names
             });
+        }
+
+        //requisitions in this view are always IN_APPROVAL or AUTHORIZED
+        //method needed for calculation factory so always return true
+        function isAfterAuthorize() {
+            return true;
         }
     }
 

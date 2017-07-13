@@ -83,10 +83,11 @@
             .catch(function(response){
                 if(response.status === 400){
                     // process errors
-                    if(response.data.errors){
-                        response.data.errors.forEach(function(error){
+                    if(response.data.requisitionErrors){
+                        response.data.requisitionErrors.forEach(function(error){
                             if(requisitionsObject[error.requisitionId]){
-                                requisitionsObject[error.requisitionId].$error = error.errorMessage.message;
+                                requisitionsObject[error.requisitionId].$error = error.errorMessage.message ?
+                                    error.errorMessage.message : messageService.get('requisitionBatchApproval.errorApprove');
                             }
                         });
                     }
@@ -139,6 +140,7 @@
             var column = TEMPLATE_COLUMNS.APPROVED_QUANTITY,
                 error;
 
+            if (lineItem.skipped) return true;
             if (isEmpty(lineItem.approvedQuantity)) {
                 error = messageService.get('requisitionBatchApproval.required');
             } else if (lineItem.approvedQuantity > MAX_INTEGER_VALUE) {

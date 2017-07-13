@@ -40,13 +40,15 @@
                         alertService, offlineService, localStorageFactory) {
 
 		var vm = this,
-            offlineRequisitions = localStorageFactory('requisitions');
+            offlineRequisitions = localStorageFactory('requisitions'),
+            offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions');
 
         vm.$onInit = onInit;
         vm.search = search;
 		vm.openRnr = openRnr;
 		vm.toggleSelectAll = toggleSelectAll;
 		vm.viewSelectedRequisitions = viewSelectedRequisitions;
+        vm.isFullRequisitionAvailable = isFullRequisitionAvailable;
 
         /**
          * @ngdoc property
@@ -174,12 +176,74 @@
             });
 
             if(selectedRequisitionIds.length > 0) {
+
+                angular.forEach(selectedRequisitionIds, function(id) {
+                   if (!isBatchRequisitionAvailable(id)) {
+                       var fullRequisitionDto = offlineRequisitions.getBy('id', id);
+                       offlineBatchRequisitions.put(transformToBatchDto(angular.copy(fullRequisitionDto)));
+                   }
+                });
+
                 $state.go('openlmis.requisitions.batchApproval', {
                     ids: selectedRequisitionIds.join(',')
                 });
             } else {
                 alertService.error('requisitionApproval.selectAtLeastOneRnr');
             }
+        }
+
+        function isFullRequisitionAvailable(requisitionId) {
+            var offlineRequisition = offlineRequisitions.search({id: requisitionId});
+            return !vm.offline || vm.offline && offlineRequisition.length > 0;
+        }
+
+        function isBatchRequisitionAvailable(requisitionId) {
+            return !vm.offline || vm.offline && offlineBatchRequisitions.getBy('id', requisitionId);
+        }
+
+        function transformToBatchDto(requisition) {
+            var batchRequisitioDto = {
+                id: requisition.id,
+                status : requisition.status,
+                statusChanges: requisition.statusChanges,
+                program: {
+                    id: requisition.program.id,
+                    code: requisition.program.code,
+                    name: requisition.program.name
+                },
+                facility: {
+                    id: requisition.facility.id,
+                    code: requisition.facility.code,
+                    name: requisition.facility.name
+                },
+                processingPeriod: {
+                    id: requisition.processingPeriod.id,
+                    name: requisition.processingPeriod.name,
+                    startDate: requisition.processingPeriod.startDate,
+                    endDate: requisition.processingPeriod.endDate
+                },
+                requisitionLineItems: []
+            };
+            angular.forEach(requisition.requisitionLineItems, function(lineItem) {
+                var newLineItem = {
+                    id: lineItem.id,
+                    approvedQuantity: lineItem.approvedQuantity,
+                    pricePerPack: lineItem.pricePerPack,
+                    totalCost: lineItem.totalCost,
+                    skipped: lineItem.skipped,
+                    orderable: {
+                        id: lineItem.orderable.id,
+                        productCode: lineItem.orderable.productCode,
+                        fullProductName: lineItem.orderable.fullProductName,
+                        netContent: lineItem.orderable.netContent,
+                        packRoundingThreshold: lineItem.orderable.packRoundingThreshold,
+                        roundToZero: lineItem.orderable.roundToZero
+                    }
+                };
+                batchRequisitioDto.requisitionLineItems.push(newLineItem);
+            });
+
+            return batchRequisitioDto;
         }
 
     }
