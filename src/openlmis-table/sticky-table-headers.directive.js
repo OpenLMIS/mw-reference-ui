@@ -78,7 +78,7 @@
 
             // If there are new items added to the grid, redraw
             scope.$watch(function() {
-                return element[0].querySelectorAll('.sticky:not(.sticky-added)').length;
+                return element[0].querySelectorAll('.col-sticky').length;
             }, updateStickyElements);
 
             // If the window changes sizes, update the view
