@@ -1,4 +1,4 @@
-# OpenLMIS Malawi Reference UI
+# OpenLMIS Malawi UI
 This user interface is designed to be a single page web application that is optimized for offline and low-bandwidth environments.
 
 Multiple UI modules are compiled together with the OpenLMIS dev-ui to create the OpenLMIS Reference-UI. UI modules included in the OpenLMIS Reference-UI are:
