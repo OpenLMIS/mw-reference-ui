@@ -33,9 +33,9 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchSaveFactory', factory);
 
-    factory.$inject = ['$q', '$http', '$filter', 'openlmisUrlFactory'];
+    factory.$inject = ['$q', '$http', '$filter', 'openlmisUrlFactory', 'localStorageFactory'];
 
-    function factory($q, $http, $filter, openlmisUrlFactory) {
+    function factory($q, $http, $filter, openlmisUrlFactory, localStorageFactory) {
         return saveRequisitions;
 
         /**
@@ -58,22 +58,70 @@
                 return $q.reject([]);
             }
 
-            var deferred = $q.defer();
+            var deferred = $q.defer(),
+                offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
+                offlineRequisitions = localStorageFactory('requisitions'),
+                requisitionDtos = [];
 
-            $http.put(openlmisUrlFactory('/api/requisitions/batch/save'), requisitions)
+            requisitions.forEach(function(requisition){
+                requisitionDtos.push(transformRequisition(requisition));
+            });
+
+            $http.put(openlmisUrlFactory('/api/requisitions/batch/save'), requisitionDtos)
             .then(function(response) {
-                deferred.resolve(response.data.requisitionDtos);
+
+                angular.forEach(requisitions, function(requisition) {
+                    var savedRequisition = $filter('filter')(response.data.requisitionDtos, {id: requisition.id});
+                    saveToStorage(angular.copy(savedRequisition[0]), offlineBatchRequisitions);
+                });
+
+                return deferred.resolve(response.data.requisitionDtos);
             }, function(response) {
+
                 angular.forEach(requisitions, function(requisition) {
                     var requisitionError = $filter('filter')(response.data.requisitionErrors, {requisitionId: requisition.id});
                     if (requisitionError.length > 0) {
                         requisition.$error = requisitionError[0].errorMessage.message;
+                        if (requisitionError[0].errorMessage.messageKey === 'requisition.error.validation.dateModifiedMismatch') {
+                            // In case of outdated requisition remove it from storage
+                            removeFromStorage(requisition, offlineBatchRequisitions);
+                            removeFromStorage(requisition, offlineRequisitions);
+                        }
+                    } else {
+                        //Save successful requisitions to storage
+                        var savedRequisition = $filter('filter')(response.data.requisitionDtos, {id: requisition.id});
+                        saveToStorage(angular.copy(savedRequisition[0]), offlineBatchRequisitions);
                     }
                 });
-                deferred.reject(response.data.requisitionDtos);
+
+                return deferred.reject(response.data.requisitionDtos);
             });
 
             return deferred.promise;
+        }
+
+        function transformRequisition(requisition) {
+            var requestBody = angular.copy(requisition);
+            angular.forEach(requestBody.requisitionLineItems, function(lineItem) {
+                transformLineItem(lineItem);
+            });
+
+            return requestBody;
+        }
+
+        function transformLineItem(lineItem) {
+            lineItem.totalCost = null;
+        }
+
+        function saveToStorage(requisition, storage) {
+            requisition.$availableOffline = true;
+            delete requisition.$outdated;
+            delete requisition.$modified;
+            storage.put(requisition);
+        }
+
+        function removeFromStorage(requisition, storage) {
+            storage.removeBy('id', requisition.id);
         }
     }
 

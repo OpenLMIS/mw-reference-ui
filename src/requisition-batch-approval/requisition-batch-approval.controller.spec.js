@@ -16,8 +16,9 @@
 describe('RequisitionBatchApprovalController', function () {
 
     //injects
-    var vm, $stateParams, $rootScope, $q, confirmService, $controller,
-        calculationFactory, confirmDeferred, $scope, requisitionService, requisitionStatus;
+    var vm, $stateParams, $rootScope, $q, confirmService, $controller, calculationFactory,
+        confirmDeferred, $scope, requisitionService, requisitionStatus, alertService, $state,
+        localStorageFactory;
 
     //variables
     var requisitions, products, lineItems;
@@ -92,7 +93,8 @@ describe('RequisitionBatchApprovalController', function () {
             });
         });
 
-        inject(function (_$controller_, _confirmService_, _$rootScope_, _$q_, _requisitionService_, _$stateParams_, _REQUISITION_STATUS_) {
+        inject(function (_$controller_, _confirmService_, _$rootScope_, _$q_, _requisitionService_,
+                         _$stateParams_, _REQUISITION_STATUS_, _alertService_, _$state_) {
             $controller = _$controller_;
             confirmService = _confirmService_;
             $rootScope = _$rootScope_;
@@ -100,9 +102,13 @@ describe('RequisitionBatchApprovalController', function () {
             $scope = _$rootScope_.$new();
             requisitionService = _requisitionService_;
             requisitionStatus = _REQUISITION_STATUS_;
+            $stateParams = _$stateParams_;
+            alertService = _alertService_;
+            $state = _$state_;
 
         });
 
+        $stateParams.errors = {};
         calculationFactory = jasmine.createSpyObj('calculationFactory', ['totalCost']);
         calculationFactory.totalCost.andReturn(100);
         spyOn(requisitionService, 'get').andReturn($q.when(requisition));
@@ -111,9 +117,12 @@ describe('RequisitionBatchApprovalController', function () {
     describe('$onInit', function() {
 
         beforeEach(function() {
+            $stateParams.errors[requisitions[0].id] = "There was an error";
+
             vm = $controller('RequisitionBatchApprovalController', {
                 requisitions: requisitions,
-                $scope: $scope
+                $scope: $scope,
+                $stateParams: $stateParams
             });
         });
 
@@ -121,6 +130,12 @@ describe('RequisitionBatchApprovalController', function () {
             vm.$onInit();
             $rootScope.$apply();
             expect(vm.requisitions).toEqual(requisitions);
+        });
+
+        it('should assign errors to requisitions', function() {
+            vm.$onInit();
+            $rootScope.$apply();
+            expect(vm.requisitions[0].$error).toEqual("There was an error");
         });
 
         it('should calculate total cost of requisition', function() {
@@ -212,12 +227,76 @@ describe('RequisitionBatchApprovalController', function () {
         });
     });
 
+    describe('updateRequisitions', function() {
+        var isOffline;
+
+        beforeEach(function() {
+            isOffline = false;
+            initController();
+
+            spyOn($state, 'reload');
+            spyOn(alertService, 'error');
+
+            spyOn(vm, 'isOffline').andCallFake(function(){
+                return isOffline;
+            });
+
+            confirmDeferred = $q.defer();
+            spyOn(confirmService, 'confirm').andReturn(confirmDeferred.promise);
+        });
+
+        it('should display alert if offline', function() {
+            isOffline = true;
+            vm.updateRequisitions();
+
+            expect(alertService.error).toHaveBeenCalledWith('requisitionBatchApproval.updateOffline');
+        });
+
+        it('should ask user for confirmation to update', function() {
+            vm.updateRequisitions();
+
+            confirmDeferred.resolve();
+            $rootScope.$apply();
+
+            expect(confirmService.confirm).toHaveBeenCalledWith(
+                'requisitionBatchApproval.updateWarning', 'requisitionBatchApproval.update');
+        });
+
+        it('should reload current state', function() {
+            vm.updateRequisitions();
+
+            confirmDeferred.resolve();
+            $rootScope.$apply();
+
+            expect($state.reload).toHaveBeenCalled();
+        });
+    });
+
+    describe('areRequisitionsOutdated', function() {
+
+        beforeEach(function() {
+            initController();
+        });
+
+        it('should return true if at least one requisition is marked as outdated', function() {
+            vm.requisitions[0].$outdated = true;
+
+            expect(vm.areRequisitionsOutdated()).toBeTruthy();
+        });
+
+        it('should return false if all requisitions are up to date', function() {
+            expect(vm.areRequisitionsOutdated()).toBeFalsy();
+        });
+
+    });
+
 
     function initController() {
         vm = $controller('RequisitionBatchApprovalController', {
             requisitions: requisitions,
             calculationFactory: calculationFactory,
-            $scope: $scope
+            $scope: $scope,
+            $stateParams: $stateParams
         });
         vm.$onInit();
         $rootScope.$apply();

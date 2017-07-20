@@ -41,7 +41,7 @@ describe('RequisitionBatchApproveFactory', function() {
 		});
 	}));
 
-	beforeEach(inject(function(_$rootScope_, _requisitionBatchApproveFactory_, $q){
+	beforeEach(inject(function(_$rootScope_, _requisitionBatchApproveFactory_){
 		$rootScope = _$rootScope_;
 		requisitionBatchApproveFactory = _requisitionBatchApproveFactory_;
 	}));
@@ -69,7 +69,7 @@ describe('RequisitionBatchApproveFactory', function() {
 			}
 
 			if(requisitionErrors.length == 0){
-				return [200, data];
+				return [200, {requisitionDtos: data}];
 			} else {
 				return [400, {
                     requisitionErrors: requisitionErrors
@@ -78,12 +78,12 @@ describe('RequisitionBatchApproveFactory', function() {
 		});
 	}));
 
-	beforeEach(inject(function(Requisition) {
+	beforeEach(inject(function() {
 		requisitions = [{
 			id: "requisition-1"
 		}, {
 			id: "requisition-2"
-		}]; // See bottom of file for variable definition
+		}];
 	}));
 
 	it('returns an empty array if input is invalid', function() {
@@ -128,7 +128,7 @@ describe('RequisitionBatchApproveFactory', function() {
 		$httpBackend.flush();
 
 		expect(response.length).toEqual(requisitions.length);
-		expect(response[0].id).toEqual(requisitions[0].id);
+		expect(response[0]).toEqual(requisitions[0].id);
 	});
 
 	it('invalid requisitions are not returned, and have error message applied', function() {

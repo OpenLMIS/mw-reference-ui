@@ -35,6 +35,9 @@
             accessRights: [REQUISITION_RIGHTS.REQUISITION_APPROVE],
             resolve: {
                 requisitions: getRequisitions
+            },
+            params: {
+                errors: {}
             }
         });
     }

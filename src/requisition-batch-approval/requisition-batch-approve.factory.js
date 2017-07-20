@@ -34,9 +34,9 @@
         .module('requisition-batch-approval')
         .factory('requisitionBatchApproveFactory', factory);
 
-    factory.$inject = ['$q', '$http', 'requisitionUrlFactory', 'requisitionBatchSaveFactory', 'messageService', 'MAX_INTEGER_VALUE', 'TEMPLATE_COLUMNS'];
+    factory.$inject = ['$q', '$http', 'requisitionUrlFactory', 'requisitionBatchSaveFactory', 'messageService', 'MAX_INTEGER_VALUE', 'TEMPLATE_COLUMNS', 'localStorageFactory'];
 
-    function factory($q, $http, requisitionUrlFactory, requisitionBatchSaveFactory, messageService, MAX_INTEGER_VALUE, TEMPLATE_COLUMNS) {
+    function factory($q, $http, requisitionUrlFactory, requisitionBatchSaveFactory, messageService, MAX_INTEGER_VALUE, TEMPLATE_COLUMNS, localStorageFactory) {
 
         return batchApprove;
 
@@ -68,7 +68,8 @@
         }
 
         function approveRequisitions(requisitions) {
-            var requisitionsObject = {};
+            var requisitionsObject = {},
+                offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions');
 
             requisitions.forEach(function(requisition){
                 requisitionsObject[requisition.id] = requisition;
@@ -78,12 +79,18 @@
 
             $http.post(requisitionUrlFactory('/api/requisitions/batch/approve'), Object.keys(requisitionsObject))
             .then(function(response){
-                return deferred.resolve(requisitions);
+
+                // All requisitions are approved so remove them from batchRequisitions storage
+                angular.forEach(requisitions, function(requisition) {
+                    removeFromStorage(requisition, offlineBatchRequisitions);
+                });
+
+                return deferred.resolve(response.data.requisitionDtos);
             })
             .catch(function(response){
                 if(response.status === 400){
-                    // process errors
-                    if(response.data.requisitionErrors){
+                    // Process errors
+                    if(response.data.requisitionErrors) {
                         response.data.requisitionErrors.forEach(function(error){
                             if(requisitionsObject[error.requisitionId]){
                                 requisitionsObject[error.requisitionId].$error = error.errorMessage.message ?
@@ -92,9 +99,12 @@
                         });
                     }
 
+                    // Process successful requisitions
                     var successfulRequisitions = [];
                     requisitions.forEach(function(requisition){
                         if(!requisition.$error){
+                            // Remove successful requisitions from batchRequisitions storage
+                            removeFromStorage(requisition, offlineBatchRequisitions);
                             successfulRequisitions.push(requisition);
                         }
                     });
@@ -152,6 +162,10 @@
 
         function isEmpty(value) {
             return value === null || value === undefined || value === '';
+        }
+
+        function removeFromStorage(requisition, storage) {
+            storage.removeBy('id', requisition.id);
         }
     }
 

@@ -33,16 +33,15 @@
         'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
             'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
             'requisitionBatchApproveFactory', 'offlineService', 'BatchRequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
-            'localStorageFactory'
+            'localStorageFactory', '$state', '$stateParams'
     ];
 
     function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
                         messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
                         requisitionBatchApproveFactory, offlineService, BatchRequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
-                        localStorageFactory) {
+                        localStorageFactory, $state, $stateParams) {
 
-        var vm = this,
-            offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions');
+        var vm = this;
 
         vm.$onInit = onInit;
         vm.updateLineItem = updateLineItem;
@@ -50,6 +49,8 @@
         vm.sync = sync;
         vm.approve = approve;
         vm.isInApproval = isInApproval;
+        vm.updateRequisitions = updateRequisitions;
+        vm.areRequisitionsOutdated = areRequisitionsOutdated;
         vm.isOffline = offlineService.isOffline;
 
         /**
@@ -184,9 +185,15 @@
 
                 });
 
-                //used in calculation factory
+                //method used in calculation factory
                 requisition.$isAfterAuthorize = isAfterAuthorize;
                 calculateRequisitionTotalCost(requisition);
+
+                //set errors to be displayed (needed when state is reloaded to update outdated requisitions)
+                if ($stateParams.errors[requisition.id]) {
+                    requisition.$error = $stateParams.errors[requisition.id];
+                }
+
                 new BatchRequisitionWatcher($scope, requisition);
                 vm.requisitions.push(requisition);
             });
@@ -194,6 +201,7 @@
             addNewColumn(true, true, ['requisitionBatchApproval.totalQuantityForAllFacilities']);
             addNewColumn(true, true, ['requisitionBatchApproval.totalCostForAllFacilities']);
 
+            //save copy to provide revert functionality
             vm.requisitionsCopy = angular.copy(vm.requisitions);
         }
 
@@ -240,27 +248,34 @@
 
             requisitionBatchSaveFactory(vm.requisitions)
             .then(function(savedRequisitions){
-                prepareDataToDisplay(savedRequisitions);
-
+                //successfully saved all requisitions
                 var successMessage = messageService.get("requisitionBatchApproval.syncSuccess", {
                     successCount: savedRequisitions.length
                 });
+
+                $stateParams.errors = {};
+                prepareDataToDisplay(savedRequisitions);
                 notificationService.success(successMessage);
 
             }, function(savedRequisitions) {
+                //at least one requisition failed to save
+                var errors = {},
+                    successCount = savedRequisitions ? savedRequisitions.length : 0,
+                    errorMessage = messageService.get("requisitionBatchApproval.syncError", {
+                        errorCount: vm.requisitions.length - successCount
+                    });
+
                 angular.forEach(vm.requisitions, function(requisition){
                     var savedRequisition = $filter('filter')(savedRequisitions, {id: requisition.id});
-                    if(savedRequisition !== undefined) { // if successful requisition
-                        requisition = savedRequisition;
-                        saveToStorage(requisition);
+                    if(savedRequisition[0] !== undefined) { // if successful requisition
+                        requisition = savedRequisition[0];
+                    } else {
+                        errors[requisition.id] = requisition.$error;
                     }
                 });
 
-                var successes = savedRequisitions ? savedRequisitions.length : 0;
-                var errorTitle = messageService.get("requisitionBatchApproval.syncError", {
-                    errorCount: vm.requisitions.length - successes
-                });
-                alertService.error(errorTitle);
+                notificationService.error(errorMessage);
+                $state.go($state.current, {errors: errors}, {reload: true});
             })
             .finally(loadingModalService.close);
         }
@@ -279,7 +294,8 @@
 
                 // Using slice to make copy of array, so scope changes at end only
                 requisitionBatchApproveFactory(vm.requisitions.slice())
-                .then(handleApprove, handleApprove);
+                .then(handleApprove, handleApprove)
+                .finally(loadingModalService.close);
             });
         }
 
@@ -299,28 +315,90 @@
             return requisition.status === REQUISITION_STATUS.IN_APPROVAL;
         }
 
-        function handleApprove(successfulRequisitions){
-            loadingModalService.close();
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name updateRequisitions
+         *
+         * @description
+         * After confirming with the user, the outdated offline requisitions are removed,
+         * and the state is reloaded. This will fetch a fresh version of the
+         * requisitions.
+         *
+         * If the browser is offline, an error will be thrown, and nothing will
+         * change.
+         *
+         */
+        function updateRequisitions() {
+            if(vm.isOffline()) {
+                alertService.error('requisitionBatchApproval.updateOffline');
+                return;
+            }
 
+            confirmService.confirm('requisitionBatchApproval.updateWarning', 'requisitionBatchApproval.update')
+                .then(function(){
+                    var offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
+                        offlineRequisitions = localStorageFactory('requisitions');
 
-            angular.forEach(successfulRequisitions, function(requisition) {
-                //requisition was approved and is removed from batchRequisitions storage
-                removeFromStorage(requisition);
-            });
+                    angular.forEach(vm.requisitions, function(requisition) {
+                        offlineBatchRequisitions.removeBy('id', requisition.id);
+                        offlineRequisitions.removeBy('id', requisition.id)
+                    });
 
-            if(successfulRequisitions.length < vm.requisitions.length){
+                    $state.reload();
+                });
+        }
 
-                // Remove all successful requisitions
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name areRequisitionsOutdated
+         *
+         * @return {boolean} true if at least one requisition is outdated, false otherwise
+         *
+         * @description
+         * Checks if there are outdated offline requisitions displayed on the page in
+         * order to display proper warning.
+         *
+         */
+        function areRequisitionsOutdated() {
+            return $filter('filter')(vm.requisitions, {$outdated: true}).length > 0;
+        }
+
+        function handleApprove(successfulRequisitions) {
+
+            if(successfulRequisitions.length < vm.requisitions.length) {
+                var errors = {};
+
+                //Not all requisitions got approved, remove all successful requisitions
                 vm.requisitions = _.filter(vm.requisitions, function(requisition){
                     return requisition.$error;
                 });
 
-                alertService.error(
+                angular.forEach(vm.requisitions, function(requisition) {
+                    errors[requisition.id] = requisition.$error;
+
+                });
+
+                if (successfulRequisitions.length > 0) {
+                    notificationService.success(
+                        messageService.get("requisitionBatchApproval.approvalSuccess", {
+                            successCount: successfulRequisitions.length
+                        })
+                    );
+                }
+
+                notificationService.error(
                     messageService.get("requisitionBatchApproval.approvalError", {
                         errorCount: vm.requisitions.length
                     })
                 );
+
+                // Reload state to display page without approved notifications and to update outdated ones
+                $state.go($state.current, {errors: errors, ids: Object.keys(errors).join(',')}, {reload: true});
             } else {
+
+                //All requisitions got approved, display notification and go back to approval list
                 notificationService.success(
                     messageService.get("requisitionBatchApproval.approvalSuccess", {
                         successCount: successfulRequisitions.length
@@ -354,16 +432,6 @@
             });
         }
 
-        function saveToStorage(requisition) {
-            requisition.$modified = false;
-            requisition.$availableOffline = true;
-            offlineBatchRequisitions.put(requisition);
-        }
-
-        function removeFromStorage(requisition) {
-            offlineBatchRequisitions.removeBy('id', requisition.id);
-        }
-
         function addNewColumn(isSticky, isStickyRight, names, requisition) {
             vm.columns.push({
                 id: requisition ? requisition.id : vm.columns.length,
@@ -374,8 +442,7 @@
             });
         }
 
-        //requisitions in this view are always IN_APPROVAL or AUTHORIZED
-        //method needed for calculation factory so always return true
+        // Requisitions in this view are always IN_APPROVAL or AUTHORIZED so always return true
         function isAfterAuthorize() {
             return true;
         }

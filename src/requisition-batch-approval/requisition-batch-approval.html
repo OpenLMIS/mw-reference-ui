@@ -1,5 +1,10 @@
 <h2>{{'requisitionBatchApproval.approveRequisitions' | message}}</h2>
+<p class="alert is-error" ng-if="vm.areRequisitionsOutdated();">
+    {{ 'requisitionBatchApproval.outdated' | message}}
+    <button ng-click="vm.updateRequisitions();">{{ 'requisitionBatchApproval.update' | message }}</button>
+</p>
 <div class="openlmis-table-container">
+
     <saving-indicator class="requisition-indicator" object="vm.requisitions"/>
     <table>
         <thead>

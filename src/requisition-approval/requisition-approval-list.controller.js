@@ -203,6 +203,9 @@
 
         function transformToBatchDto(requisition) {
             var batchRequisitioDto = {
+                $outdated: requisition.$outdated,
+                $modified: requisition.$modified,
+                $availableOffline: requisition.$availableOffline,
                 id: requisition.id,
                 status : requisition.status,
                 statusChanges: requisition.statusChanges,

@@ -457,18 +457,32 @@
         function transformRequisitionOffline(requisition) {
             var offlineRequisition = offlineRequisitions.getBy('id', requisition.id);
             var offlineBatchRequisition = offlineBatchRequisitions.getBy('id', requisition.id);
+
             if (offlineRequisition || offlineBatchRequisition) {
                 requisition.$availableOffline = true;
             }
-            if(offlineRequisition && requisition.modifiedDate && requisition.modifiedDate.getTime) {
-                var offlineDate = dateUtils.toDate(offlineRequisition.modifiedDate);
 
-                if(!offlineDate || offlineDate.getTime() !== requisition.modifiedDate.getTime()) {
-                    offlineRequisition.$outdated = true;
-                } else {
-                    delete offlineRequisition.$outdated;
+            if(requisition.modifiedDate && requisition.modifiedDate.getTime) {
+
+                if (offlineRequisition) {
+                    markIfOutdated(requisition, offlineRequisition);
+                    offlineRequisitions.put(offlineRequisition);
                 }
-                offlineRequisitions.put(offlineRequisition);
+
+                if (offlineBatchRequisition) {
+                    markIfOutdated(requisition, offlineBatchRequisition);
+                    offlineBatchRequisitions.put(offlineBatchRequisition);
+                }
+            }
+        }
+
+        function markIfOutdated(requisition, offlineRequisition) {
+            var offlineDate = dateUtils.toDate(offlineRequisition.modifiedDate);
+
+            if(!offlineDate || offlineDate.getTime() !== requisition.modifiedDate.getTime()) {
+                offlineRequisition.$outdated = true;
+            } else {
+                delete offlineRequisition.$outdated;
             }
         }
     }
