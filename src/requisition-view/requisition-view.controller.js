@@ -694,8 +694,8 @@
 
         function failWithMessage(message) {
             return function() {
-                notificationService.error(message);
                 loadingModalService.close();
+                alertService.error(message);
             };
         }
 

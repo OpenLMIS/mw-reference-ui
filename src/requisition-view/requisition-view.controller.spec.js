@@ -16,7 +16,7 @@
 
 describe('RequisitionViewController', function() {
 
-    var $scope, $q, $state, notificationService, confirmService, vm, requisition,
+    var $scope, $q, $state, notificationService, confirmService, alertService, vm, requisition,
         loadingModalService, deferred, requisitionUrlFactoryMock, requisitionValidatorMock,
         fullSupplyItems, nonFullSupplyItems, authorizationServiceSpy, confirmSpy,
         REQUISITION_RIGHTS, accessTokenFactorySpy, $window, stateTrackerService, messageService;
@@ -66,6 +66,7 @@ describe('RequisitionViewController', function() {
             $window = $injector.get('$window');
             notificationService = $injector.get('notificationService');
             confirmService = $injector.get('confirmService');
+            alertService = $injector.get('alertService');
             loadingModalService = $injector.get('loadingModalService');
             REQUISITION_RIGHTS = $injector.get('REQUISITION_RIGHTS');
             stateTrackerService = $injector.get('stateTrackerService');
@@ -178,16 +179,16 @@ describe('RequisitionViewController', function() {
     });
 
     it('should display error message when skip requisition failed', function() {
-        var notificationServiceSpy = jasmine.createSpy();
+        var alertServiceSpy = jasmine.createSpy();
 
-        spyOn(notificationService, 'error').andCallFake(notificationServiceSpy);
+        spyOn(alertService, 'error').andCallFake(alertServiceSpy);
 
         vm.skipRnr();
 
         deferred.reject();
         $scope.$apply();
 
-        expect(notificationServiceSpy).toHaveBeenCalledWith('requisitionView.skip.failure');
+        expect(alertServiceSpy).toHaveBeenCalledWith('requisitionView.skip.failure');
     });
 
     it('getPrintUrl should prepare URL correctly', function() {
@@ -324,11 +325,11 @@ describe('RequisitionViewController', function() {
         }
 
         function verifyNoReloadOnError(responseStatus) {
-            var notificationServiceSpy = jasmine.createSpy(),
+            var alertServiceSpy = jasmine.createSpy(),
                 stateSpy = jasmine.createSpy(),
                 conflictResponse = { status: responseStatus };
 
-            spyOn(notificationService, 'error').andCallFake(notificationServiceSpy);
+            spyOn(alertService, 'error').andCallFake(alertServiceSpy);
             spyOn($state, 'reload').andCallFake(stateSpy);
 
             vm.syncRnr();
@@ -336,7 +337,7 @@ describe('RequisitionViewController', function() {
             deferred.reject(conflictResponse);
             $scope.$apply();
 
-            expect(notificationServiceSpy).toHaveBeenCalledWith('requisitionView.sync.failure');
+            expect(alertServiceSpy).toHaveBeenCalledWith('requisitionView.sync.failure');
             expect(stateSpy).not.toHaveBeenCalled();
         }
     });
@@ -445,22 +446,22 @@ describe('RequisitionViewController', function() {
 
         it('should show notification if requisition has error', function() {
             requisitionValidatorMock.validateRequisition.andReturn(false);
-            spyOn(notificationService, 'error');
+            spyOn(alertService, 'error');
 
             vm.authorizeRnr();
             $scope.$apply();
 
-            expect(notificationService.error).toHaveBeenCalledWith('requisitionView.rnrHasErrors');
+            expect(alertService.error).toHaveBeenCalledWith('requisitionView.rnrHasErrors');
         });
 
         it('should show notification if all line items are skipped', function() {
             requisitionValidatorMock.areAllLineItemsSkipped.andReturn(true);
-            spyOn(notificationService, 'error');
+            spyOn(alertService, 'error');
 
             vm.authorizeRnr();
             $scope.$apply();
 
-            expect(notificationService.error).toHaveBeenCalledWith('requisitionView.allLineItemsSkipped');
+            expect(alertService.error).toHaveBeenCalledWith('requisitionView.allLineItemsSkipped');
         });
     });
 
@@ -531,12 +532,12 @@ describe('RequisitionViewController', function() {
 
         it('should show notification if requisition has error', function() {
             requisitionValidatorMock.validateRequisition.andReturn(false);
-            spyOn(notificationService, 'error');
+            spyOn(alertService, 'error');
 
             vm.approveRnr();
             $scope.$apply();
 
-            expect(notificationService.error).toHaveBeenCalledWith('requisitionView.rnrHasErrors');
+            expect(alertService.error).toHaveBeenCalledWith('requisitionView.rnrHasErrors');
         });
     });
 
@@ -634,13 +635,13 @@ describe('RequisitionViewController', function() {
 
         it('should display error message when sync failed', function() {
             requisition.$save.andReturn($q.reject({status: 400}));
-            var notificationServiceSpy = jasmine.createSpy();
-            spyOn(notificationService, 'error').andCallFake(notificationServiceSpy);
+            var alertServiceSpy = jasmine.createSpy();
+            spyOn(alertService, 'error').andCallFake(alertServiceSpy);
 
             vm.syncRnrAndPrint();
             $scope.$apply();
 
-            expect(notificationServiceSpy).toHaveBeenCalledWith('requisitionView.sync.failure');
+            expect(alertServiceSpy).toHaveBeenCalledWith('requisitionView.sync.failure');
         });
 
         it('should open window with report when has no right for sync', function() {
