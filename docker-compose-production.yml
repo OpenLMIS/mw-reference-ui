@@ -1,0 +1,67 @@
+version: "2"
+services:
+
+  mw-ui:
+    image: openlmis/dev-ui:4
+    working_dir: /app
+    volumes:
+      - '.:/app'
+    ports:
+      - "9000:9000"
+      - "9876:9876"
+    env_file: .env
+    volumes_from:
+      - auth-ui
+      - fulfillment-ui
+      - referencedata-ui
+      - requisition-ui
+      - report-ui
+      - ui-components
+      - ui-layout
+    depends_on:
+      - auth-ui
+      - fulfillment-ui
+      - referencedata-ui
+      - requisition-ui
+      - report-ui
+      - ui-components
+      - ui-layout
+
+  auth-ui:
+    image: openlmis/auth-ui:5.0.2
+    volumes:
+      - '/openlmis-auth-ui'
+
+  fulfillment-ui:
+    image: openlmis/fulfillment-ui:5.0.2
+    volumes:
+      - '/openlmis-fulfillment-ui'
+
+  referencedata-ui:
+    image: openlmis/referencedata-ui:5.2.0
+    volumes:
+      - '/openlmis-referencedata-ui'
+
+  report-ui:
+    image: openlmis/report-ui:5.0.2
+    volumes:
+      - '/openlmis-report-ui'
+
+  requisition-ui:
+    image: openlmis/requisition-ui:5.1.0
+    volumes:
+      - '/openlmis-requisition-ui'
+
+  ui-components:
+    image: openlmis/ui-components:5.1.0
+    volumes:
+      - '/openlmis-ui-components'
+
+  ui-layout:
+    image: openlmis/ui-layout:5.0.1
+    volumes:
+      - '/openlmis-ui-layout'
+
+  image:
+    build: .
+    image: openlmismw/ui-with-production-settings
