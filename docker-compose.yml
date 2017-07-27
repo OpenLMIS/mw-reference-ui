@@ -53,7 +53,7 @@ services:
       - '/openlmis-requisition-ui'
 
   ui-components:
-    image: openlmis/ui-components:5.1.0
+    image: openlmis/ui-components:5.1.1-SNAPSHOT
     volumes:
       - '/openlmis-ui-components'
 
