@@ -30,7 +30,9 @@
                 <th>{{'requisitionApproval.endDate' | message}}</th>
                 <th>{{'requisitionApproval.dateSubmitted' | message}}</th>
                 <th>{{'requisitionApproval.emergency' | message}}</th>
-                <th>{{'requisitionApproval.offline' | message}}</th>
+                <th popover="{{'requisitionApproval.offlineInfo' | message}}" popover-trigger-area="element">
+                    {{'requisitionApproval.offline' | message}}
+                </th>
                 <th class="col-sticky sticky-right">{{'requisitionApproval.actions' | message}}</th>
             </tr>
         </thead>
