@@ -12,23 +12,22 @@
  * the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
+
 (function() {
 
     'use strict';
 
-    angular
-        .module('openlmis-support')
-        .run(openExternalUrl);
-
-    function openExternalUrl($rootScope, $window, loadingModalService) {
-        $rootScope.$on('$stateChangeStart',
-            function(event, toState, toParams, fromState, fromParams) {
-                if (toState.externalUrl) {
-                    event.preventDefault();
-                    loadingModalService.close();
-                    $window.open(toState.externalUrl);
-                }
-        });
-    }
+    /**
+     * @module openlmis-external-url
+     *
+     * @description
+     * Provides run block that allows opening external urls.
+     */
+    angular.module('openlmis-external-url', [
+        'ui.router',
+        'openlmis-modal'
+    ]);
 
 })();
+
+
