@@ -32,12 +32,12 @@
     controller.$inject = [
         'supplyingFacilities', 'requestingFacilities', 'programs', 'orderFactory',
         'loadingModalService', 'notificationService', 'fulfillmentUrlFactory',
-        'orders', '$stateParams', '$filter', '$state'
+        'orders', '$stateParams', '$filter', '$state', '$scope'
     ];
 
     function controller(supplyingFacilities, requestingFacilities, programs, orderFactory,
                         loadingModalService, notificationService, fulfillmentUrlFactory,
-                        orders, $stateParams, $filter, $state) {
+                        orders, $stateParams, $filter, $state, $scope) {
 
         var vm = this;
 
@@ -125,6 +125,14 @@
                     id: $stateParams.program
                 })[0];
             }
+
+            $scope.$watch(function() {
+                return vm.supplyingFacility;
+            }, function(oldValue, newValue) {
+                if (oldValue !== newValue) {
+                    loadRequestingFacilities(vm.supplyingFacility.id);
+                }
+            }, true);
         }
 
 
@@ -211,6 +219,12 @@
             return fulfillmentUrlFactory('/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/csv?order=' + order.id);
         }
 
+        function loadRequestingFacilities(supplyingFacilityId) {
+            loadingModalService.open();
+            orderFactory.loadRequestingFacilities(supplyingFacilityId).then(function(facilities) {
+                vm.requestingFacilities = facilities;
+            }).finally(loadingModalService.close);
+        }
     }
 
 })();
