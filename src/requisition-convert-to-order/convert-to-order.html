@@ -3,9 +3,9 @@
 	<form ng-submit="vm.search()">
 		<label for="searchFor">{{'requisitionConvertToOrder.search' | message}}</label>
 		<input id="searchFor" type="text" ng-model="vm.filterValue"
-			   maxlength="50" aria-labelledby="filtersInfo" disabled/>
+			   maxlength="50" aria-labelledby="filtersInfo" ng-list/>
 		<p class="note" id="filtersInfo">{{'requisitionConvertToOrder.searchInfo' | message}}</p>
-		<input type="submit" value="{{'requisitionConvertToOrder.search' | message}}" disabled/>
+		<input type="submit" value="{{'requisitionConvertToOrder.search' | message}}"/>
 	</form>
 	<table>
 		<caption ng-if="vm.infoMessage">{{vm.infoMessage | message}}</caption>

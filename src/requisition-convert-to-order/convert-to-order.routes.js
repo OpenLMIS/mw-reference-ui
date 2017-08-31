@@ -34,13 +34,11 @@
             templateUrl: 'requisition-convert-to-order/convert-to-order.html',
             accessRights: [FULFILLMENT_RIGHTS.ORDERS_EDIT],
             params: {
-                filterBy: 'all',
-                filterValue: ''
+                filterBy: 'programName',
+                filterValue: ['Essential Meds', 'TB']
             },
             resolve: {
                 requisitions: function(paginationService, requisitionService, $stateParams) {
-                    $stateParams.filterBy="programName";
-                    $stateParams.filterValue="Essential Meds";
 					return paginationService.registerUrl($stateParams, function(stateParams) {
 						return requisitionService.forConvert(stateParams);
 					});
