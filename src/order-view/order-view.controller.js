@@ -128,10 +128,11 @@
 
             $scope.$watch(function() {
                 return vm.supplyingFacility;
-            }, function() {
-                if (vm.supplyingFacility) {
+            }, function(newValue, oldValue) {
+                if (newValue && hasSupplyingFacilityChange(newValue, oldValue)) {
                     loadRequestingFacilities(vm.supplyingFacility.id);
-                } else {
+                }
+                if (!newValue){
                     vm.requestingFacilities = undefined;
                 }
             }, true);
@@ -225,6 +226,11 @@
             requestingFacilityFactory.loadRequestingFacilities(supplyingFacilityId).then(function(facilities) {
                 vm.requestingFacilities = facilities;
             }).finally(loadingModalService.close);
+        }
+
+        function hasSupplyingFacilityChange(newValue, oldValue) {
+            return newValue.id != $stateParams.supplyingFacility
+                || (newValue.id == $stateParams.supplyingFacility && oldValue && oldValue.id != $stateParams.supplyingFacility);
         }
     }
 
