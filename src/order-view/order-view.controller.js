@@ -30,12 +30,12 @@
         .controller('OrderViewController', controller);
 
     controller.$inject = [
-        'supplyingFacilities', 'requestingFacilities', 'programs', 'orderFactory',
+        'supplyingFacilities', 'requestingFacilities', 'programs', 'requestingFacilityFactory',
         'loadingModalService', 'notificationService', 'fulfillmentUrlFactory',
         'orders', '$stateParams', '$filter', '$state', '$scope'
     ];
 
-    function controller(supplyingFacilities, requestingFacilities, programs, orderFactory,
+    function controller(supplyingFacilities, requestingFacilities, programs, requestingFacilityFactory,
                         loadingModalService, notificationService, fulfillmentUrlFactory,
                         orders, $stateParams, $filter, $state, $scope) {
 
@@ -128,13 +128,14 @@
 
             $scope.$watch(function() {
                 return vm.supplyingFacility;
-            }, function(oldValue, newValue) {
-                if (oldValue !== newValue) {
+            }, function() {
+                if (vm.supplyingFacility) {
                     loadRequestingFacilities(vm.supplyingFacility.id);
+                } else {
+                    vm.requestingFacilities = undefined;
                 }
             }, true);
         }
-
 
         /**
          * @ngdoc method
@@ -221,7 +222,7 @@
 
         function loadRequestingFacilities(supplyingFacilityId) {
             loadingModalService.open();
-            orderFactory.loadRequestingFacilities(supplyingFacilityId).then(function(facilities) {
+            requestingFacilityFactory.loadRequestingFacilities(supplyingFacilityId).then(function(facilities) {
                 vm.requestingFacilities = facilities;
             }).finally(loadingModalService.close);
         }
