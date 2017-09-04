@@ -85,7 +85,7 @@ describe('ConvertToOrderController', function(){
     it('should show all requisitions if default filter is applied', function() {
         vm.$onInit();
         expect(vm.filterBy).toEqual('programName');
-        expect(vm.filterValue).toEqual(['Essential Meds', 'TB']);
+        expect(vm.filterValue).toEqual([]);
         expect(vm.requisitions).toEqual(requisitions);
     });
 

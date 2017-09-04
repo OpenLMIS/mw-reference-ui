@@ -170,8 +170,10 @@
          * Initialization method of the ConvertToOrderController controller.
          */
         function onInit() {
-            if ($stateParams.filterValue instanceof Array) {
+            if ($stateParams.filterValue instanceof Array && !isDefaultValue($stateParams.filterValue)) {
                 vm.filterValue = $stateParams.filterValue;
+            } else if (isDefaultValue($stateParams.filterValue)){
+                vm.filterValue = [];
             } else {
                 vm.filterValue = [$stateParams.filterValue];
             }
@@ -336,13 +338,17 @@
 			var stateParams = angular.copy($stateParams);
 
 			stateParams.filterValue = vm.filterValue.length == 0 ? defaultParams : vm.filterValue;
-			stateParams.filterBy = JSON.stringify(stateParams.filterValue) == JSON.stringify(defaultParams) ? 'programName' : 'all';
+			stateParams.filterBy = isDefaultValue(stateParams.filterValue) ? 'programName' : 'all';
 			stateParams.sortBy = vm.sortBy;
 			stateParams.descending = vm.descending;
 
 			$state.go('openlmis.requisitions.convertToOrder', stateParams, {
 				reload: true
 			});
+		}
+
+		function isDefaultValue(value) {
+		    return JSON.stringify(value) == JSON.stringify(defaultParams);
 		}
 	}
 
