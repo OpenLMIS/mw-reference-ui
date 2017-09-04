@@ -31,10 +31,10 @@
         .service('loginService', loginService);
 
     loginService.$inject = ['$rootScope', '$q', '$http', 'authUrl', 'openlmisUrlFactory', 'authorizationService',
-        'Right', '$state', 'currencyService', 'offlineService'];
+                            'Right', '$state', 'currencyService', 'offlineService'];
 
     function loginService($rootScope, $q, $http, authUrl, openlmisUrlFactory, authorizationService,
-                          Right, $state, currencyService, offlineService) {
+                            Right, $state, currencyService, offlineService) {
 
         this.login = login;
         this.logout = logout;
@@ -88,8 +88,8 @@
                     deferred.reject();
                 });
             });
-            httpPromise.catch(function(){
-                deferred.reject();
+            httpPromise.catch(function(response) {
+                deferred.reject(response);
             });
 
             return deferred.promise;
@@ -101,9 +101,11 @@
          * @name logout
          *
          * @description
-         * Calls the server, and removes from authorization service.
+         * Calls the server if online, then removes user data from
+         * authorization service.
          */
         function logout() {
+            $rootScope.$emit('openlmis-auth.logout');
             if(offlineService.isOffline()) {
                 return logoutOffline();
             }
@@ -132,15 +134,11 @@
         }
 
         function logoutOffline() {
-            var deferred = $q.defer();
-
             authorizationService.clearAccessToken();
             authorizationService.clearUser();
             authorizationService.clearRights();
 
-            deferred.resolve();
-
-            return deferred.promise;
+            return $q.resolve();
         }
 
         function getUserInfo(userId){
@@ -255,6 +253,7 @@
             } else {
                 $rootScope.$emit('auth.login-modal');
             }
+            $rootScope.$emit('openlmis-auth.login');
             deferred.resolve();
         }
 

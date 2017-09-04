@@ -41,7 +41,6 @@
         var offlineRequisitions = localStorageFactory('requisitions'),
             offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
             onlineOnlyRequisitions = localStorageFactory('onlineOnly'),
-            offlineStockAdjustmentReasons = localStorageFactory('stockAdjustmentReasons'),
             offlineStatusMessages = localStorageFactory('statusMessages');
 
         var resource = $resource(requisitionUrlFactory('/api/requisitions/:id'), {}, {
@@ -72,11 +71,6 @@
                 url: requisitionUrlFactory('/api/requisitions/convertToOrder'),
                 method: 'POST',
                 transformRequest: transformRequest
-            },
-            'getStockAdjustmentReasonsByProgram': {
-                url: openlmisUrlFactory('/api/stockAdjustmentReasons/search'),
-                method: 'GET',
-                isArray: true
             },
             'getStatusMessages': {
                 url: requisitionUrlFactory('/api/requisitions/:id/statusMessages'),
@@ -113,22 +107,16 @@
                 requisition;
 
             if (offlineService.isOffline()) {
-                requisition = offlineRequisitions.getBy('id', id);
+                requisition = getOfflineRequisition('id', id);
 
                 if(!requisition) {
                     error();
                 }
                 else {
-                    var reasons = offlineStockAdjustmentReasons.search({
-                        program: {
-                            id: requisition.program.id,
-                            $modified: true
-                        }
-                    }),
-                    statusMessages = offlineStatusMessages.search({
+                    var statusMessages = offlineStatusMessages.search({
                         requisitionId: requisition.id
                     });
-                    resolve(requisition, reasons, statusMessages);
+                    resolve(requisition, statusMessages);
                 }
             } else {
                 requisition = offlineRequisitions.search({
@@ -136,17 +124,13 @@
                     $modified: true
                 });
                 if (!requisition || !requisition.length) {
-                    var i = 0;
                     getRequisition(id).then(function(requisition) {
                         requisition.$availableOffline = !onlineOnlyRequisitions.contains(id);
-                        $q.all([
-                            getStockAdjustmentReasons(requisition),
-                            getStatusMessages(requisition)
-                        ]).then(function(responses) {
+                        getStatusMessages(requisition).then(function(response) {
                             if (requisition.$availableOffline) {
-                                storeResponses(requisition, responses[0], responses[1]);
+                                storeResponses(requisition, response);
                             }
-                            resolve(requisition, responses[0], responses[1]);
+                            resolve(requisition, response);
                         }, function() {
                             if (requisition.$availableOffline) {
                                 offlineRequisitions.put(requisition);
@@ -155,23 +139,18 @@
                         });
                     }, error);
                 } else {
-                    var reasons = offlineStockAdjustmentReasons.search({
-                            program: {
-                                id: requisition[0].program.id
-                            }
-                        }),
-                        statusMessages = offlineStatusMessages.search({
+                    var statusMessages = offlineStatusMessages.search({
                             requisitionId: requisition[0].id
                         });
 
-                    resolve(requisition[0], reasons, statusMessages);
+                    resolve(requisition[0], statusMessages);
                 }
             }
 
             return deferred.promise;
 
-            function resolve(requisition, reasons, statusMessages) {
-                deferred.resolve(new Requisition(requisition, reasons, statusMessages));
+            function resolve(requisition, statusMessages) {
+                deferred.resolve(new Requisition(requisition, statusMessages));
             }
 
             function error() {
@@ -206,14 +185,11 @@
                 requisition.$availableOffline = true;
                 requisition.$modified = true;
 
-                $q.all([
-                    getStockAdjustmentReasons(requisition),
-                    getStatusMessages(requisition)
-                ]).then(function(responses) {
+                getStatusMessages(requisition).then(function(response) {
                     if (requisition.$availableOffline) {
-                        storeResponses(requisition, responses[0], responses[1]);
+                        storeResponses(requisition, response);
                     }
-                    deferred.resolve(new Requisition(requisition, responses[0], responses[1]));
+                    deferred.resolve(new Requisition(requisition, response));
                 }, function() {
                     if (requisition.$availableOffline) {
                         offlineRequisitions.put(requisition);
@@ -253,7 +229,9 @@
             if(offline) {
                 var requisitions = offlineRequisitions.search(searchParams, 'requisitionSearch'),
                     batchRequisitions = searchParams.showBatchRequisitions ?
-                        offlineBatchRequisitions.search(searchParams.program, 'requisitionSearch') : [];
+                        offlineBatchRequisitions.search(searchParams.program, 'requisitionSearch') : [],
+                    page = searchParams.page,
+                    size = searchParams.size;
 
                 angular.forEach(batchRequisitions, function(batchRequisition) {
                     if ($filter('filter')(requisitions, {id: batchRequisition.id}).length == 0) {
@@ -261,9 +239,7 @@
                     }
                 });
 
-                var page = searchParams.page,
-                    size = searchParams.size,
-                    items = paginationFactory.getPage(requisitions, page, size);
+                var items = paginationFactory.getPage(requisitions, page, size);
 
                 deferred.resolve({
                     content: items,
@@ -351,25 +327,15 @@
             return offlineRequisitions.getBy('id', id);
         }
 
-        function getStockAdjustmentReasons(requisition) {
-            return resource.getStockAdjustmentReasonsByProgram({
-                program: requisition.program.id
-            }).$promise;
-        }
-
         function getStatusMessages(requisition) {
             return resource.getStatusMessages({
                 id: requisition.id
             }).$promise;
         }
 
-        function storeResponses(requisition, reasons, statusMessages) {
+        function storeResponses(requisition, statusMessages) {
             requisition.$modified = false;
             offlineRequisitions.put(requisition);
-
-            reasons.forEach(function(reason) {
-                offlineStockAdjustmentReasons.put(reason);
-            });
 
             statusMessages.forEach(function(statusMessage) {
                 offlineStatusMessages.put(statusMessage);
@@ -455,8 +421,8 @@
         }
 
         function transformRequisitionOffline(requisition) {
-            var offlineRequisition = offlineRequisitions.getBy('id', requisition.id);
-            var offlineBatchRequisition = offlineBatchRequisitions.getBy('id', requisition.id);
+            var offlineRequisition = offlineRequisitions.getBy('id', requisition.id),
+                offlineBatchRequisition = offlineBatchRequisitions.getBy('id', requisition.id);
 
             if (offlineRequisition || offlineBatchRequisition) {
                 requisition.$availableOffline = true;

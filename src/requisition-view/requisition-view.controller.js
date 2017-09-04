@@ -29,23 +29,26 @@
         .controller('RequisitionViewController', RequisitionViewController);
 
     RequisitionViewController.$inject = [
-        '$state', 'requisition', 'requisitionValidator', 'authorizationService', 'requisitionService',
-        'loadingModalService', 'alertService', 'notificationService', 'confirmService', 'REQUISITION_RIGHTS',
-        'FULFILLMENT_RIGHTS', 'convertToOrderModalService', 'offlineService', '$window',
-        'requisitionUrlFactory', '$filter', '$scope', '$timeout', 'RequisitionWatcher', 'accessTokenFactory',
-        'messageService', 'stateTrackerService',
-        'REQUISITION_WARNING_PERIODS', 'REQUISITION_WARNING_PROGRAM_CODE'
+        '$state', 'requisition', 'requisitionValidator', 'authorizationService',
+        'requisitionService', 'loadingModalService', 'alertService', 'notificationService',
+        'confirmService', 'REQUISITION_RIGHTS', 'FULFILLMENT_RIGHTS', 'offlineService', '$window',
+        'requisitionUrlFactory', '$filter', '$scope', 'RequisitionWatcher',
+        'accessTokenFactory', 'messageService', 'stateTrackerService', 'RequisitionStockCountDateModal',
+        'localStorageFactory', 'REQUISITION_WARNING_PROGRAM_CODE', 'REQUISITION_WARNING_PERIODS'
     ];
 
-    function RequisitionViewController($state, requisition, requisitionValidator, authorizationService, requisitionService,
-                             loadingModalService, alertService, notificationService, confirmService,
-                             REQUISITION_RIGHTS, FULFILLMENT_RIGHTS , convertToOrderModalService,
-                             offlineService, $window, requisitionUrlFactory, $filter, $scope,
-                             $timeout, RequisitionWatcher, accessTokenFactory, messageService,
-                             stateTrackerService, REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE) {
+    function RequisitionViewController($state, requisition, requisitionValidator,
+                                       authorizationService, requisitionService,
+                                       loadingModalService, alertService, notificationService,
+                                       confirmService, REQUISITION_RIGHTS, FULFILLMENT_RIGHTS,
+                                       offlineService, $window, requisitionUrlFactory, $filter,
+                                       $scope, RequisitionWatcher, accessTokenFactory,
+                                       messageService, stateTrackerService, RequisitionStockCountDateModal,
+                                       localStorageFactory, REQUISITION_WARNING_PROGRAM_CODE,
+                                       REQUISITION_WARNING_PERIODS) {
 
         var vm = this,
-            watcher = new RequisitionWatcher($scope, requisition);
+            watcher = new RequisitionWatcher($scope, requisition, localStorageFactory('requisitions'));
 
         /**
          * @ngdoc property
@@ -102,7 +105,6 @@
         vm.submitRnr = submitRnr;
         vm.authorizeRnr = authorizeRnr;
         vm.removeRnr = removeRnr;
-        vm.convertRnr = convertRnr;
         vm.approveRnr = approveRnr;
         vm.rejectRnr = rejectRnr;
         vm.skipRnr = skipRnr;
@@ -118,7 +120,6 @@
         vm.getMalawiPrintUrl = getMalawiPrintUrl;
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
-
 
         /**
          * @ngdoc method
@@ -188,6 +189,7 @@
                 popup.document.write(messageService.get('requisitionView.sync.pending'));
                 var loadingPromise = loadingModalService.open();
                 saveRnr().then(function() {
+                    watcher.disableWatcher();
                     loadingPromise.then(function() {
                         notificationService.success('requisitionView.sync.success');
                     });
@@ -234,7 +236,7 @@
             }
         }
 
-        function saveRnr(successCallback, failCallback) {
+        function saveRnr() {
             vm.requisition.$modified = false;
             return vm.requisition.$save();
         }
@@ -267,8 +269,38 @@
                 submitWarningMessage = 'requisitionPeriodWarning.confirm';
             }
 
-            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label')
-            .then(doSubmitRnr);
+            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label').then(function() {
+                if (requisitionValidator.validateRequisition(requisition)) {
+                    if (!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
+                        if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
+                            var modal = new RequisitionStockCountDateModal(vm.requisition);
+                            modal.then(saveThenSubmit);
+                        } else {
+                            saveThenSubmit();
+                        }
+                    } else {
+                        failWithMessage('requisitionView.allLineItemsSkipped')();
+                    }
+                } else {
+                    $scope.$broadcast('openlmis-form-submit');
+                    failWithMessage('requisitionView.rnrHasErrors')();
+                }
+            });
+
+            function saveThenSubmit() {
+                var loadingPromise = loadingModalService.open();
+                vm.requisition.$save().then(function () {
+                    vm.requisition.$submit().then(function (response) {
+                        watcher.disableWatcher();
+                        loadingPromise.then(function () {
+                            notificationService.success('requisitionView.submit.success');
+                        });
+                        stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
+                    }, failWithMessage('requisitionView.submit.failure'));
+                }, function(response) {
+                    handleSaveError(response.status);
+                });
+            }
         }
 
         /**
@@ -323,25 +355,36 @@
                 'requisitionView.authorize.label'
             ).then(function() {
                 if(requisitionValidator.validateRequisition(requisition)) {
-                    var loadingPromise = loadingModalService.open();
                     if(!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
-                        vm.requisition.$save().then(function() {
-                            vm.requisition.$authorize().then(function(response) {
-                                loadingPromise.then(function() {
-                                    notificationService.success('requisitionView.authorize.success');
-                                });
-                                stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                            }, failWithMessage('requisitionView.authorize.failure'));
-                        }, function(response) {
-                            handleSaveError(response.status);
-                        });
+                        if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
+                            var modal = new RequisitionStockCountDateModal(vm.requisition);
+                            modal.then(saveThenAuthorize);
+                        } else {
+                            saveThenAuthorize();
+                        }
                     } else {
                         failWithMessage('requisitionView.allLineItemsSkipped')();
                     }
                 } else {
+                    $scope.$broadcast('openlmis-form-submit');
                     failWithMessage('requisitionView.rnrHasErrors')();
                 }
             });
+
+            function saveThenAuthorize() {
+                var loadingPromise = loadingModalService.open();
+                vm.requisition.$save().then(function () {
+                    vm.requisition.$authorize().then(function (response) {
+                        watcher.disableWatcher();
+                        loadingPromise.then(function () {
+                            notificationService.success('requisitionView.authorize.success');
+                        });
+                        stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
+                    }, failWithMessage('requisitionView.authorize.failure'));
+                }, function (response) {
+                    handleSaveError(response.status);
+                });
+            }
         }
 
         /**
@@ -361,6 +404,7 @@
             ).then(function() {
                 var loadingPromise = loadingModalService.open();
                 vm.requisition.$remove().then(function(response) {
+                    watcher.disableWatcher();
                     loadingPromise.then(function() {
                         notificationService.success('requisitionView.delete.success');
                     });
@@ -389,6 +433,7 @@
                     var loadingPromise = loadingModalService.open();
                     vm.requisition.$save().then(function() {
                         vm.requisition.$approve().then(function(response) {
+                            watcher.disableWatcher();
                             loadingPromise.then(function() {
                                 notificationService.success('requisitionView.approve.success');
                             });
@@ -398,6 +443,7 @@
                         handleSaveError(response.status);
                     });
                 } else {
+                    $scope.$broadcast('openlmis-form-submit');
                     failWithMessage('requisitionView.rnrHasErrors')();
                 }
             });
@@ -424,6 +470,7 @@
                     var loadingPromise = loadingModalService.open();
                     vm.requisition.$save().then(function () {
                         vm.requisition.$reject().then().then(function (response) {
+                            watcher.disableWatcher();
                             loadingPromise.then(function () {
                                 notificationService.success('requisitionView.reject.success');
                             });
@@ -452,6 +499,7 @@
             ).then(function() {
                 var loadingPromise = loadingModalService.open();
                 vm.requisition.$skip().then(function(response) {
+                    watcher.disableWatcher();
                     loadingPromise.then(function() {
                         notificationService.success('requisitionView.skip.success');
                     });
@@ -584,18 +632,6 @@
                 return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
             }
             return false;
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name convertRnr
-         *
-         * @description
-         * Displays convert to order modal.
-         */
-        function convertRnr() {
-            convertToOrderModalService.show(vm.requisition);
         }
 
         /**

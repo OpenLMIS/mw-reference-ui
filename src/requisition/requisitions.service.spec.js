@@ -19,7 +19,7 @@ describe('requisitionService', function() {
         requisitionUrlFactory, openlmisUrl, requisitionsStorage, batchRequisitionsStorage, onlineOnlyRequisitions, startDate,
         endDate, startDate1, endDate1, modifiedDate, createdDate, processingSchedule, facility,
         program, period, emergency, requisition, requisitionDto, requisitionDto2,
-        requisitionToConvert, approvedProductsOffline, templateOffline;
+        requisitionToConvert, approvedProductsOffline, templateOffline, statusMessage,statusMessagesStorage;
 
     beforeEach(function() {
         module('requisition');
@@ -87,6 +87,9 @@ describe('requisitionService', function() {
             requisitionId: requisition.id,
             supplyingDepotId: requisition.supplyingFacility
         };
+        statusMessage = {
+            id: "123"
+        };
 
         module(function($provide){
             var RequisitionSpy = jasmine.createSpy('Requisition').andReturn(requisition),
@@ -105,6 +108,7 @@ describe('requisitionService', function() {
 
             requisitionsStorage = jasmine.createSpyObj('requisitionsStorage', ['search', 'put', 'getBy', 'removeBy']);
             batchRequisitionsStorage = jasmine.createSpyObj('batchRequisitionsStorage', ['search', 'put', 'getBy', 'removeBy']);
+            statusMessagesStorage = jasmine.createSpyObj('statusMessagesStorage', ['search', 'put', 'getBy', 'removeBy']);
 
             var offlineFlag = jasmine.createSpyObj('offlineRequisitions', ['getAll']);
             offlineFlag.getAll.andReturn([false]);
@@ -113,10 +117,9 @@ describe('requisitionService', function() {
             approvedProducts = jasmine.createSpyObj('approvedProducts', ['put']);
             var localStorageFactorySpy = jasmine.createSpy('localStorageFactory').andCallFake(function(resourceName) {
                 if (resourceName === 'offlineFlag') return offlineFlag;
-                if (resourceName === 'template') return templateOffline;
-                if (resourceName === 'approvedProducts') return approvedProductsOffline;
                 if (resourceName === 'onlineOnly') return onlineOnlyRequisitions;
                 if (resourceName === 'batchApproveRequisitions') return batchRequisitionsStorage;
+                if (resourceName === 'statusMessages') return statusMessagesStorage;
                 return requisitionsStorage;
             });
 
@@ -143,19 +146,13 @@ describe('requisitionService', function() {
     });
 
     it('should get requisition by id', function() {
-        var getReasonsUrl = '/api/stockAdjustmentReasons/search';
-        var getTemplateUrl = '/api/requisitionTemplates/' + requisition.template;
         var getRequisitionUrl = '/api/requisitions/' + requisition.id;
-        var getProductsUrl = '/api/facilities/' + requisition.facility.id +
-                             '/approvedProducts?fullSupply=false&programId=' +
-                             requisition.program.id;
+        var getStatusMessagesUrl = '/api/requisitions/' + requisition.id + '/statusMessages';
 
-        httpBackend.when('GET', requisitionUrlFactory(getRequisitionUrl)).respond(200, requisition);
-        httpBackend.when('GET', requisitionUrlFactory(getTemplateUrl)).respond(200, {});
-        httpBackend.when('GET', openlmisUrl(getProductsUrl)).respond(200, []);
-        httpBackend.when('GET', openlmisUrl(getReasonsUrl)).respond(200, []);
+        httpBackend.expect('GET', requisitionUrlFactory(getRequisitionUrl)).respond(200, requisition);
+        httpBackend.expect('GET', requisitionUrlFactory(getStatusMessagesUrl)).respond(200, [statusMessage]);
 
-        var data;
+        var data = {};
         requisitionService.get('1').then(function(response) {
             data = response;
         });
@@ -164,6 +161,8 @@ describe('requisitionService', function() {
         $rootScope.$apply();
 
         expect(data.id).toBe(requisition.id);
+        expect(requisitionsStorage.put).toHaveBeenCalled();
+        expect(statusMessagesStorage.put).toHaveBeenCalled();
     });
 
     it('should initiate requisition', function() {
@@ -319,6 +318,60 @@ describe('requisitionService', function() {
         expect(requisitionsStorage.search).toHaveBeenCalledWith(params, 'requisitionSearch');
     });
 
+    it('should count batch requisitions in search total elements if showBatchRequisitions is true', function() {
+        var data,
+            params = {
+                showBatchRequisitions: true,
+                program: program.id,
+                page: 0,
+                size: 10
+            };
+
+        requisitionsStorage.search.andReturn([requisitionDto]);
+        batchRequisitionsStorage.search.andReturn([requisitionDto, requisitionDto2]);
+
+        requisitionService.search(true, params).then(function(response) {
+            data = response;
+        });
+
+        $rootScope.$apply();
+
+        expect(angular.toJson(data)).toEqual(angular.toJson({
+            content: [requisitionDto, requisitionDto2],
+            number: 0,
+            totalElements: 2,
+            size: 10
+        }));
+        expect(batchRequisitionsStorage.search).toHaveBeenCalledWith(params.program, 'requisitionSearch');
+    });
+
+    it('should not count batch requisitions in search total elements if showBatchRequisitions is false', function() {
+        var data,
+            params = {
+                showBatchRequisitions: false,
+                program: program.id,
+                page: 0,
+                size: 10
+            };
+
+        requisitionsStorage.search.andReturn([requisitionDto]);
+        batchRequisitionsStorage.search.andReturn([requisitionDto, requisitionDto2]);
+
+        requisitionService.search(true, params).then(function(response) {
+            data = response;
+        });
+
+        $rootScope.$apply();
+
+        expect(angular.toJson(data)).toEqual(angular.toJson({
+            content: [requisitionDto],
+            number: 0,
+            totalElements: 1,
+            size: 10
+        }));
+        expect(batchRequisitionsStorage.search).not.toHaveBeenCalled();
+    });
+
     describe('transformRequisition', function() {
 
         it('should not require createdDate to be set', function() {
@@ -405,6 +458,117 @@ describe('requisitionService', function() {
 
             // The offline requisition should have been updated twice (once as $outdated, and once not)
             expect(requisitionsStorage.put.calls.length).toBe(2);
+        });
+
+        it('will put requisition to the batch requisitions storage if modifiedDates do not match', function(){
+            requisition.modifiedDate = [2016, 4, 30, 16, 21, 33];
+
+            batchRequisitionsStorage.getBy.andReturn(requisition);
+
+            httpBackend.when('GET',
+                requisitionUrlFactory('/api/requisitions/search')
+            ).respond(200, {
+                content: [
+                    requisition
+                ]
+            });
+
+            requisitionService.search();
+            httpBackend.flush();
+            $rootScope.$apply();
+
+            expect(batchRequisitionsStorage.put).toHaveBeenCalled();
+            expect(requisitionsStorage.put).not.toHaveBeenCalled();
+        });
+
+        it('will put requisition to the requisitions storage if modifiedDates do not match', function(){
+            requisition.modifiedDate = [2016, 4, 30, 16, 21, 33];
+
+            requisitionsStorage.getBy.andReturn(requisition);
+
+            httpBackend.when('GET',
+                requisitionUrlFactory('/api/requisitions/search')
+            ).respond(200, {
+                content: [
+                    requisition
+                ]
+            });
+
+            requisitionService.search();
+            httpBackend.flush();
+            $rootScope.$apply();
+
+            expect(requisitionsStorage.put).toHaveBeenCalled();
+            expect(batchRequisitionsStorage.put).not.toHaveBeenCalled();
+        });
+
+        it('will set requisition as available offline if was found the batch requisitions storage', function(){
+            batchRequisitionsStorage.getBy.andReturn(requisition);
+
+            var data = {};
+
+            httpBackend.when('GET',
+                requisitionUrlFactory('/api/requisitions/search')
+            ).respond(200, {
+                content: [
+                    requisition
+                ]
+            });
+
+            requisitionService.search().then(function(response) {
+                data = response;
+            });
+
+            httpBackend.flush();
+            $rootScope.$apply();
+
+            expect(data.content[0].$availableOffline).toBe(true);
+        });
+
+        it('will set requisition as available offline if was found the requisitions storage', function(){
+            requisitionsStorage.getBy.andReturn(requisition);
+
+            var data = {};
+
+            httpBackend.when('GET',
+                requisitionUrlFactory('/api/requisitions/search')
+            ).respond(200, {
+                content: [
+                    requisition
+                ]
+            });
+
+            requisitionService.search().then(function(response) {
+                data = response;
+            });
+
+            httpBackend.flush();
+            $rootScope.$apply();
+
+            expect(data.content[0].$availableOffline).toBe(true);
+        });
+
+        it('will not set requisition as available offline if was not found in any storage', function(){
+            var data = {};
+
+            httpBackend.when('GET',
+                requisitionUrlFactory('/api/requisitions/search')
+            ).respond(200, {
+                content: [
+                    requisition
+                ]
+            });
+
+            requisitionService.search().then(function(response) {
+                data = response;
+            });
+
+            httpBackend.flush();
+            $rootScope.$apply();
+
+            expect(requisitionsStorage.getBy).toHaveBeenCalled();
+            expect(batchRequisitionsStorage.getBy).toHaveBeenCalled();
+            expect(data.content[0].$availableOffline).toBe(undefined);
         });
 
     });
