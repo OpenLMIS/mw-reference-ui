@@ -16,7 +16,7 @@ describe('ProductGridCell', function() {
 
     var $compile, scope, requisition, directiveElem, requisitionValidatorMock,
         authorizationServiceSpy, TEMPLATE_COLUMNS, fullSupplyColumns, nonFullSupplyColumns,
-        REQUISITION_RIGHTS, userAlwaysHasRight, userHasSubmitRight, userHasAuthorizedRight,
+        REQUISITION_RIGHTS, userAlwaysHasRight, userHasCreateRight, userHasAuthorizedRight,
         userHasApprovedRight;
 
     beforeEach(function() {
@@ -56,7 +56,7 @@ describe('ProductGridCell', function() {
             if (userHasAuthorizedRight && right == REQUISITION_RIGHTS.REQUISITION_AUTHORIZE) {
                 return true;
             }
-            if (userHasSubmitRight && right == REQUISITION_RIGHTS.REQUISITION_SUBMIT) {
+            if (userHasCreateRight && right == REQUISITION_RIGHTS.REQUISITION_CREATE) {
                 return true;
             }
             return false;
@@ -153,7 +153,7 @@ describe('ProductGridCell', function() {
         expect(directiveElem.find("input").length).toEqual(0);
     });
 
-    it('should produce read-only cell if in authorized', function() {
+    it('should produce read-only cell if authorized', function() {
         scope.requisition.$isApproved.andReturn(false);
         scope.requisition.$isReleased.andReturn(false);
         scope.requisition.$isInApproval.andReturn(false);
@@ -220,13 +220,13 @@ describe('ProductGridCell', function() {
         scope.requisition.$isInApproval.andReturn(false);
 
         userAlwaysHasRight = false;
-        userHasSubmitRight = false;
+        userHasCreateRight = false;
         directiveElem = getCompiledElement();
 
         expect(directiveElem.html()).toContain("readOnlyFieldValue");
         expect(directiveElem.find("input").length).toEqual(0);
 
-        userHasSubmitRight = true;
+        userHasCreateRight = true;
         directiveElem = getCompiledElement();
 
         expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
@@ -242,13 +242,13 @@ describe('ProductGridCell', function() {
         scope.requisition.$isInApproval.andReturn(false);
 
         userAlwaysHasRight = false;
-        userHasSubmitRight = false;
+        userHasCreateRight = false;
         directiveElem = getCompiledElement();
 
         expect(directiveElem.html()).toContain("readOnlyFieldValue");
         expect(directiveElem.find("input").length).toEqual(0);
 
-        userHasSubmitRight = true;
+        userHasCreateRight = true;
         directiveElem = getCompiledElement();
 
         expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
@@ -291,11 +291,10 @@ describe('ProductGridCell', function() {
     it('should validate full supply line item columns after updating fields', function() {
         scope.requisition.$isInitiated.andReturn(true);
         var element = getCompiledElement(),
-            input = element.find('input'),
-            inputScope = angular.element(angular.element(input)).scope(),
-            validate = inputScope.validate;
+            input = element.find('input');
 
-        validate();
+        input.controller('ngModel').$setViewValue("1000");
+        scope.$apply();
 
         expect(requisitionValidatorMock.validateLineItem).toHaveBeenCalledWith(
             scope.lineItem, fullSupplyColumns, requisition);
@@ -306,13 +305,12 @@ describe('ProductGridCell', function() {
     it('should validate non full supply line item columns after updating fields', function() {
         scope.requisition.$isInitiated.andReturn(true);
         var element = getCompiledElement(),
-            input = element.find('input'),
-            inputScope = angular.element(angular.element(input)).scope(),
-            validate = inputScope.validate;
+            input = element.find('input');
 
         scope.lineItem.$program.fullSupply = false;
 
-        validate();
+        input.controller('ngModel').$setViewValue("1000");
+        scope.$apply();
 
         expect(requisitionValidatorMock.validateLineItem).toHaveBeenCalledWith(
             scope.lineItem, nonFullSupplyColumns, requisition);
@@ -323,6 +321,7 @@ describe('ProductGridCell', function() {
     function getCompiledElement() {
         var rootElement = angular.element('<div><div product-grid-cell requisition="requisition" column="column" line-item="lineItem"></div></div>');
         var compiledElement = $compile(rootElement)(scope);
+        angular.element('body').append(compiledElement);
         scope.$digest();
         return compiledElement;
     }

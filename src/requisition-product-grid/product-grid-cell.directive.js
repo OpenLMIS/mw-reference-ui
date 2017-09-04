@@ -25,8 +25,6 @@
      * @description
      * Responsible for rendering the product grid cell based on the column source and requisitions type.
      * It also keeps track of the validation as well as changes made to the related cells.
-     * This directive is forked from the core project and changed, so that requisition is non-editable when
-     * it has status IN_APPROVAL.
      *
      * @example
      * Here we extend our product grid cell with the directive.
@@ -64,6 +62,7 @@
             scope.lineItem = lineItem;
             scope.column = column;
             scope.validate = validate;
+            scope.update = update;
             scope.isReadOnly = isReadOnly;
             scope.canNotSkip = canNotSkip;
 
@@ -85,6 +84,8 @@
             }, function(error){
                 scope.invalidMessage = error ? error : undefined;
             });
+
+            scope.$on('openlmisInvalid.update', validate);
 
             updateCellContents();
 
@@ -123,8 +124,12 @@
                 });
             }
 
-            function validate() {
+            function update() {
                 lineItem.updateDependentFields(column, requisition);
+                validate();
+            }
+
+            function validate() {
                 return requisitionValidator.validateLineItem(
                     scope.lineItem,
                     requisition.template.getColumns(!scope.lineItem.$program.fullSupply),
@@ -145,7 +150,7 @@
                     if (hasAuthorizeRightForProgram() && requisition.$isSubmitted()) {
                         return false;
                     }
-                    if (hasSubmitRightForProgram() && (requisition.$isInitiated() || requisition.$isRejected())) {
+                    if (hasCreateRightForProgram() && (requisition.$isInitiated() || requisition.$isRejected())) {
                         return false;
                     }
                 }
@@ -155,7 +160,9 @@
             }
 
             function canNotSkip() {
-                return !lineItem.canBeSkipped(scope.requisition);
+                return !requisition.$isInitiated() && !requisition.$isRejected() &&
+                    !(hasAuthorizeRightForProgram() && requisition.$isSubmitted()) ||
+                    !lineItem.canBeSkipped(scope.requisition);
             }
 
             function isApprovalColumn() {
@@ -180,8 +187,8 @@
                 });
             }
 
-            function hasSubmitRightForProgram() {
-                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_SUBMIT, {
+            function hasCreateRightForProgram() {
+                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
                     programCode: requisition.program.code
                 });
             }
