@@ -77,7 +77,6 @@
                     getUserRights(response.data.referenceDataUserId).then(function(userRights) {
                         authorizationService.saveOfflineUserData(username, response.data.referenceDataUserId, referencedataUsername, userRights);
                         currencyService.getCurrencySettingsFromConfig();
-                        emitEventAndResolve(deferred);
                         deferred.resolve();
                     }, function(){
                         authorizationService.clearAccessToken();
@@ -245,16 +244,6 @@
                     'Content-Type': 'application/json'
                 }
             });
-        }
-
-        function emitEventAndResolve (deferred) {
-            if ($state.is('auth.login')) {
-                $rootScope.$emit('auth.login');
-            } else {
-                $rootScope.$emit('auth.login-modal');
-            }
-            $rootScope.$emit('openlmis-auth.login');
-            deferred.resolve();
         }
 
         function clearUserData() {
