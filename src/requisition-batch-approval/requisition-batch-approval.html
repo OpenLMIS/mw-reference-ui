@@ -1,0 +1,82 @@
+<h2>{{'requisitionBatchApproval.approveRequisitions' | message}}</h2>
+<p class="alert is-error" ng-if="vm.areRequisitionsOutdated();">
+    {{ 'requisitionBatchApproval.outdated' | message}}
+    <button ng-click="vm.updateRequisitions();">{{ 'requisitionBatchApproval.update' | message }}</button>
+</p>
+<div class="openlmis-table-container">
+
+    <saving-indicator class="requisition-indicator" object="vm.requisitions"/>
+    <table>
+        <thead>
+        <tr class="not-bottom">
+            <th ng-repeat-start="column in vm.columns track by column.id"
+                popover="{{column.requisition.$error}}"
+                ng-class="{'requisition-error': column.requisition.$error,
+                           'col-sticky': column.sticky,
+                           'sticky-right': column.right,
+                           'is-hidden': !(column.requisition),
+                           'merged-cell-right': column.requisition}">
+                <div ng-if="column.requisition"> {{column.requisition.facility.name}} - {{column.requisition.processingPeriod.name}} </div>
+                <div ng-if="column.requisition.$error">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
+            </th>
+            <th ng-repeat-end ng-if="column.requisition" class="merged-cell-left"
+                ng-class="{'requisition-error': column.requisition.$error,
+                           'col-sticky': column.sticky,
+                           'sticky-right': column.right}">
+            </th>
+        </tr>
+        <tr>
+            <th ng-repeat-start="column in vm.columns track by column.id"
+                ng-class="{'col-sticky': column.sticky, 'sticky-right': column.right}">
+                {{column.names[0] | message}}
+            </th>
+            <th ng-repeat-end ng-if="column.requisition"
+                ng-class="{'col-sticky': column.sticky, 'sticky-right': column.right}">
+                {{column.names[1] | message}}
+            </th>
+        </tr>
+        </thead>
+        <tr ng-repeat="(productId, product) in vm.products track by productId">
+            <td> {{product.code}} </td>
+            <td class="requisition-product-grid-cell"><div class="collapsable">{{product.name}}</div></td>
+            <td ng-repeat-start="requisition in vm.requisitions track by requisition.id" class="numeric">
+                <input ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][productId].skipped) && !(vm.isInApproval(requisition))"
+                       positive-integer
+                       ng-model="vm.lineItems[requisition.id][productId].approvedQuantity"
+                       ng-change="vm.updateLineItem(vm.lineItems[requisition.id][productId], requisition)"/>
+                <p ng-if="vm.lineItems[requisition.id][productId].skipped">
+                    {{'requisitionBatchApproval.skipped' | message}}
+                </p>
+                <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && vm.isInApproval(requisition)">
+                    {{vm.lineItems[requisition.id][productId].approvedQuantity}}
+                </p>
+            </td>
+            <td class="numeric" ng-repeat-end>
+                {{vm.lineItems[requisition.id][productId].totalCost | openlmisCurrency}}
+            </td>
+            <td class="total-cell numeric"> {{product.totalQuantity}} </td>
+            <td class="total-cell numeric"> {{product.totalCost | openlmisCurrency}} </td>
+        </tr>
+        <tfoot>
+        <tr class="total-row">
+            <th class="col-sticky">{{'requisitionBatchApproval.total' | message}}</th></td>
+            <th class="col-sticky"></th>
+            <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
+            </th>
+            <th class="numeric" ng-repeat-end>
+                {{requisition.$totalCost | openlmisCurrency}}
+            </th>
+            <th></th>
+            <th class="numeric"> {{vm.totalCost | openlmisCurrency}}</th>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+<br /><br />
+<div class="openlmis-toolbar button-group" ng-if="vm.requisitions.length">
+    <button ng-disabled="vm.isOffline()" ng-click="vm.sync()">{{'requisitionBatchApproval.sync' | message}}</button>
+    <div class="button-group primary">
+        <button class="primary" ng-disabled="vm.isOffline()" ng-click="vm.approve()">{{'requisitionBatchApproval.approve' | message}}</button>
+        <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
+    </div>
+</div>
