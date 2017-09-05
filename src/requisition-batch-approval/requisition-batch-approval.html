@@ -8,30 +8,30 @@
     <saving-indicator class="requisition-indicator" object="vm.requisitions"/>
     <table>
         <thead>
-        <tr class="not-bottom">
-            <th ng-repeat-start="column in vm.columns track by column.id"
+        <tr>
+            <th ng-repeat="column in vm.columns track by column.id"
+                openlmis-invalid="{{column.requisition.$error}}"
+                popover-trigger-area="element"
                 popover="{{column.requisition.$error}}"
+                colspan="{{column.requisition ? '2' : '1'}}"
                 ng-class="{'requisition-error': column.requisition.$error,
                            'col-sticky': column.sticky,
                            'sticky-right': column.right,
-                           'is-hidden': !(column.requisition),
-                           'merged-cell-right': column.requisition}">
+                           'is-hidden': !(column.requisition)}">
                 <div ng-if="column.requisition"> {{column.requisition.facilityName}} - {{column.requisition.periodName}} </div>
-                <div ng-if="column.requisition.$error">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
-            </th>
-            <th ng-repeat-end ng-if="column.requisition" class="merged-cell-left"
-                ng-class="{'requisition-error': column.requisition.$error,
-                           'col-sticky': column.sticky,
-                           'sticky-right': column.right}">
             </th>
         </tr>
         <tr>
             <th ng-repeat-start="column in vm.columns track by column.id"
-                ng-class="{'col-sticky': column.sticky, 'sticky-right': column.right}">
+                ng-class="{'requisition-error': column.requisition.$error,
+                           'col-sticky': column.sticky,
+                           'sticky-right': column.right}">
                 {{column.names[0] | message}}
             </th>
             <th ng-repeat-end ng-if="column.requisition"
-                ng-class="{'col-sticky': column.sticky, 'sticky-right': column.right}">
+                ng-class="{'requisition-error': column.requisition.$error,
+                           'col-sticky': column.sticky,
+                           'sticky-right': column.right}">
                 {{column.names[1] | message}}
             </th>
         </tr>
@@ -72,7 +72,6 @@
         </tfoot>
     </table>
 </div>
-<br /><br />
 <div class="openlmis-toolbar button-group" ng-if="vm.requisitions.length">
     <button ng-disabled="vm.isOffline()" ng-click="vm.sync()">{{'requisitionBatchApproval.sync' | message}}</button>
     <div class="button-group primary">
