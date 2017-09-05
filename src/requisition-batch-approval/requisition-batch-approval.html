@@ -16,7 +16,7 @@
                            'sticky-right': column.right,
                            'is-hidden': !(column.requisition),
                            'merged-cell-right': column.requisition}">
-                <div ng-if="column.requisition"> {{column.requisition.facility.name}} - {{column.requisition.processingPeriod.name}} </div>
+                <div ng-if="column.requisition"> {{column.requisition.facilityName}} - {{column.requisition.periodName}} </div>
                 <div ng-if="column.requisition.$error">{{ 'requisitionBatchApproval.invalidRequisition' | message }}</div>
             </th>
             <th ng-repeat-end ng-if="column.requisition" class="merged-cell-left"
