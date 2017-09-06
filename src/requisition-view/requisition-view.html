@@ -27,5 +27,6 @@
     </ul>
 </nav>
 <div ui-view=""></div>
+<h4 class="prices-info" ng-if="vm.displayPriceInfo(vm.requisition)">{{'requisitionView.pricesAreIndicative' | message }}</h4>
 <requisition-summary requisition="vm.requisition"></requisition-summary>
 <ng-include src="'requisition-view/requisition-toolbar.html'"></ng-include>

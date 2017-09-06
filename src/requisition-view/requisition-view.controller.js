@@ -120,6 +120,7 @@
         vm.getMalawiPrintUrl = getMalawiPrintUrl;
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
+        vm.displayPriceInfo = displayPriceInfo;
 
         /**
          * @ngdoc method
@@ -708,6 +709,23 @@
             vm.invalidNonFullSupply = valid ? undefined : messageService.get('requisitionView.requisition.error');
 
             return valid;
+        }
+
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name displayPriceInfo
+         *
+         * @param {Object} requisition Requisition with status to check
+         *
+         * @return {boolean} true if requisition is in status IN_APPROVAL or AUTHORIZED, false otherwise
+         *
+         * @description
+         * Determines whether requisition is IN_APPROVAL or AUTHORIZED status.
+         */
+        function displayPriceInfo(requisition) {
+            return requisition.$isInApproval() || requisition.$isAuthorized();
         }
 
         function handleSaveError(status) {

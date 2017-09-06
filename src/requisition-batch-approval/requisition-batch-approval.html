@@ -40,14 +40,14 @@
             <td> {{product.code}} </td>
             <td class="requisition-product-grid-cell"><div class="collapsable">{{product.name}}</div></td>
             <td ng-repeat-start="requisition in vm.requisitions track by requisition.id" class="numeric">
-                <input ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][productId].skipped) && !(vm.isInApproval(requisition))"
+                <input ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][productId].skipped) && !requisition.status === REQUISITION_STATUS.IN_APPROVAL"
                        positive-integer
                        ng-model="vm.lineItems[requisition.id][productId].approvedQuantity"
                        ng-change="vm.updateLineItem(vm.lineItems[requisition.id][productId], requisition)"/>
                 <p ng-if="vm.lineItems[requisition.id][productId].skipped">
                     {{'requisitionBatchApproval.skipped' | message}}
                 </p>
-                <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && vm.isInApproval(requisition)">
+                <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && requisition.status === REQUISITION_STATUS.IN_APPROVAL">
                     {{vm.lineItems[requisition.id][productId].approvedQuantity}}
                 </p>
             </td>
@@ -72,6 +72,7 @@
         </tfoot>
     </table>
 </div>
+<h4 class="prices-info">{{'requisitionBatchApproval.pricesAreIndicative' | message }}</h4>
 <div class="openlmis-toolbar button-group" ng-if="vm.requisitions.length">
     <button ng-disabled="vm.isOffline()" ng-click="vm.sync()">{{'requisitionBatchApproval.sync' | message}}</button>
     <div class="button-group primary">
