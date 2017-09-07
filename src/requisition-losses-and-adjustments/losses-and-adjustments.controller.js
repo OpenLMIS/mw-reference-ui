@@ -65,22 +65,23 @@
         function onInit() {
             vm.lineItem = $scope.lineItem;
 
-            $scope.$watchCollection('lineItem.stockAdjustments', function() {
-                vm.lineItem.totalLossesAndAdjustments = calculationFactory.totalLossesAndAdjustments(
-                    vm.lineItem.stockAdjustments,
-                    $scope.requisition.stockAdjustmentReasons
-                );
+            var first = true;
+            $scope.$watch('lineItem.totalLossesAndAdjustments', function() {
+                if(first) {
+                    first = false;
+                    return;
+                }
 
                 vm.lineItem.updateDependentFields(
                     $scope.requisition.template.columnsMap.totalLossesAndAdjustments,
                     $scope.requisition
                 );
 
-                // requisitionValidator.validateLineItem(
-                //     vm.lineItem,
-                //     $scope.requisition.template.columnsMap,
-                //     $scope.requisition
-                // );
+                requisitionValidator.validateLineItem(
+                    vm.lineItem,
+                    $scope.requisition.template.getColumns(!vm.lineItem.$program.fullSupply),
+                    $scope.requisition
+                );
             });
 
             reasons = $scope.requisition.stockAdjustmentReasons;
@@ -111,6 +112,11 @@
                 }
             ).then(function(adjustments) {
                 vm.lineItem.stockAdjustments = getSimpleAdjustments(adjustments);
+                
+                vm.lineItem.totalLossesAndAdjustments = calculationFactory.totalLossesAndAdjustments(
+                    vm.lineItem.stockAdjustments,
+                    $scope.requisition.stockAdjustmentReasons
+                ); 
             });
         }
 
