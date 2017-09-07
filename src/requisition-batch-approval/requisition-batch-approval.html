@@ -40,14 +40,14 @@
             <td> {{product.code}} </td>
             <td class="requisition-product-grid-cell"><div class="collapsable">{{product.name}}</div></td>
             <td ng-repeat-start="requisition in vm.requisitions track by requisition.id" class="numeric">
-                <input ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][productId].skipped) && !requisition.status === REQUISITION_STATUS.IN_APPROVAL"
+                <input ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][productId].skipped) && !vm.isInApproval(requisition)"
                        positive-integer
                        ng-model="vm.lineItems[requisition.id][productId].approvedQuantity"
                        ng-change="vm.updateLineItem(vm.lineItems[requisition.id][productId], requisition)"/>
                 <p ng-if="vm.lineItems[requisition.id][productId].skipped">
                     {{'requisitionBatchApproval.skipped' | message}}
                 </p>
-                <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && requisition.status === REQUISITION_STATUS.IN_APPROVAL">
+                <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && vm.isInApproval(requisition)">
                     {{vm.lineItems[requisition.id][productId].approvedQuantity}}
                 </p>
             </td>
