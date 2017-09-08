@@ -28,9 +28,9 @@
         .module('report')
         .factory('reportFactory', factory);
 
-    factory.$inject = ['$http', '$q', 'openlmisUrlFactory', 'reportService', 'REPORTING_SERVICES', 'dateUtils'];
+    factory.$inject = ['$http', '$q', 'openlmisUrlFactory', 'reportService', 'REPORTING_SERVICES'];
 
-    function factory($http, $q, openlmisUrlFactory, reportService, REPORTING_SERVICES, dateUtils) {
+    function factory($http, $q, openlmisUrlFactory, reportService, REPORTING_SERVICES) {
         var factory = {
             getReport: getReport,
             getReports: getReports,
@@ -222,20 +222,7 @@
                     }
                 });
 
-                var filteredItems = items;
-                if ((report.id == 'f28d0ebd-7276-4453-bc3c-48556a4bd25a' || report.id == '5e378334-d1fe-4915-902e-22ecd0a61f5b')
-                    && parameter.name == 'period') {
-                    items.forEach(function(item) {
-                        items.forEach(function(item) {
-                            if (item.startDate && dateUtils.toDate(item.startDate) < dateUtils.toDate('2017-07-01')) {
-                                var index = filteredItems.indexOf(item);
-                                filteredItems.splice(index, 1);
-                            }
-                        });
-                    });
-                }
-
-                deferred.resolve(filteredItems);
+                deferred.resolve(items);
             }, deferred.reject);
 
             return deferred.promise;

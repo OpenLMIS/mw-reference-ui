@@ -36,8 +36,20 @@
                 report: function(reportFactory) {
                     return reportFactory.getReport('malawi', 'f28d0ebd-7276-4453-bc3c-48556a4bd25a');
                 },
-                reportParamsOptions: function(report, reportFactory) {
-                    return reportFactory.getReportParamsOptions(report);
+                reportParamsOptions: function(report, reportFactory, dateUtils) {
+                    return reportFactory.getReportParamsOptions(report).then(function(response) {
+                        var filteredPeriods = [];
+                        if (report.id == 'f28d0ebd-7276-4453-bc3c-48556a4bd25a' || report.id == '5e378334-d1fe-4915-902e-22ecd0a61f5b') {
+                            response.period.forEach(function(period) {
+                                if (dateUtils.toDate(period.startDate) >= dateUtils.toDate('2017-07-01')) {
+                                    filteredPeriods.push(period);
+                                }
+                            });
+                        }
+                        response.period = filteredPeriods;
+
+                        return response;
+                    });
                 }
             }
         });
