@@ -149,7 +149,7 @@
                 } else if (param.selectExpression != null) {
                     promises.push(paramDeferred.promise);
 
-                    getReportParamOptions(param).then(function(items) {
+                    getReportParamOptions(report, param).then(function(items) {
                         parameters[param.name] = items;
                         paramDeferred.resolve();
                     }, paramDeferred.reject);
@@ -193,7 +193,7 @@
          *
          * @return {Promise}              The promise for report params.
          */
-        function getReportParamOptions(parameter, attributes) {
+        function getReportParamOptions(report, parameter, attributes) {
             var deferred = $q.defer();
             var uri = getReportParamSelectExpressionUri(parameter, attributes);
             var property = parameter.selectProperty;
@@ -223,7 +223,8 @@
                 });
 
                 var filteredItems = items;
-                if (parameter.name == 'period') {
+                if ((report.id == 'f28d0ebd-7276-4453-bc3c-48556a4bd25a' || report.id == '5e378334-d1fe-4915-902e-22ecd0a61f5b')
+                    && parameter.name == 'period') {
                     items.forEach(function(item) {
                         items.forEach(function(item) {
                             if (item.startDate && dateUtils.toDate(item.startDate) < dateUtils.toDate('2017-07-01')) {
