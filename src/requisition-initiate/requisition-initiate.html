@@ -21,12 +21,15 @@
         </fieldset>
         <input type="submit" value="{{'requisitionInitiate.search'|message}}"/>
     </form>
-    <table ng-class="{changed:filterForm.$dirty}">
+    <table ng-class="{changed:filterForm.$dirty || vm.isUpdated}">
         <caption ng-if="!vm.periods.length">
             {{'requisitionInitiate.selectRequiredFields' | message}}
         </caption>
         <caption ng-if="vm.periods.length && filterForm.$dirty">
             {{'requisitionInitiate.hasBeenChanged' | message}}
+        </caption>
+        <caption ng-if="vm.periods.length && vm.isUpdated">
+            {{'requisitionInitiate.formIsUpdated' | message}}
         </caption>
         <thead>
             <tr>
