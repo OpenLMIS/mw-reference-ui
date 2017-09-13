@@ -141,6 +141,15 @@ describe('LineItem decorator', function() {
             expect(lineItem.approvedQuantity).toEqual(0);
         });
 
+        it('should update approved quantity in line item if has value and facility operator is CHAM', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.approvedQuantity = 100;
+            lineItem.updateFieldValue(requisition.template.columnsMap[6], requisition);
+
+            expect(lineItem.approvedQuantity).toEqual(0);
+        });
+
         it('should not update approved quantity in line item if it is undefined and facility operator is different than CHAM', function() {
             facilityOperator.code = 'MOH';
             var lineItem = new LineItem(requisitionLineItem, requisition);

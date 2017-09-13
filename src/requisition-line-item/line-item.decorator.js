@@ -23,7 +23,7 @@
      *
      * @description
      * Decorates method to the LineItem, making it
-     * so the approved quantity value is displayed as 0 if undefined
+     * so the approved quantity value is displayed as 0
      * and facility operator is CHAM.
      */
     angular.module('requisition-line-item')
@@ -50,7 +50,7 @@
          *
          * @description
          * Updates column value in the line item based on column type and source.
-         * If approved quantity is null then set 0 as value.
+         * Set 0 as default value of approved quantity.
          *
          * @param {Object} column Requisition template column
          * @param {Object} requisition Requisition to which line item belongs
@@ -65,7 +65,7 @@
                     object[propertyName] = calculationFactory[fullName] ? calculationFactory[fullName](this, requisition) : null;
                 } else if (column.$type === COLUMN_TYPES.NUMERIC || column.$type === COLUMN_TYPES.CURRENCY) {
                     if (requisition.facility.operator.code == 'CHAM' && fullName == 'approvedQuantity') {
-                        object[propertyName] = checkIfApprovedQuantityIsNull(object[propertyName]);
+                        object[propertyName] = 0;
                     } else {
                         checkIfNullOrZero(object[propertyName]);
                     }
@@ -98,10 +98,6 @@
             } else if (value === null) {
                 value = null;
             }
-        }
-
-        function checkIfApprovedQuantityIsNull(value) {
-            return value == null ? 0 : value;
         }
     };
 
