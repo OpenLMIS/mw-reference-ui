@@ -15,7 +15,7 @@
 
 describe('reportFactory', function() {
 
-    var $rootScope, $q, reportServiceMock, reportFactory,
+    var $rootScope, $q, reportServiceMock, reportFactory, dateUtilsMock,
         report, report2, paramPeriod, paramFacility, periodOptions, facilityOptions,
         REPORT_ID = '629bc86c-0291-11e7-86e3-3417eb83144e',
         REPORT_ID2 = '6b207f14-0291-11e7-b732-3417eb83144e',
@@ -25,11 +25,17 @@ describe('reportFactory', function() {
 
     beforeEach(function() {
         module('report', function($provide) {
+            dateUtilsMock = jasmine.createSpyObj('dateUtils', ['toDate']);
+
             reportServiceMock = jasmine.createSpyObj('reportService',
                 ['getReport', 'getReports', 'getReportParamsOptions']);
 
             $provide.service('reportService', function() {
                 return reportServiceMock;
+            });
+
+            $provide.service('dateUtils', function() {
+                return dateUtilsMock;
             });
 
             $provide.constant('REPORTING_SERVICES', ['requisitions']);
@@ -103,6 +109,8 @@ describe('reportFactory', function() {
                 return $q.when({ data: periodOptions });
             }
         });
+
+        dateUtilsMock.toDate.andCallFake(parseDateMock);
     });
 
     it('should get a single report', function() {
