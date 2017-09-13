@@ -38,10 +38,43 @@
     decorator.$inject = ['$delegate', 'calculationFactory', 'COLUMN_SOURCES', 'COLUMN_TYPES'];
 
     function decorator($delegate, calculationFactory, COLUMN_SOURCES, COLUMN_TYPES) {
+        var delegatedLineItem = LineItem;
 
-        $delegate.prototype.updateFieldValue = updateFieldValue;
+        delegatedLineItem.prototype.getFieldValue = $delegate.prototype.getFieldValue;
+        delegatedLineItem.prototype.updateFieldValue = $delegate.prototype.updateFieldValue;
+        delegatedLineItem.prototype.updateDependentFields = $delegate.prototype.updateDependentFields;
+        delegatedLineItem.prototype.canBeSkipped = $delegate.prototype.canBeSkipped;
+        delegatedLineItem.prototype.isNonFullSupply = $delegate.prototype.isNonFullSupply;
+        delegatedLineItem.prototype.updateFieldValue = updateFieldValue;
 
-        return $delegate;
+        return delegatedLineItem;
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-line-item.LineItem
+         * @name LineItem
+         *
+         * @description
+         * Adds needed properties and methods to line items based on it and requisition parent.
+         *
+         * @param {Object} lineItem Requisition line item to be updated
+         * @param {Object} requisition Requisition that has given line item
+         */
+        function LineItem(lineItem, requisition) {
+            angular.copy(lineItem, this);
+
+            this.orderable = lineItem.orderable;
+            this.stockAdjustments = lineItem.stockAdjustments;
+            this.skipped = lineItem.skipped;
+
+            this.$errors = {};
+            this.$program = this.orderable.$program ? this.orderable.$program : getProgramById(lineItem.orderable.programs, requisition.program.id);
+
+            var newLineItem = this;
+            requisition.template.getColumns(!this.$program.fullSupply).forEach(function(column) {
+                newLineItem.updateFieldValue(column, requisition);
+            });
+        }
 
         /**
          * @ngdoc method
@@ -64,7 +97,7 @@
                 if (column.source === COLUMN_SOURCES.CALCULATED) {
                     object[propertyName] = calculationFactory[fullName] ? calculationFactory[fullName](this, requisition) : null;
                 } else if (column.$type === COLUMN_TYPES.NUMERIC || column.$type === COLUMN_TYPES.CURRENCY) {
-                    if (requisition.facility.operator.code == 'CHAM' && fullName == 'approvedQuantity') {
+                    if (requisition.facility.operator.code == 'CHAM' && fullName == 'approvedQuantity' && !this.skipped) {
                         object[propertyName] = 0;
                     } else {
                         checkIfNullOrZero(object[propertyName]);
@@ -73,6 +106,16 @@
                     object[propertyName] = object[propertyName] ? object[propertyName] : '';
                 }
             }
+        }
+
+        function getProgramById(programs, programId) {
+            var match;
+            programs.forEach(function(program) {
+                if (program.programId === programId) {
+                    match = program;
+                }
+            });
+            return match;
         }
 
         function getObject(from, path) {

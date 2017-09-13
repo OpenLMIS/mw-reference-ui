@@ -159,6 +159,16 @@ describe('LineItem decorator', function() {
 
             expect(lineItem.approvedQuantity).toEqual(undefined);
         });
+
+        it('should not update approved quantity in line item if it is skipped', function() {
+            requisitionLineItem.skipped = true;
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.approvedQuantity = undefined;
+            lineItem.updateFieldValue(requisition.template.columnsMap[6], requisition);
+
+            expect(lineItem.approvedQuantity).toEqual(undefined);
+        });
     });
 
  });
