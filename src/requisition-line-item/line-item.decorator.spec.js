@@ -110,7 +110,8 @@ describe('LineItem decorator', function() {
                     {
                         programId: program.id
                     }
-                ]
+                ],
+                netContent: 100
             },
             requestedQuantity: 10,
             requestedQuantityExplanation: 'explanation'
@@ -128,6 +129,12 @@ describe('LineItem decorator', function() {
             startDate: [2016, 4, 1],
             endDate: [2016, 4, 30]
         };
+    });
+
+    it('should update full product name to contain product name and net content', function() {
+        var lineItem = new LineItem(requisitionLineItem, requisition);
+
+        expect(lineItem.orderable.fullProductName).toEqual('product (100)');
     });
 
     describe('updateFieldValue', function() {

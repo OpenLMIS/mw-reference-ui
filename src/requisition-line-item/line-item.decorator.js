@@ -64,6 +64,7 @@
             angular.copy(lineItem, this);
 
             this.orderable = lineItem.orderable;
+            this.orderable.fullProductName = displayProductNameWithNetContent(lineItem.orderable.fullProductName, lineItem.orderable.netContent);
             this.stockAdjustments = lineItem.stockAdjustments;
             this.skipped = lineItem.skipped;
 
@@ -141,6 +142,10 @@
             } else if (value === null) {
                 value = null;
             }
+        }
+
+        function displayProductNameWithNetContent(fullProductName, netContent) {
+            return fullProductName.concat(' (', netContent.toString(), ')');
         }
     };
 
