@@ -146,6 +146,9 @@
                         return false;
                     }
                 }
+                if (column.name == TEMPLATE_COLUMNS.BEGINNING_BALANCE) {
+                    return true;
+                }
                 if (column.source === COLUMN_SOURCES.USER_INPUT) {
                     if (hasAuthorizeRightForProgram() && requisition.$isSubmitted()) {
                         return false;

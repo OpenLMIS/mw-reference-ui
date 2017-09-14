@@ -73,7 +73,7 @@ describe('ProductGridCell', function() {
 
             fullSupplyColumns = [{
                 type: $injector.get('COLUMN_TYPES').NUMERIC,
-                name: "beginningBalance",
+                name: 'requestedQuantity',
                 source: $injector.get('COLUMN_SOURCES').USER_INPUT
             }];
 
@@ -114,7 +114,7 @@ describe('ProductGridCell', function() {
             };
 
             scope.lineItem.getFieldValue.andCallFake(function() {
-                return "readOnlyFieldValue";
+                return 'readOnlyFieldValue';
             });
 
             scope.lineItem.$errors = {};
@@ -127,8 +127,8 @@ describe('ProductGridCell', function() {
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
     });
 
     it('should produce read-only cell if released', function() {
@@ -137,8 +137,8 @@ describe('ProductGridCell', function() {
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
     });
 
     it('should produce read-only cell if in approval', function() {
@@ -149,8 +149,8 @@ describe('ProductGridCell', function() {
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
     });
 
     it('should produce read-only cell if authorized', function() {
@@ -161,8 +161,8 @@ describe('ProductGridCell', function() {
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
     });
 
     it('should produce read-only cell if authorized and column is approved quantity', function() {
@@ -177,8 +177,8 @@ describe('ProductGridCell', function() {
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
     });
 
     it('should produce editable cell if user has no right to approve', function() {
@@ -190,12 +190,24 @@ describe('ProductGridCell', function() {
         scope.requisition.$isReleased.andReturn(false);
         scope.requisition.$isInApproval.andReturn(false);
         scope.requisition.$isAuthorized.andReturn(false);
+        directiveElem = getCompiledElement();
 
+        expect(directiveElem.html()).not.toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(1);
+    });
+
+    it('should produce read-only cell if column is beginning balance', function() {
+        scope.column.name = TEMPLATE_COLUMNS.BEGINNING_BALANCE;
+
+        scope.requisition.$isApproved.andReturn(false);
+        scope.requisition.$isReleased.andReturn(false);
+        scope.requisition.$isInApproval.andReturn(false);
+        scope.requisition.$isAuthorized.andReturn(false);
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(1);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
     });
 
     it('should produce editable cell', function() {
@@ -207,8 +219,8 @@ describe('ProductGridCell', function() {
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(1);
+        expect(directiveElem.html()).not.toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(1);
     });
 
     it('makes an editable cell if initiated and user can submit', function(){
@@ -223,14 +235,14 @@ describe('ProductGridCell', function() {
         userHasCreateRight = false;
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
 
         userHasCreateRight = true;
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(1);
+        expect(directiveElem.html()).not.toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(1);
     });
 
     it('makes an editable cell if rejected and user can submit', function(){
@@ -245,14 +257,14 @@ describe('ProductGridCell', function() {
         userHasCreateRight = false;
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
 
         userHasCreateRight = true;
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(1);
+        expect(directiveElem.html()).not.toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(1);
     });
 
     it('makes an editable cell if submitted and user can approve', function(){
@@ -266,26 +278,26 @@ describe('ProductGridCell', function() {
         userAlwaysHasRight = false;
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(0);
+        expect(directiveElem.html()).toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(0);
 
         userHasAuthorizedRight = true;
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
-        expect(directiveElem.find("input").length).toEqual(1);
+        expect(directiveElem.html()).not.toContain('readOnlyFieldValue');
+        expect(directiveElem.find('input').length).toEqual(1);
     });
 
     it('should produce losesAndAdjustment cell', function() {
         scope.requisition.$isApproved.andReturn(false);
         scope.requisition.$isReleased.andReturn(false);
         scope.requisition.$isAuthorized.andReturn(false);
-        scope.column.name = "totalLossesAndAdjustments";
+        scope.column.name = 'totalLossesAndAdjustments';
 
         directiveElem = getCompiledElement();
 
-        expect(directiveElem.html()).not.toContain("readOnlyFieldValue");
-        expect(directiveElem.find("a").length).toEqual(1);
+        expect(directiveElem.html()).not.toContain('readOnlyFieldValue');
+        expect(directiveElem.find('a').length).toEqual(1);
     });
 
     it('should validate full supply line item columns after updating fields', function() {
@@ -293,7 +305,7 @@ describe('ProductGridCell', function() {
         var element = getCompiledElement(),
             input = element.find('input');
 
-        input.controller('ngModel').$setViewValue("1000");
+        input.controller('ngModel').$setViewValue('1000');
         scope.$apply();
 
         expect(requisitionValidatorMock.validateLineItem).toHaveBeenCalledWith(
@@ -309,7 +321,7 @@ describe('ProductGridCell', function() {
 
         scope.lineItem.$program.fullSupply = false;
 
-        input.controller('ngModel').$setViewValue("1000");
+        input.controller('ngModel').$setViewValue('1000');
         scope.$apply();
 
         expect(requisitionValidatorMock.validateLineItem).toHaveBeenCalledWith(
