@@ -69,6 +69,7 @@
             this.skipped = lineItem.skipped;
 
             this.$errors = {};
+            this.difference = {};
             this.$program = this.orderable.$program ? this.orderable.$program : getProgramById(lineItem.orderable.programs, requisition.program.id);
 
             var newLineItem = this;
@@ -102,6 +103,10 @@
                         object[propertyName] = 0;
                     } else {
                         checkIfNullOrZero(object[propertyName]);
+                    }
+                    if (calculationFactory[fullName] && fullName != 'totalLossesAndAdjustments') {
+                        this.difference[fullName] = object[propertyName] ? calculationFactory[fullName](this, requisition) - object[propertyName]
+                            : calculationFactory[fullName](this, requisition);
                     }
                 } else {
                     object[propertyName] = object[propertyName] ? object[propertyName] : '';
@@ -145,7 +150,9 @@
         }
 
         function displayProductNameWithNetContent(fullProductName, netContent) {
-            return fullProductName.concat(' (', netContent.toString(), ')');
+            var bracket = ' (';
+            var stringToAdd = bracket.concat(netContent, ')');
+            return fullProductName.indexOf(stringToAdd) > -1 ? fullProductName : fullProductName.concat(stringToAdd);
         }
     };
 

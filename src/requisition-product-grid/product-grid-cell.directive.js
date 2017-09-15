@@ -82,7 +82,20 @@
                 }
                 return lineItem.$errors[column.name];
             }, function(error){
-                scope.invalidMessage = error ? error : undefined;
+                if (lineItem.difference[column.name]) {
+                    scope.invalidMessage = error ? displayError(error, lineItem.difference[column.name]) : undefined;
+                } else {
+                    scope.invalidMessage = error ? error : undefined;
+                }
+            });
+
+            scope.$watch(function(){
+                if(lineItem.skipped){
+                    return false;
+                }
+                return lineItem.difference[column.name];
+            }, function(difference){
+                scope.invalidMessage = difference ? displayError(lineItem.$errors[column.name], difference) : undefined;
             });
 
             scope.$on('openlmisInvalid.update', validate);
@@ -194,6 +207,10 @@
                 return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
                     programCode: requisition.program.code
                 });
+            }
+
+            function displayError(error, difference) {
+                return difference == 0 ? undefined : error.concat('. The difference between the calculated and entered value is ', difference, '.');
             }
         }
     }

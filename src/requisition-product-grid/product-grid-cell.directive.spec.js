@@ -118,6 +118,8 @@ describe('ProductGridCell', function() {
             });
 
             scope.lineItem.$errors = {};
+
+            scope.lineItem.difference = {};
         });
     });
 
