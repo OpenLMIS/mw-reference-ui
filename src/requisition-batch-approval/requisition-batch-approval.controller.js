@@ -234,8 +234,7 @@
 
                 // Using slice to make copy of array, so scope changes at end only
                 requisitionBatchApproveFactory.batchApprove(vm.requisitions.slice())
-                .then(handleApprove, handleApprove)
-                .finally(loadingModalService.close);
+                .then(handleApprove, handleApprove);
             });
         }
 
@@ -334,6 +333,7 @@
 
                 // Reload state to display page without approved notifications and to update outdated ones
                 $state.go($state.current, {errors: errors, ids: requisitionIds.join(',')}, {reload: true});
+                loadingModalService.close();
 
             } else {
 
