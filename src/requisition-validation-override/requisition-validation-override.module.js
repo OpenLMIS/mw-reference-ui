@@ -18,13 +18,16 @@
     'use strict';
 
     /**
-     * @module requisition-line-item
+     * @module requisition-validation-override
      *
      * @description
-     * Updates approved quantity value.
+     * Override line item validation to add calculationMismatch to
+     * totalRecievedQuantity
      */
-    angular.module('requisition-line-item', [
-        'requisition',
+    angular.module('requisition-validation-override', [
+        'requisition-constants',
+        'requisition-validation',
+        'openlmis-i18n'
     ]);
 
 })();
