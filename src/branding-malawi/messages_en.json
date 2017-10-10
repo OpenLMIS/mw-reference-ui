@@ -60,7 +60,7 @@
   "requisitionView.update": "Update LMIS Form",
   "requisitionView.updateWarning": "Updating this LMIS Form will remove any changes that have been made to the offline LMIS Form",
   "requisitionView.updateOffline": "Can't update this LMIS Form while offline",
-  "report.dueDaysInfo": "Insert number of days past the period end date the LMIS Forms are due by. Default is 10 days.",
+  "report.dueDaysInfo": "Insert number of days past the period end date the LMIS Forms are due by. Default is 20 days.",
   "adminRoleForm.requisitionApprove": "Approve LMIS Form",
   "adminRoleForm.requisitionAuthorize": "Authorize LMIS Form",
   "adminRoleForm.requisitionCreate": "Create LMIS Form",
