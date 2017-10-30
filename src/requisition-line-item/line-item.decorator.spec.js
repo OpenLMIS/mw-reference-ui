@@ -178,4 +178,89 @@ describe('LineItem decorator', function() {
         });
     });
 
+    describe('canBeSkipped', function() {
+
+        it('should return true if input = 0', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false if input > 0', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 100;
+            lineItem.requestedQuantityExplanation = 'we need more';
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return true if input > 0 and requisition is emergency', function() {
+            requisition.emergency = true;
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 100;
+            lineItem.requestedQuantityExplanation = 'we need more';
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false if requisition status is authorized', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+            requisition.$isAuthorized.andReturn(true);
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if requisition status is in approval', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+            requisition.$isInApproval.andReturn(true);
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if requisition status is approved', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+            requisition.$isApproved.andReturn(true);
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if requisition status is released', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+            requisition.$isReleased.andReturn(true);
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(false);
+        });
+    });
+
  });

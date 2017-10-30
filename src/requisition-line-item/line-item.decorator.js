@@ -43,7 +43,7 @@
         delegatedLineItem.prototype.getFieldValue = $delegate.prototype.getFieldValue;
         delegatedLineItem.prototype.updateFieldValue = $delegate.prototype.updateFieldValue;
         delegatedLineItem.prototype.updateDependentFields = $delegate.prototype.updateDependentFields;
-        delegatedLineItem.prototype.canBeSkipped = $delegate.prototype.canBeSkipped;
+        delegatedLineItem.prototype.canBeSkipped = canBeSkipped;
         delegatedLineItem.prototype.isNonFullSupply = $delegate.prototype.isNonFullSupply;
         delegatedLineItem.prototype.updateFieldValue = updateFieldValue;
 
@@ -114,6 +114,47 @@
             }
         }
 
+        /**
+         * @ngdoc method
+         * @methodOf requisition.LineItem
+         * @name canBeSkipped
+         *
+         * @description
+         * Determines whether the line item from given requisition can be marked as skipped.
+         *
+         * @param {Object} requisition Requisition to which line item belongs
+         * @return {Boolean} true if line item can be skipped
+         */
+        function canBeSkipped(requisition) {
+            var result = true,
+                lineItem = this,
+                columns = requisition.template.getColumns(!this.$program.fullSupply);
+
+            if (requisition.$isApproved() || requisition.$isAuthorized() || requisition.$isInApproval() || requisition.$isReleased()) {
+                return false;
+            } else if (requisition.emergency) {
+                return true;
+            }
+
+            columns.forEach(function (column) {
+                if (isInputDisplayedAndNotEmpty(column, lineItem)) {
+                    result = false;
+                }
+            });
+            return result;
+        }
+
+        function isInputDisplayedAndNotEmpty(column, lineItem) {
+            return column.$display
+                && column.source === COLUMN_SOURCES.USER_INPUT
+                && column.$type !== COLUMN_TYPES.BOOLEAN
+                && !isEmpty(lineItem[column.name]);
+        }
+
+        function isEmpty(value) {
+            return !value || !value.toString().trim();
+        }
+
         function getProgramById(programs, programId) {
             var match;
             programs.forEach(function(program) {
@@ -154,6 +195,6 @@
             var stringToAdd = bracket.concat(netContent, ')');
             return fullProductName.indexOf(stringToAdd) > -1 ? fullProductName : fullProductName.concat(stringToAdd);
         }
-    };
+    }
 
 })();
