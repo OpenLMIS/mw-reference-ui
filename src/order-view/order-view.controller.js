@@ -73,6 +73,28 @@
         /**
          * @ngdoc property
          * @propertyOf order-view.controller:OrderViewController
+         * @name periodStartDate
+         * @type {Object}
+         *
+         * @description
+         * The beginning of the period to search for orders.
+         */
+        vm.periodStartDate = undefined;
+
+        /**
+         * @ngdoc property
+         * @propertyOf order-view.controller:OrderViewController
+         * @name periodEndDate
+         * @type {Object}
+         *
+         * @description
+         * The end of the period to search for orders.
+         */
+        vm.periodEndDate = undefined;
+
+        /**
+         * @ngdoc property
+         * @propertyOf order-view.controller:OrderViewController
          * @name programs
          * @type {Array}
          *
@@ -126,6 +148,14 @@
                 })[0];
             }
 
+            if ($stateParams.periodStartDate) {
+                vm.periodStartDate = new Date($stateParams.periodStartDate);
+            }
+
+            if ($stateParams.periodEndDate) {
+                vm.periodEndDate = new Date($stateParams.periodEndDate);
+            }
+
             $scope.$watch(function() {
                 return vm.supplyingFacility;
             }, function(newValue, oldValue) {
@@ -155,6 +185,8 @@
             stateParams.supplyingFacility = vm.supplyingFacility ? vm.supplyingFacility.id : null;
             stateParams.requestingFacility = vm.requestingFacility ? vm.requestingFacility.id : null;
             stateParams.program = vm.program ? vm.program.id : null;
+            stateParams.periodStartDate = vm.periodStartDate ? $filter('isoDate')(vm.periodStartDate) : null;
+            stateParams.periodEndDate = vm.periodEndDate ? $filter('isoDate')(vm.periodEndDate) : null;
 
             $state.go('openlmis.orders.view', stateParams, {
                 reload: true

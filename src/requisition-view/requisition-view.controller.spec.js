@@ -97,8 +97,7 @@ describe('RequisitionViewController', function() {
             });
 
             deferred = $q.defer();
-            requisition = jasmine.createSpyObj('requisition',
-                ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
+            requisition = jasmine.createSpyObj('requisition', ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$isSkipped', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
             requisition.id = '1';
             requisition.draftStatusMessage = 'New comment';
             requisition.program = {
@@ -302,6 +301,14 @@ describe('RequisitionViewController', function() {
         authorizationServiceSpy.hasRight.andReturn(true);
 
         vm.requisition.$isSubmitted.andReturn(true);
+
+        expect(vm.displayDelete()).toBe(true);
+    });
+
+    it('should display delete button when skipped', function() {
+        authorizationServiceSpy.hasRight.andReturn(true);
+
+        vm.requisition.$isSkipped.andReturn(true);
 
         expect(vm.displayDelete()).toBe(true);
     });

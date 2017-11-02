@@ -297,7 +297,7 @@
                             notificationService.success('requisitionView.submit.success');
                         });
                         stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                    }, failWithMessage('requisitionView.submit.failure'));
+                    }, loadingModalService.close);
                 }, function(response) {
                     handleSaveError(response.status);
                 });
@@ -381,7 +381,7 @@
                             notificationService.success('requisitionView.authorize.success');
                         });
                         stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                    }, failWithMessage('requisitionView.authorize.failure'));
+                    }, loadingModalService.close);
                 }, function (response) {
                     handleSaveError(response.status);
                 });
@@ -410,7 +410,7 @@
                         notificationService.success('requisitionView.delete.success');
                     });
                     stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                }, failWithMessage('requisitionView.delete.failure'));
+                }, loadingModalService.close);
             });
         }
 
@@ -568,7 +568,7 @@
          */
         function displayDelete() {
             if (hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_DELETE)) {
-                if (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) {
+                if (vm.requisition.$isInitiated() || vm.requisition.$isRejected() || vm.requisition.$isSkipped()) {
                     return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
                 }
                 if (vm.requisition.$isSubmitted()) {

@@ -13,6 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
+
 (function() {
 
     'use strict';
@@ -31,18 +32,20 @@
 
     RequisitionInitiateController.$inject = [
         'messageService', 'requisitionService', '$state', 'loadingModalService',
-        'notificationService', 'REQUISITION_RIGHTS', 'userRightFactory', '$stateParams', 'periods'
+        'notificationService', 'REQUISITION_RIGHTS', 'permissionService', 'authorizationService', '$stateParams', 'periods'
     ];
 
     function RequisitionInitiateController(
         messageService, requisitionService, $state, loadingModalService, notificationService,
-        REQUISITION_RIGHTS, userRightFactory, $stateParams, periods
+        REQUISITION_RIGHTS, permissionService, authorizationService, $stateParams, periods
     ) {
         var vm = this;
 
         vm.$onInit = onInit;
         vm.loadPeriods = loadPeriods;
         vm.initRnr = initRnr;
+        vm.periodHasRequisition = periodHasRequisition;
+        vm.goToRequisition = goToRequisition;
 
         /**
          * @ngdoc property
@@ -111,48 +114,75 @@
          * @name initRnr
          *
          * @description
-         * Responsible for initiating and/or navigating to the requisition, based on the specified
-         * period. If the provided period does not have a requisition associated with it, one
-         * will be initiated for the currently selected facility, program, emergency status and
-         * provided period. In case of a successful response, a redirect to the newly initiated
-         * requisition is made. Otherwise an error about failed requisition initiate is shown. If
-         * the provided period is already associated with a requisition, the function only
-         * performs a redirect to that requisition.
+         * Responsible for initiating a requisition for a specified period. If
+         * creating the requisition is successful, then the user is sent to the
+         * requisition view page. Otherwise an error message is shown.
          *
          * @param {Object} selectedPeriod a period to initiate or proceed with the requisition for
          */
         function initRnr(selectedPeriod) {
+            var user = authorizationService.getUser();
+
             vm.error = '';
-            if (!selectedPeriod.rnrId || selectedPeriod.rnrStatus == messageService.get('requisitionInitiate.notYetStarted')) {
-                loadingModalService.open();
-                userRightFactory.checkRightForCurrentUser(REQUISITION_RIGHTS.REQUISITION_CREATE, vm.program.id, vm.facility.id).then(function(response) {
-                    if(response) {
-                        requisitionService.initiate(vm.facility.id,
-                            vm.program.id,
-                            selectedPeriod.id,
-                            vm.emergency)
-                        .then(function (data) {
-                            $state.go('openlmis.requisitions.requisition.fullSupply', {
-                                rnr: data.id
-                            });
-                        }, handleError('requisitionInitiate.couldNotInitiateRequisition'));
-                    } else {
-                        handleError('requisitionInitiate.noPermissionToInitiateRequisition')();
-                    }
-                }, handleError('requisitionInitiate.noPermissionToInitiateRequisition'));
+
+            loadingModalService.open();
+            permissionService.hasPermission(user.user_id, {
+                right: REQUISITION_RIGHTS.REQUISITION_CREATE,
+                programId: vm.program.id,
+                facilityId: vm.facility.id
+            })
+            .catch(function(){
+                vm.isUpdated = true;
+                notificationService.error('requisitionInitiate.noPermissionToInitiateRequisition');
+            })
+            .then(function(response) {
+                return requisitionService.initiate(vm.facility.id,
+                        vm.program.id,
+                        selectedPeriod.id,
+                        vm.emergency)
+            })
+            .then(function (data) {
+                vm.goToRequisition(data.id);
+            })
+            .catch(function() {
+                notificationService.error('requisitionInitiate.couldNotInitiateRequisition');
+            })
+            .finally(loadingModalService.close);
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-initiate.controller:RequisitionInitiateController
+         * @name periodHasRequisition
+         *
+         * @description
+         * Checks a period object to make sure no requisition is associated with
+         * the period.
+         *
+         * @param {Object} period a period to check if it has a requisition
+         */
+        function periodHasRequisition(period) {
+            if(period.rnrId) {
+                return true;
             } else {
-                $state.go('openlmis.requisitions.requisition.fullSupply', {
-                    rnr: selectedPeriod.rnrId
-                });
+                return false;
             }
         }
 
-        function handleError(message) {
-            return function() {
-                vm.isUpdated = true;
-                loadingModalService.close();
-                notificationService.error(message);
-            };
+        /**
+         * @ngdoc method
+         * @methodOf requisition-initiate.controller:RequisitionInitiateController
+         * @name goToRequisition
+         *
+         * @description
+         * Directs a user to the requisition view data for a specific period
+         *
+         * @param {Object} id A requisition id
+         */
+        function goToRequisition(id) {
+            $state.go('openlmis.requisitions.requisition.fullSupply', {
+                rnr: id
+            });
         }
     }
 })();

@@ -3,6 +3,7 @@
     {{vm.error | message}}
 </div>
 <section class="openlmis-table-container">
+    <openlmis-sort options="vm.options"/>
     <form class="openlmis-table-filters" ng-submit="vm.search()">
         <label for="facility">{{'requisitionSearch.facility' | message}}</label>
         <select id="facility" placeholder="{{'requisitionSearch.selectFacility' | message}}"
@@ -21,7 +22,7 @@
             {{'requisitionSearch.offline' | message}}
         </label>
         <fieldset>
-            <legend>{{'requisitionSearch.date' | message}}</legend>
+            <legend>{{'requisitionSearch.dateInitiated' | message}}</legend>
             <label for=startDate>{{'requisitionSearch.from' | message}}</label>
             <openlmis-datepicker input-id="startDate" value="vm.startDate" max-date="vm.endDate"></openlmis-datepicker>
             <label for=endDate>{{'requisitionSearch.to' | message}}</label>
@@ -47,9 +48,7 @@
                 <th>{{'requisitionSearch.startDate' | message}}</th>
                 <th>{{'requisitionSearch.endDate' | message}}</th>
                 <th>{{'requisitionSearch.status' | message}}</th>
-                <th>{{'requisitionSearch.dateSubmitted' | message}}</th>
-                <th>{{'requisitionSearch.dateAuthorized' | message}}</th>
-                <th>{{'requisitionSearch.dateApproved' | message}}</th>
+                <th>{{'requisitionSearch.dateInitiated' | message}}</th>
                 <th>{{'requisitionSearch.emergency' | message}}</th>
                 <th popover="{{'requisitionSearch.offlineInfo' | message}}" popover-trigger-area="element">
                     {{'requisitionSearch.offline' | message}}
@@ -65,9 +64,7 @@
                 <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
                 <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
                 <td>{{requisition.status}}</td>
-                <td>{{requisition.statusChanges.SUBMITTED.changeDate | openlmisDate}}</td>
-                <td>{{requisition.statusChanges.AUTHORIZED.changeDate | openlmisDate}}</td>
-                <td>{{requisition.statusChanges.APPROVED.changeDate | openlmisDate}}</td>
+                <td>{{requisition.statusChanges.INITIATED.changeDate | openlmisDate}}</td>
                 <td class="col-emergency">
                     <i ng-class="{'icon-ok': requisition.emergency}"></i>
                 </td>

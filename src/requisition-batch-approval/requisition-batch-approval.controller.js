@@ -230,11 +230,13 @@
          */
         function approve() {
             confirmService.confirm('requisitionBatchApproval.approvalConfirm').then(function(){
-                loadingModalService.open();
+                var loadingPromise = loadingModalService.open();
 
                 // Using slice to make copy of array, so scope changes at end only
                 requisitionBatchApproveFactory.batchApprove(vm.requisitions.slice())
-                .then(handleApprove, handleApprove);
+                .then(function(successfulRequisitions) {
+                    handleApprove(successfulRequisitions, loadingPromise);
+                }).catch(loadingModalService.close);
             });
         }
 
@@ -304,12 +306,11 @@
             return requisition.status === REQUISITION_STATUS.IN_APPROVAL;
         }
 
-        function handleApprove(successfulRequisitions) {
+        function handleApprove(successfulRequisitions, loadingPromise) {
+            var errors = {},
+                requisitionIds = [];
 
             if(successfulRequisitions.length < vm.requisitions.length) {
-                var errors = {},
-                    requisitionIds = [];
-
                 vm.requisitions.forEach(function(requisition) {
                     if (!isFoundInSuccessfulRequisitions(requisition, successfulRequisitions)) {
                         requisitionIds.push(requisition.id);
@@ -317,6 +318,22 @@
                     }
                 });
 
+                // Reload state to display page without approved notifications and to update outdated ones
+                $state.go($state.current, {errors: errors, ids: requisitionIds.join(',')}, {reload: true});
+
+            } else {
+                //All requisitions got approved, display notification and go back to approval list
+                stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
+            }
+
+            loadingPromise.then(function() {
+                if (requisitionIds.length > 0) {
+                    notificationService.error(
+                        messageService.get("requisitionBatchApproval.approvalError", {
+                            errorCount: requisitionIds.length
+                        })
+                    );
+                }
                 if (successfulRequisitions.length > 0) {
                     notificationService.success(
                         messageService.get("requisitionBatchApproval.approvalSuccess", {
@@ -324,28 +341,7 @@
                         })
                     );
                 }
-
-                notificationService.error(
-                    messageService.get("requisitionBatchApproval.approvalError", {
-                        errorCount: requisitionIds.length
-                    })
-                );
-
-                // Reload state to display page without approved notifications and to update outdated ones
-                $state.go($state.current, {errors: errors, ids: requisitionIds.join(',')}, {reload: true});
-                loadingModalService.close();
-
-            } else {
-
-                //All requisitions got approved, display notification and go back to approval list
-                notificationService.success(
-                    messageService.get("requisitionBatchApproval.approvalSuccess", {
-                        successCount: successfulRequisitions.length
-                    })
-                );
-
-                stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-            }
+            });
         }
 
         function updateTotalValues(productId) {
@@ -371,6 +367,9 @@
             vm.requisitions = dataToDisplay.requisitions;
 
             vm.products = dataToDisplay.products;
+
+            vm.productsToDisplay = dataToDisplay.productsToDisplay;
+
             vm.lineItems = dataToDisplay.lineItems;
             vm.errors = dataToDisplay.errors;
             vm.columns = dataToDisplay.columns;
