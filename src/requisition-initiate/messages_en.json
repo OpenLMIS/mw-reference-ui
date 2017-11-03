@@ -12,7 +12,7 @@
   "requisitionInitiate.myFacility": "My facility",
   "requisitionInitiate.noFacilitiesForProgram": "There are no facilities for program. Please contact the Admin.",
   "requisitionInitiate.noneAssigned": "None assigned",
-  "requisitionInitiate.noPermissionToInitiateRequisition": "You have no permission to initiate requisition",
+  "requisitionInitiate.noPermissionToInitiateRequisition": "You have no permission to initiate LMIS Form",
   "requisitionInitiate.noProgramsForFacility": "There are no programs for this facility. Please contact the Admin.",
   "requisitionInitiate.noRightToPerformThisAction": "You do not have the right to perform this action",
   "requisitionInitiate.notYetStarted": "Not yet started",
