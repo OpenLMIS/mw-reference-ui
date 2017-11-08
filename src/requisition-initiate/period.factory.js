@@ -78,7 +78,9 @@
             angular.forEach(periods, function(period, id) {
                 if(emergency) {
                     periodGridLineItems.push(createPeriodGridItem(period, null, 0));
+                // Malawi: check if the period is active
                 } else if (period.isActive === true) {
+                // --- ends here ---
                     var foundRequisition = null;
                     angular.forEach(requisitions, function (requisition) {
                         if (requisition.processingPeriod.id == period.id) {

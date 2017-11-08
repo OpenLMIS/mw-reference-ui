@@ -36,7 +36,9 @@
             periodsForInitiate: {
                 method: 'GET',
                 isArray: true,
+                // Malawi: use our custom transformResponse()
                 transformResponse: transformResponse
+                // --- ends here ---
             }
         });
 
@@ -65,13 +67,16 @@
 
         function transformResponse(data, headers, status) {
             if (status === 200) {
+                // Malawi: get Date response header
                 var serverDate = (headers('Date') === null) ? null : new Date(headers('Date'));
+                // --- ends here ---
                 var periods = angular.fromJson(data);
                 periods.forEach(function(period) {
                     period.startDate = dateUtils.toDate(period.startDate);
                     period.endDate = dateUtils.toDate(period.endDate);
-                    // allows to initiate regular requisitions only after period's endDate
+                    // Malawi: add isActive property which allows to initiate regular requisitions only after period's endDate
                     period.isActive = serverDate > period.endDate;
+                    // --- ends here ---
                 });
                 return periods;
             }
