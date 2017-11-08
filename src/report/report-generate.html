@@ -34,7 +34,7 @@
 
     <fieldset class="form-group">
         <legend>{{'report.format' | message}}</legend>
-        <label class="radio">
+        <label class="radio" ng-if="vm.report.id != 'afbd56e8-bc66-446a-a947-810971f68aef'">
             <input type="radio" ng-model="vm.format" value="pdf" required/>
             {{'report.pdf' | message}}
         </label>
@@ -46,7 +46,7 @@
             <input type="radio" ng-model="vm.format" value="xls" required/>
             {{'report.xls' | message}}
         </label>
-        <label class="radio">
+        <label class="radio" ng-if="vm.report.id != 'afbd56e8-bc66-446a-a947-810971f68aef'">
             <input type="radio" ng-model="vm.format" value="html" required/>
             {{'report.html' | message}}
         </label>
