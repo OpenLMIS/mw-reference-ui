@@ -67,16 +67,13 @@
             if (status === 200) {
                 var serverDate = (headers('Date') === null) ? null : new Date(headers('Date'));
                 var periods = angular.fromJson(data);
-                var filteredPeriods = [];
                 periods.forEach(function(period) {
                     period.startDate = dateUtils.toDate(period.startDate);
                     period.endDate = dateUtils.toDate(period.endDate);
-                    // allow to initiate only after period's endDate
-                    if (serverDate === null || serverDate > period.endDate) {
-                        this.push(period);
-                    }
-                }, filteredPeriods);
-                return filteredPeriods;
+                    // allows to initiate regular requisitions only after period's endDate
+                    period.isActive = serverDate > period.endDate;
+                });
+                return periods;
             }
             return data;
         }

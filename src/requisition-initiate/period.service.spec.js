@@ -79,7 +79,7 @@ describe('periodService', function() {
             prepare(new Date());
             expect(angular.isFunction(promise.then)).toBe(true);
         });
-
++
         it('should return proper response', function() {
             prepare(new Date());
             var data;
@@ -106,7 +106,7 @@ describe('periodService', function() {
             expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodThree.endDate);
         });
 
-        it('should return a period if serverDate > endDate', function() {
+        it('should set isActive = true if serverDate > endDate', function() {
             prepare(new Date("April 1, 2017 00:00:00"));
             var data;
 
@@ -116,10 +116,11 @@ describe('periodService', function() {
 
             $rootScope.$apply();
             expect(data).not.toBe(undefined);
-            expect(data.some(function(period) { return period.id === periodThree.id })).toEqual(true);
+            expect(data.some(function(period) { return period.id === periodThree.id
+                && period.isActive === true })).toEqual(true);
         });
 
-        it('should not return a period if serverDate < endDate', function() {
+        it('should set isActive = false if serverDate < endDate', function() {
             prepare(new Date("March 15, 2017 00:00:00"));
             var data;
 
@@ -129,7 +130,8 @@ describe('periodService', function() {
 
             $rootScope.$apply();
             expect(data).not.toBe(undefined);
-            expect(data.some(function(period) { return period.id === periodThree.id })).toEqual(false);
+            expect(data.some(function(period) { return period.id === periodThree.id
+                && period.isActive === false })).toEqual(true);
         });
     });
 
