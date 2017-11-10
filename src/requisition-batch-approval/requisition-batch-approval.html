@@ -11,31 +11,31 @@
         <div class="openlmis-table-pane">
             <table>
                 <thead>
-                <tr>
-                    <th class="col-sticky" colspan="2"></th>
-                    <th ng-repeat="requisition in vm.requisitions track by requisition.id"
-                        popover="{{requisition.$error}}"
-                        colspan="2"
-                        ng-class="{'requisition-error': requisition.$error,
-                                       'is-hidden': !(requisition)}">
-                        {{requisition.facilityName}} - {{requisition.periodName}}
-                    </th>
-                    <th class="col-sticky col-sticky-right" colspan="2"></th>
-                </tr>
-                <tr>
-                    <th class="col-sticky" >{{'requisitionBatchApproval.productCode' | message}}</th>
-                    <th class="col-sticky" >{{'requisitionBatchApproval.product' | message}}</th>
-                    <th ng-repeat-start="requisition in ::vm.requisitions track by requisition.id"
-                        ng-class="{'requisition-error': requisition.$error}">
-                        {{'requisitionBatchApproval.approvedQuantity' | message}}
-                    </th>
-                    <th ng-repeat-end
-                        ng-class="{'requisition-error': requisition.$error}">
-                        {{'requisitionBatchApproval.cost' | message}}
-                    </th>
-                    <th class="col-sticky col-sticky-right" >{{'requisitionBatchApproval.totalQuantityForAllFacilities' | message}}</th>
-                    <th class="col-sticky col-sticky-right" >{{'requisitionBatchApproval.totalCostForAllFacilities' | message}}</th>
-                </tr>
+                    <tr>
+                        <th class="col-sticky" colspan="2"></th>
+                        <th ng-repeat="requisition in vm.requisitions track by requisition.id"
+                            popover="{{requisition.$error}}"
+                            colspan="2"
+                            ng-class="{'requisition-error': requisition.$error,
+                                           'is-hidden': !(requisition)}">
+                            {{requisition.facilityName}} - {{requisition.periodName}}
+                        </th>
+                        <th class="col-sticky col-sticky-right" colspan="2">{{'requisitionBatchApproval.totalForAllFacilities' | message}}</th>
+                    </tr>
+                    <tr>
+                        <th class="col-sticky" >{{'requisitionBatchApproval.productCode' | message}}</th>
+                        <th class="col-sticky" >{{'requisitionBatchApproval.product' | message}}</th>
+                        <th ng-repeat-start="requisition in ::vm.requisitions track by requisition.id"
+                            ng-class="{'requisition-error': requisition.$error}">
+                            {{'requisitionBatchApproval.approvedQuantity' | message}}
+                        </th>
+                        <th ng-repeat-end
+                            ng-class="{'requisition-error': requisition.$error}">
+                            {{'requisitionBatchApproval.cost' | message}}
+                        </th>
+                        <th class="col-sticky col-sticky-right">{{'requisitionBatchApproval.quantity' | message}}</th>
+                        <th class="col-sticky col-sticky-right">{{'requisitionBatchApproval.cost' | message}}</th>
+                    </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="product in vm.productsToDisplay">
@@ -63,17 +63,17 @@
                 </tr>
                 </tbody>
                 <tfoot>
-                <tr class="total-row">
-                    <th class="col-sticky">{{'requisitionBatchApproval.total' | message}}</th>
-                    <th class="col-sticky"></th>
-                    <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
-                    </th>
-                    <th class="numeric" ng-repeat-end>
-                        {{requisition.$totalCost | openlmisCurrency}}
-                    </th>
-                    <th class="col-sticky col-sticky-right"></th>
-                    <th class="col-sticky col-sticky-right numeric"> {{vm.totalCost | openlmisCurrency}}</th>
-                </tr>
+                    <tr class="total-row">
+                        <th class="col-sticky">{{'requisitionBatchApproval.total' | message}}</th>
+                        <th class="col-sticky"></th>
+                        <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
+                        </th>
+                        <th class="numeric" ng-repeat-end>
+                            {{requisition.$totalCost | openlmisCurrency}}
+                        </th>
+                        <th class="col-sticky col-sticky-right"></th>
+                        <th class="col-sticky col-sticky-right numeric"> {{vm.totalCost | openlmisCurrency}}</th>
+                    </tr>
                 </tfoot>
             </table>
         </div>
