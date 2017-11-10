@@ -13,7 +13,7 @@
                 <thead>
                 <tr>
                     <th class="col-sticky" colspan="2"></th>
-                    <th ng-repeat="requisition in ::vm.requisitions track by requisition.id"
+                    <th ng-repeat="requisition in vm.requisitions track by requisition.id"
                         popover="{{requisition.$error}}"
                         colspan="2"
                         ng-class="{'requisition-error': requisition.$error,
@@ -38,10 +38,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="product in ::vm.productsToDisplay">
+                <tr ng-repeat="product in vm.productsToDisplay">
                     <td class="col-sticky"> {{product.code}} </td>
                     <td class="col-sticky requisition-product-grid-cell"><div class="collapsable">{{product.name}}</div></td>
-                    <td ng-repeat-start="requisition in ::vm.requisitions" class="numeric">
+                    <td ng-repeat-start="requisition in vm.requisitions" class="numeric">
                         <div ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][product.productId].skipped) && !vm.isInApproval(requisition)"
                              class="input-control" input-control openlmis-invalid>
                             <input positive-integer required validate-requisition="requisition" product-id="product.productId"
@@ -66,7 +66,7 @@
                 <tr class="total-row">
                     <th class="col-sticky">{{'requisitionBatchApproval.total' | message}}</th>
                     <th class="col-sticky"></th>
-                    <th ng-repeat-start="requisition in ::vm.requisitions track by requisition.id">
+                    <th ng-repeat-start="requisition in vm.requisitions track by requisition.id">
                     </th>
                     <th class="numeric" ng-repeat-end>
                         {{requisition.$totalCost | openlmisCurrency}}
