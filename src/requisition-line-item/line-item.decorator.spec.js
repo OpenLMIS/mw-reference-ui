@@ -76,6 +76,12 @@ describe('LineItem decorator', function() {
                 source: 'USER_INPUT',
                 $type: 'NUMERIC',
                 $display: true
+            },
+            {
+                name: 'beginningBalance',
+                source: 'USER_INPUT',
+                $type: 'NUMERIC',
+                $display: true
             }
 
         ];
@@ -125,6 +131,7 @@ describe('LineItem decorator', function() {
         requisition.status = 'SUBMITTED';
         requisition.template = template;
         requisition.facility = facility;
+        requisition.emergency = false;
         requisition.processingPeriod = {
             startDate: [2016, 4, 1],
             endDate: [2016, 4, 30]
