@@ -83,7 +83,7 @@
         <button ng-disabled="vm.isOffline()" ng-click="vm.sync()">{{'requisitionBatchApproval.sync' | message}}</button>
         <div class="button-group primary">
             <button class="primary" ng-disabled="vm.isOffline()" form="batch-approval-form" type="submit">{{'requisitionBatchApproval.approve' | message}}</button>
-            <button class="danger" ng-click="vm.revert()">{{'requisitionBatchApproval.revert' | message}}</button>
+            <button class="danger" ng-click="vm.revert()" ng-if="!vm.requisitions.every(vm.isInApproval)">{{'requisitionBatchApproval.revert' | message}}</button>
         </div>
     </div>
 </div>

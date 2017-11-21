@@ -1,0 +1,11 @@
+<div class="openlmis-toolbar button-group">
+    <button ng-if="vm.displaySync()" ng-disabled="vm.isOffline()" ng-click="vm.syncRnr()">{{'requisitionView.sync.label' | message}}</button>
+    <div class="button-group primary">
+        <button ng-if="vm.displaySubmit()" class="primary" ng-disabled="vm.isOffline()" ng-click="vm.submitRnr()">{{'requisitionView.submit.label' | message}}</button>
+        <button ng-if="vm.displayAuthorize()" class="primary" ng-disabled="vm.isOffline()" ng-click="vm.authorizeRnr()">{{'requisitionView.authorize.label' | message}}</button>
+        <button ng-if="vm.displayApproveAndReject()" class="primary" ng-disabled="vm.isOffline()" ng-click="vm.approveRnr()">{{'requisitionView.approve.label' | message}}</button>
+        <button ng-if="vm.displayApproveAndReject() && !vm.requisition.$isInApproval()" class="danger" ng-disabled="vm.isOffline()" ng-click="vm.rejectRnr()">{{'requisitionView.reject.label' | message}}</button>
+        <button ng-if="vm.displayDelete()" class="danger" ng-disabled="vm.isOffline()" ng-click="vm.removeRnr()">{{'requisitionView.delete.label' | message}}</button>
+        <button ng-if="vm.displaySkip()" ng-disabled="vm.isOffline()" ng-click="vm.skipRnr()">{{'requisitionView.skip.label' | message}}</button>
+    </div>
+</div>
