@@ -132,13 +132,13 @@
 
             if (requisition.$isApproved() || requisition.$isAuthorized() || requisition.$isInApproval() || requisition.$isReleased()) {
                 return false;
-            } else if (requisition.emergency) {
-                return true;
             }
 
             columns.forEach(function (column) {
                 if (isInputDisplayedAndNotEmpty(column, lineItem)) {
-                    result = false;
+                    if (!requisition.emergency || column.name !== 'beginningBalance') {
+                        result = false;
+                    }
                 }
             });
             return result;
@@ -178,7 +178,7 @@
         }
 
         function getPropertyName(fullPath) {
-            var id = fullPath.lastIndexOf('.')
+            var id = fullPath.lastIndexOf('.');
             return id > -1 ? fullPath.substr(id) : fullPath;
         }
 

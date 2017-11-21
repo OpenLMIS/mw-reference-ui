@@ -202,12 +202,26 @@ describe('LineItem decorator', function() {
             expect(result).toBe(false);
         });
 
-        it('should return true if input > 0 and requisition is emergency', function() {
+        it('should return false if input = 0 and beginningBalance > 0', function() {
+            var lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+            lineItem.beginningBalance = 100;
+
+            var result = lineItem.canBeSkipped(requisition);
+
+            expect(result).toBe(false);
+        });
+
+
+        it('should return true if input = 0, beginningBalance > 0 and requisition is emergency', function() {
             requisition.emergency = true;
             var lineItem = new LineItem(requisitionLineItem, requisition);
 
-            lineItem.requestedQuantity = 100;
-            lineItem.requestedQuantityExplanation = 'we need more';
+            lineItem.requestedQuantity = 0;
+            lineItem.requestedQuantityExplanation = '';
+            lineItem.beginningBalance = 100;
 
             var result = lineItem.canBeSkipped(requisition);
 
