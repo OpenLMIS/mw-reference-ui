@@ -19,8 +19,7 @@ describe('RequisitionViewController', function() {
         loadingModalService, deferred, requisitionUrlFactoryMock, requisitionValidatorMock,
         fullSupplyItems, nonFullSupplyItems, authorizationServiceSpy, confirmSpy,
         REQUISITION_RIGHTS, accessTokenFactorySpy, $window, stateTrackerService, messageService,
-        RequisitionStockCountDateModal, RequisitionWatcher, watcher, REQUISITION_WARNING_PERIODS,
-        REQUISITION_WARNING_PROGRAM_CODE;
+        RequisitionStockCountDateModal, RequisitionWatcher, watcher;
 
     beforeEach(function() {
         module('requisition-view');
@@ -82,30 +81,28 @@ describe('RequisitionViewController', function() {
             $q = $injector.get('$q');
             $window = $injector.get('$window');
             notificationService = $injector.get('notificationService');
-            confirmService = $injector.get('confirmService');
             alertService = $injector.get('alertService');
+            confirmService = $injector.get('confirmService');
             loadingModalService = $injector.get('loadingModalService');
             REQUISITION_RIGHTS = $injector.get('REQUISITION_RIGHTS');
             stateTrackerService = $injector.get('stateTrackerService');
             messageService = $injector.get('messageService');
-            REQUISITION_WARNING_PROGRAM_CODE = $injector.get('REQUISITION_WARNING_PROGRAM_CODE');
-            REQUISITION_WARNING_PERIODS = $injector.get('REQUISITION_WARNING_PERIODS');
-
 
             confirmService.confirm.andCallFake(function() {
                 return $q.when(true);
             });
 
             deferred = $q.defer();
-            requisition = jasmine.createSpyObj('requisition', ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$isSkipped', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
+            requisition = jasmine.createSpyObj('requisition',
+                ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$isSkipped', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
             requisition.id = '1';
-            requisition.draftStatusMessage = 'New comment';
             requisition.program = {
                 id: '2',
                 periodsSkippable: true,
                 code: 'CODE',
                 enableDatePhysicalStockCountCompleted: true
             };
+            requisition.draftStatusMessage = 'New comment';
             requisition.$isInitiated.andReturn(true);
             requisition.$isReleased.andReturn(false);
             requisition.$isRejected.andReturn(false);
@@ -141,40 +138,186 @@ describe('RequisitionViewController', function() {
         requisition.requisitionLineItems = fullSupplyItems.concat(nonFullSupplyItems);
     });
 
-    it('should display skip button', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-        expect(vm.displaySkip()).toBe(true);
-    });
+    describe('$onInit', function() {
 
-    it('should display skip button when requisition is rejected', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-        requisition.$isInitiated.andReturn(false);
-        requisition.$isRejected.andReturn(true);
+        it('should display skip button', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
 
-        expect(vm.displaySkip()).toBe(true);
-    });
+            vm.$onInit();
 
-    it('should not display skip button if user has no permission to create requisition', function() {
-        authorizationServiceSpy.hasRight.andReturn(false);
-        expect(vm.displaySkip()).toBe(false);
-    });
+            expect(vm.canSkip).toBe(true);
+        });
 
-    it('should not display skip button if program does not allow skipping periods', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-        vm.requisition.program.periodsSkippable = false;
-        expect(vm.displaySkip()).toBe(false);
-    });
+        it('should display skip button when requisition is rejected', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+            requisition.$isInitiated.andReturn(false);
+            requisition.$isRejected.andReturn(true);
 
-    it('should not display skip button if requisition has emergency type', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-        vm.requisition.emergency = true;
-        expect(vm.displaySkip()).toBe(false);
-    });
+            vm.$onInit();
 
-    it('should display skip button if requisition is not in initiated status', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-        vm.requisition.$isInitiated.andReturn(false);
-        expect(vm.displaySkip()).toBe(false);
+            expect(vm.canSkip).toBe(true);
+        });
+
+        it('should not display skip button if user has no permission to create requisition', function() {
+            authorizationServiceSpy.hasRight.andReturn(false);
+
+            vm.$onInit();
+
+            expect(vm.canSkip).toBe(false);
+        });
+
+        it('should not display skip button if program does not allow skipping periods', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+            vm.requisition.program.periodsSkippable = false;
+
+            vm.$onInit();
+
+            expect(vm.canSkip).toBe(false);
+        });
+
+        it('should not display skip button if requisition has emergency type', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+            vm.requisition.emergency = true;
+
+            vm.$onInit();
+
+            expect(vm.canSkip).toBe(false);
+        });
+
+        it('should display skip button if requisition is not in initiated status', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+            vm.requisition.$isInitiated.andReturn(false);
+
+            vm.$onInit();
+
+            expect(vm.canSkip).toBe(false);
+        });
+
+        it('should display sync button when initiated', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(true);
+            vm.requisition.$isSubmitted.andReturn(false);
+            vm.requisition.$isAuthorized.andReturn(false);
+            vm.requisition.$isInApproval.andReturn(false);
+
+            vm.$onInit();
+
+            expect(vm.canSync).toBe(true);
+        });
+
+        it('should display sync button when rejected', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(false);
+            vm.requisition.$isSubmitted.andReturn(false);
+            vm.requisition.$isAuthorized.andReturn(false);
+            vm.requisition.$isInApproval.andReturn(false);
+            vm.requisition.$isRejected.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canSync).toBe(true);
+        });
+
+        it('should display sync button when submitted', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(false);
+            vm.requisition.$isSubmitted.andReturn(true);
+            vm.requisition.$isAuthorized.andReturn(false);
+            vm.requisition.$isInApproval.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canSync).toBe(true);
+        });
+
+        it('should display sync button when authorized', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(false);
+            vm.requisition.$isSubmitted.andReturn(false);
+            vm.requisition.$isAuthorized.andReturn(true);
+            vm.requisition.$isInApproval.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canSync).toBe(true);
+        });
+
+        it('should display sync button in approval', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(false);
+            vm.requisition.$isSubmitted.andReturn(false);
+            vm.requisition.$isAuthorized.andReturn(false);
+            vm.requisition.$isInApproval.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canSync).toBe(true);
+        });
+
+        it('should not display sync button', function() {
+            vm.requisition.$isInitiated.andReturn(false);
+            vm.requisition.$isSubmitted.andReturn(false);
+            vm.requisition.$isAuthorized.andReturn(false);
+            vm.requisition.$isInApproval.andReturn(false);
+
+            vm.$onInit();
+
+            expect(vm.canSync).toBe(false);
+        });
+
+        it('should display delete button when initiated', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canDelete).toBe(true);
+        });
+
+        it('should display delete button when rejected', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isInitiated.andReturn(false);
+            vm.requisition.$isRejected.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canDelete).toBe(true);
+        });
+
+
+        it('should display delete button when submitted', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isSubmitted.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canDelete).toBe(true);
+        });
+
+        it('should display delete button when skipped', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+
+            vm.requisition.$isSkipped.andReturn(true);
+
+            vm.$onInit();
+
+            expect(vm.canDelete).toBe(true);
+        });
+
+        it('should not display delete button', function() {
+            vm.$onInit();
+
+            expect(vm.canDelete).toBe(false);
+        });
+
     });
 
     it('should display message when successfully skipped requisition', function() {
@@ -215,108 +358,6 @@ describe('RequisitionViewController', function() {
         expect(vm.getPrintUrl()).toEqual('http://some.url/api/requisitions/1/print');
     });
 
-    it('should display sync button when initiated', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(true);
-        vm.requisition.$isSubmitted.andReturn(false);
-        vm.requisition.$isAuthorized.andReturn(false);
-        vm.requisition.$isInApproval.andReturn(false);
-
-        expect(vm.displaySync()).toBe(true);
-    });
-
-    it('should display sync button when rejected', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(false);
-        vm.requisition.$isSubmitted.andReturn(false);
-        vm.requisition.$isAuthorized.andReturn(false);
-        vm.requisition.$isInApproval.andReturn(false);
-        vm.requisition.$isRejected.andReturn(true);
-
-        expect(vm.displaySync()).toBe(true);
-    });
-
-    it('should display sync button when submitted', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(false);
-        vm.requisition.$isSubmitted.andReturn(true);
-        vm.requisition.$isAuthorized.andReturn(false);
-        vm.requisition.$isInApproval.andReturn(true);
-
-        expect(vm.displaySync()).toBe(true);
-    });
-
-    it('should display sync button when authorized', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(false);
-        vm.requisition.$isSubmitted.andReturn(false);
-        vm.requisition.$isAuthorized.andReturn(true);
-        vm.requisition.$isInApproval.andReturn(true);
-
-        expect(vm.displaySync()).toBe(true);
-    });
-
-    it('should display sync button in approval', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(false);
-        vm.requisition.$isSubmitted.andReturn(false);
-        vm.requisition.$isAuthorized.andReturn(false);
-        vm.requisition.$isInApproval.andReturn(true);
-
-        expect(vm.displaySync()).toBe(true);
-    });
-
-    it('should not display sync button', function() {
-        vm.requisition.$isInitiated.andReturn(false);
-        vm.requisition.$isSubmitted.andReturn(false);
-        vm.requisition.$isAuthorized.andReturn(false);
-        vm.requisition.$isInApproval.andReturn(false);
-        expect(vm.displaySync()).toBe(false);
-    });
-
-    it('should display delete button when initiated', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(true);
-
-        expect(vm.displayDelete()).toBe(true);
-    });
-
-    it('should display delete button when rejected', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isInitiated.andReturn(false);
-        vm.requisition.$isRejected.andReturn(true);
-
-        expect(vm.displayDelete()).toBe(true);
-    });
-
-
-    it('should display delete button when submitted', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isSubmitted.andReturn(true);
-
-        expect(vm.displayDelete()).toBe(true);
-    });
-
-    it('should display delete button when skipped', function() {
-        authorizationServiceSpy.hasRight.andReturn(true);
-
-        vm.requisition.$isSkipped.andReturn(true);
-
-        expect(vm.displayDelete()).toBe(true);
-    });
-
-    it('should not display delete button', function() {
-        expect(vm.displayDelete()).toBe(false);
-    });
-
     describe('Sync error handling', function() {
 
         it('should reload requisition when conflict response received', function() {
@@ -336,20 +377,20 @@ describe('RequisitionViewController', function() {
         });
 
         function verifyReloadOnErrorAndNotificationSent(responseStatus, messageKey) {
-          var notificationServiceSpy = jasmine.createSpy(),
-              stateSpy = jasmine.createSpy(),
-              conflictResponse = { status: responseStatus };
+            var notificationServiceSpy = jasmine.createSpy(),
+                stateSpy = jasmine.createSpy(),
+                conflictResponse = { status: responseStatus };
 
-          spyOn(notificationService, 'error').andCallFake(notificationServiceSpy);
-          spyOn($state, 'reload').andCallFake(stateSpy);
+            spyOn(notificationService, 'error').andCallFake(notificationServiceSpy);
+            spyOn($state, 'reload').andCallFake(stateSpy);
 
-          vm.syncRnr();
+            vm.syncRnr();
 
-          deferred.reject(conflictResponse);
-          $scope.$apply();
+            deferred.reject(conflictResponse);
+            $scope.$apply();
 
-          expect(notificationServiceSpy).toHaveBeenCalledWith(messageKey);
-          expect(stateSpy).toHaveBeenCalled();
+            expect(notificationServiceSpy).toHaveBeenCalledWith(messageKey);
+            expect(stateSpy).toHaveBeenCalled();
         }
 
         function verifyNoReloadOnError(responseStatus) {
@@ -698,7 +739,7 @@ describe('RequisitionViewController', function() {
             vm.rejectRnr();
             confirmDeferred.resolve();
             saveDeferred.resolve();
-            $scope.$apply()
+            $scope.$apply();
 
             expect(watcher.disableWatcher).toHaveBeenCalled();
         });

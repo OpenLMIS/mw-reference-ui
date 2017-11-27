@@ -2,7 +2,7 @@
   "name": "mw-reference-ui",
   "dependencies": {
     "perfect-scrollbar": "^0.7.0",
-	"angular": "1.6.6"
+    "angular": "1.6.6"
   },
   "resolutions": {
     "angular": "1.6.6"

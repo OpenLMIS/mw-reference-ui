@@ -106,7 +106,7 @@ describe('ProductGridCell', function() {
             scope.column = fullSupplyColumns[0];
 
             scope.lineItem = jasmine.createSpyObj('lineItem', [
-                'getFieldValue','updateDependentFields'
+                'getFieldValue','updateDependentFields', 'canBeSkipped'
             ]);
 
             scope.lineItem.$program = {
@@ -330,6 +330,34 @@ describe('ProductGridCell', function() {
             scope.lineItem, nonFullSupplyColumns, requisition);
         expect(scope.lineItem.updateDependentFields).toHaveBeenCalledWith(
             scope.column, requisition);
+    });
+
+    it('should call authorizationService only during linking for total losses and adjustments column', function() {
+        scope.column.name = "totalLossesAndAdjustments";
+
+        directiveElem = getCompiledElement();
+
+        expect(authorizationServiceSpy.hasRight.calls.length).toBe(3);
+
+        scope.$digest();
+        scope.$digest();
+        scope.$digest();
+
+        expect(authorizationServiceSpy.hasRight.calls.length).toBe(3);
+    });
+
+    it('should call authorizationService only during linking for Skip column', function() {
+        scope.column.name = "skipped";
+
+        directiveElem = getCompiledElement();
+
+        expect(authorizationServiceSpy.hasRight.calls.length).toBe(3);
+
+        scope.$digest();
+        scope.$digest();
+        scope.$digest();
+
+        expect(authorizationServiceSpy.hasRight.calls.length).toBe(3);
     });
 
     function getCompiledElement() {

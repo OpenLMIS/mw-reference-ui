@@ -63,10 +63,10 @@
             scope.column = column;
             scope.validate = validate;
             scope.update = update;
-            scope.isReadOnly = isReadOnly;
-            scope.canNotSkip = canNotSkip;
+            scope.isReadOnly = isReadOnly();
+            scope.canNotSkip = canNotSkip();
 
-            if(!isReadOnly()){
+            if(!scope.isReadOnly){
                 scope.$watch(function(){
                     return lineItem[column.name];
                 }, function(newValue, oldValue) {
@@ -108,9 +108,9 @@
                     templateUrl = 'requisition-product-grid/product-grid-cell-skip.html';
                 } else if(column.name === TEMPLATE_COLUMNS.TOTAL_LOSSES_AND_ADJUSTMENTS) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-total-losses-and-adjustments.html';
-                } else if(column.$type === COLUMN_TYPES.NUMERIC && !isReadOnly()){
+                } else if(column.$type === COLUMN_TYPES.NUMERIC && !scope.isReadOnly){
                     templateUrl = 'requisition-product-grid/product-grid-cell-input-numeric.html';
-                } else if(!isReadOnly()) {
+                } else if(!scope.isReadOnly) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-input-text.html';
                 } else if(column.$type === COLUMN_TYPES.CURRENCY) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-currency.html';
