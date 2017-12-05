@@ -51,6 +51,7 @@
         vm.areRequisitionsOutdated = areRequisitionsOutdated;
         vm.isOffline = offlineService.isOffline;
         vm.isInApproval = isInApproval;
+        vm.setAllToZero = setAllToZero;
 
         /**
          * @ngdoc property
@@ -304,6 +305,22 @@
          */
         function isInApproval(requisition) {
             return requisition.status === REQUISITION_STATUS.IN_APPROVAL;
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name setAllToZero
+         *
+         * @description
+         * Sets approved quantities of all products to zero.
+         */
+        function setAllToZero() {
+            angular.forEach(vm.requisitions, function(requisition) {
+                angular.forEach(requisition.requisitionLineItems, function(lineItem) {
+                    lineItem.approvedQuantity = 0;
+                });
+            });
         }
 
         function handleApprove(successfulRequisitions, loadingPromise) {

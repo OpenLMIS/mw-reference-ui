@@ -25,5 +25,6 @@
   "requisitionBatchApproval.invalidRequisition": "This LMIS Form is invalid",
   "requisitionBatchApproval.approvalSuccess": "${successCount} LMIS Forms were approved",
   "requisitionBatchApproval.approvalConfirm": "Are you sure you want to approve these LMIS forms?",
-  "requisitionBatchApproval.pricesAreIndicative": "The prices used in the OpenLMIS are only indicative. Actual prices can only be viewed at the completion of CMST's procurement processes."
+  "requisitionBatchApproval.pricesAreIndicative": "The prices used in the OpenLMIS are only indicative. Actual prices can only be viewed at the completion of CMST's procurement processes.",
+  "requisitionBatchApproval.setAllToZero": "Set all to 0"
 }
