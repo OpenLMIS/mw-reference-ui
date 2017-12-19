@@ -55,7 +55,7 @@ services:
       - '/openlmis-report-ui'
 
   requisition-ui:
-    image: openlmis/requisition-ui:5.2.1
+    image: openlmismw/requisition-ui:5.2.2-SNAPSHOT
     volumes:
       - '/openlmis-requisition-ui'
 

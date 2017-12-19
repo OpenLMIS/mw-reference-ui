@@ -131,23 +131,21 @@
                 programId: vm.program.id,
                 facilityId: vm.facility.id
             })
-            .catch(function(){
-                vm.isUpdated = true;
-                notificationService.error('requisitionInitiate.noPermissionToInitiateRequisition');
-            })
-            .then(function(response) {
-                return requisitionService.initiate(vm.facility.id,
-                        vm.program.id,
-                        selectedPeriod.id,
-                        vm.emergency)
-            })
-            .then(function (data) {
-                vm.goToRequisition(data.id);
-            })
-            .catch(function() {
-                notificationService.error('requisitionInitiate.couldNotInitiateRequisition');
-            })
-            .finally(loadingModalService.close);
+                .then(function() {
+                    requisitionService.initiate(vm.facility.id, vm.program.id, selectedPeriod.id, vm.emergency)
+                        .then(function(data) {
+                            vm.goToRequisition(data.id);
+                        })
+                        .catch(function() {
+                            notificationService.error('requisitionInitiate.couldNotInitiateRequisition');
+                            loadingModalService.close();
+                        });
+                })
+                .catch(function() {
+                    vm.isUpdated = true;
+                    notificationService.error('requisitionInitiate.noPermissionToInitiateRequisition');
+                    loadingModalService.close();
+                });
         }
 
         /**
