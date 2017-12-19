@@ -35,9 +35,11 @@
         $provide.decorator('LineItem', decorator);
     }
 
-    decorator.$inject = ['$delegate', 'calculationFactory', 'COLUMN_SOURCES', 'COLUMN_TYPES'];
+    decorator.$inject = ['$delegate', 'calculationFactory', 'authorizationService',
+        'COLUMN_SOURCES', 'COLUMN_TYPES', 'TEMPLATE_COLUMNS', 'REQUISITION_RIGHTS'];
 
-    function decorator($delegate, calculationFactory, COLUMN_SOURCES, COLUMN_TYPES) {
+    function decorator($delegate, calculationFactory, authorizationService,
+                       COLUMN_SOURCES, COLUMN_TYPES, TEMPLATE_COLUMNS, REQUISITION_RIGHTS) {
         var delegatedLineItem = LineItem;
 
         delegatedLineItem.prototype.getFieldValue = $delegate.prototype.getFieldValue;
@@ -46,6 +48,7 @@
         delegatedLineItem.prototype.canBeSkipped = canBeSkipped;
         delegatedLineItem.prototype.isNonFullSupply = $delegate.prototype.isNonFullSupply;
         delegatedLineItem.prototype.updateFieldValue = updateFieldValue;
+        delegatedLineItem.prototype.isReadOnly = isReadOnly;
 
         return delegatedLineItem;
 
@@ -142,6 +145,67 @@
                 }
             });
             return result;
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition.LineItem
+         * @name isReadOnly
+         *
+         * @description
+         * Determines whether a column within this line item is read only.
+         *
+         * @param {Object} requisition Requisition to which line item belongs
+         * @param {Object} column Requisition template column
+         * @return {Boolean} true if line item is read only
+         */
+        function isReadOnly(requisition, column) {
+            if (requisition.$isInApproval() || requisition.$isApproved() || requisition.$isReleased()){
+                return true;
+            }
+            if (requisition.$isAuthorized()) {
+                if (hasApproveRightForProgram(requisition) && isApprovalColumn(column)) {
+                    return false;
+                }
+            }
+            if (column.name === TEMPLATE_COLUMNS.BEGINNING_BALANCE) {
+                return true;
+            }
+            if (column.source === COLUMN_SOURCES.USER_INPUT) {
+                if (hasAuthorizeRightForProgram(requisition) && requisition.$isSubmitted()) {
+                    return false;
+                }
+                if (hasCreateRightForProgram(requisition) && (requisition.$isInitiated() || requisition.$isRejected())) {
+                    return false;
+                }
+            }
+
+            // If we don't know that the field is editable, its read only
+            return true;
+        }
+
+        function hasApproveRightForProgram(requisition) {
+            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_APPROVE, {
+                programCode: requisition.program.code
+            });
+        }
+
+        function hasAuthorizeRightForProgram(requisition) {
+            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
+                programCode: requisition.program.code
+            });
+        }
+
+        function hasCreateRightForProgram(requisition) {
+            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
+                programCode: requisition.program.code
+            });
+        }
+
+        function isApprovalColumn(column) {
+            var approvalColumns = [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS];
+
+            return approvalColumns.indexOf(column.name) !== -1;
         }
 
         function isInputDisplayedAndNotEmpty(column, lineItem) {

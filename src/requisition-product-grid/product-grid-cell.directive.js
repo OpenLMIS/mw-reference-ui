@@ -38,11 +38,11 @@
 
     productGridCell.$inject = [
         '$q', '$timeout', '$templateRequest', '$compile', 'requisitionValidator', 'authorizationService',
-        'TEMPLATE_COLUMNS', 'COLUMN_SOURCES', 'COLUMN_TYPES', 'REQUISITION_RIGHTS'
+        'TEMPLATE_COLUMNS', 'COLUMN_TYPES', 'REQUISITION_RIGHTS'
     ];
 
     function productGridCell($q, $timeout, $templateRequest, $compile, requisitionValidator, authorizationService,
-                            TEMPLATE_COLUMNS, COLUMN_SOURCES, COLUMN_TYPES, REQUISITION_RIGHTS) {
+                            TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS) {
 
         return {
             restrict: 'A',
@@ -151,28 +151,7 @@
             }
 
             function isReadOnly() {
-                if (requisition.$isInApproval() || requisition.$isApproved() || requisition.$isReleased()){
-                    return true;
-                }
-                if (requisition.$isAuthorized()) {
-                    if (hasApproveRightForProgram() && isApprovalColumn()) {
-                        return false;
-                    }
-                }
-                if (column.name == TEMPLATE_COLUMNS.BEGINNING_BALANCE) {
-                    return true;
-                }
-                if (column.source === COLUMN_SOURCES.USER_INPUT) {
-                    if (hasAuthorizeRightForProgram() && requisition.$isSubmitted()) {
-                        return false;
-                    }
-                    if (hasCreateRightForProgram() && (requisition.$isInitiated() || requisition.$isRejected())) {
-                        return false;
-                    }
-                }
-
-                // If we don't know that the field is editable, its read only
-                return true;
+                return lineItem.isReadOnly(requisition, column);
             }
 
             function canNotSkip() {
@@ -181,30 +160,8 @@
                     !lineItem.canBeSkipped(scope.requisition);
             }
 
-            function isApprovalColumn() {
-                var approvalColumns = [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS];
-
-                if(approvalColumns.indexOf(column.name) === -1){
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-
-            function hasApproveRightForProgram() {
-                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_APPROVE, {
-                    programCode: requisition.program.code
-                });
-            }
-
             function hasAuthorizeRightForProgram() {
                 return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
-                    programCode: requisition.program.code
-                });
-            }
-
-            function hasCreateRightForProgram() {
-                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
                     programCode: requisition.program.code
                 });
             }
