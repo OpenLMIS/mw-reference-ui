@@ -115,6 +115,7 @@
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
         vm.displayPriceInfo = displayPriceInfo;
+        vm.setAllToZero = setAllToZero;
 
         /**
          * @ngdoc method
@@ -722,6 +723,20 @@
          */
         function displayPriceInfo(requisition) {
             return requisition.$isInApproval() || requisition.$isAuthorized();
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name setAllToZero
+         *
+         * @description
+         * Sets approved quantities of all products to zero.
+         */
+        function setAllToZero() {
+            angular.forEach(requisition.requisitionLineItems, function(lineItem) {
+                lineItem.approvedQuantity = 0;
+            })
         }
 
         function handleSaveError(status) {

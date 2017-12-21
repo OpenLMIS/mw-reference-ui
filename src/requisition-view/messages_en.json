@@ -1,5 +1,6 @@
 {
   "requisitionView.rejectMissingCommentError": "You must enter a comment to explain the rejection.",
   "requisitionView.region": "District",
-  "requisitionView.pricesAreIndicative": "The prices used in the OpenLMIS are only indicative. Actual prices can only be viewed at the completion of CMST's procurement processes."
+  "requisitionView.pricesAreIndicative": "The prices used in the OpenLMIS are only indicative. Actual prices can only be viewed at the completion of CMST's procurement processes.",
+  "requisitionView.setAllToZero": "Set all to 0"
 }
