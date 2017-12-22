@@ -34,7 +34,7 @@
         'confirmService', 'REQUISITION_RIGHTS', 'FULFILLMENT_RIGHTS', 'offlineService', '$window',
         'requisitionUrlFactory', '$filter', '$scope', 'RequisitionWatcher',
         'accessTokenFactory', 'messageService', 'stateTrackerService', 'RequisitionStockCountDateModal',
-        'localStorageFactory', 'REQUISITION_WARNING_PROGRAM_CODE', 'REQUISITION_WARNING_PERIODS'
+        'localStorageFactory', 'REQUISITION_WARNING_PROGRAM_CODE', 'REQUISITION_WARNING_PERIODS', 'TEMPLATE_COLUMNS'
     ];
 
     function RequisitionViewController($state, requisition, requisitionValidator,
@@ -45,7 +45,7 @@
                                        $scope, RequisitionWatcher, accessTokenFactory,
                                        messageService, stateTrackerService, RequisitionStockCountDateModal,
                                        localStorageFactory, REQUISITION_WARNING_PROGRAM_CODE,
-                                       REQUISITION_WARNING_PERIODS) {
+                                       REQUISITION_WARNING_PERIODS, TEMPLATE_COLUMNS) {
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition, localStorageFactory('requisitions'));
@@ -130,6 +130,7 @@
             vm.canAuthorize = displayAuthorize();
             vm.canDelete = displayDelete();
             vm.canApproveAndReject = displayApproveAndReject();
+            vm.displaySetAllTo0 = displaySetAllTo0();
             vm.canSkip = displaySkip();
             vm.canSync = displaySync();
         }
@@ -564,6 +565,22 @@
          */
         function displayApproveAndReject() {
             return (vm.requisition.$isAuthorized() || vm.requisition.$isInApproval()) && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name displaySetAllTo0
+         *
+         * @description
+         * Determines whether to display the "Set all to 0" button. Returns true if
+         * the approved quantity column is visible and user can approve or reject.
+         *
+         * @return {Boolean} should approve and reject buttons be displayed
+         */
+        function displaySetAllTo0() {
+            var approvedQuantityColumn = requisition.template.getColumn(TEMPLATE_COLUMNS.APPROVED_QUANTITY);
+            return approvedQuantityColumn.isDisplayed && displayApproveAndReject();
         }
 
         /**

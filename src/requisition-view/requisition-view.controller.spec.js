@@ -92,9 +92,12 @@ describe('RequisitionViewController', function() {
                 return $q.when(true);
             });
 
+            var template = jasmine.createSpyObj('template', ['getColumn']);
             deferred = $q.defer();
             requisition = jasmine.createSpyObj('requisition',
                 ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$isSkipped', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
+            requisition.template = template;
+            template.getColumn.andReturn({});
             requisition.id = '1';
             requisition.program = {
                 id: '2',
