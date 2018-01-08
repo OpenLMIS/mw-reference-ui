@@ -37,11 +37,11 @@
         .directive('productGridCell', productGridCell);
 
     productGridCell.$inject = [
-        '$q', '$timeout', '$templateRequest', '$compile', 'requisitionValidator', 'authorizationService',
+        '$templateRequest', '$compile', 'requisitionValidator', 'authorizationService',
         'TEMPLATE_COLUMNS', 'COLUMN_TYPES', 'REQUISITION_RIGHTS'
     ];
 
-    function productGridCell($q, $timeout, $templateRequest, $compile, requisitionValidator, authorizationService,
+    function productGridCell($templateRequest, $compile, requisitionValidator, authorizationService,
                             TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS) {
 
         return {
@@ -76,12 +76,12 @@
                 });
             }
 
-            scope.$watch(function(){
-                if(lineItem.skipped){
+            scope.$watch(function() {
+                if(lineItem.skipped) {
                     return false;
                 }
                 return lineItem.$errors[column.name];
-            }, function(error){
+            }, function(error) {
                 if (lineItem.difference[column.name]) {
                     scope.invalidMessage = error ? displayError(error, lineItem.difference[column.name]) : undefined;
                 } else {
@@ -89,13 +89,13 @@
                 }
             });
 
-            scope.$watch(function(){
-                if(lineItem.skipped){
+            scope.$watch(function() {
+                if(lineItem.skipped) {
                     return false;
                 }
                 return lineItem.difference[column.name];
-            }, function(difference){
-                scope.invalidMessage = difference ? displayError(lineItem.$errors[column.name], difference) : undefined;
+            }, function(difference) {
+                scope.invalidMessage = displayError(lineItem.$errors[column.name], difference);
             });
 
             scope.$on('openlmisInvalid.update', validate);
@@ -167,7 +167,7 @@
             }
 
             function displayError(error, difference) {
-                return difference == 0 ? undefined : error.concat('. The difference between the calculated and entered value is ', difference, '.');
+                return !difference ? error : error.concat('. The difference between the calculated and entered value is ', difference, '.');
             }
         }
     }
