@@ -40,29 +40,31 @@ describe('ReportGenerateController', function() {
             $q = $injector.get('$q');
             $scope = $injector.get('$rootScope').$new();
         });
-
-        vm = $controller('ReportGenerateController', {
-            $scope: $scope,
-            report: report,
-            reportParamsOptions: {}
-        });
     });
 
     describe('onInit', function() {
 
         it('the default format should be pdf', function() {
-            vm.$onInit();
+            initiateController();
 
             expect(vm.format).toEqual('pdf');
         });
 
         it('should set default format to csv for Pick Work Sheet report', function() {
             report.id = 'afbd56e8-bc66-446a-a947-810971f68aef';
-            vm.report = report;
-            vm.$onInit();
+            initiateController();
 
             expect(vm.format).toEqual('csv');
         });
     });
+
+    function initiateController() {
+        vm = $controller('ReportGenerateController', {
+            $scope: $scope,
+            report: report,
+            reportParamsOptions: {}
+        });
+        vm.$onInit();
+    }
 
 });

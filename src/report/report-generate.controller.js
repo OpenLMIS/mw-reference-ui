@@ -104,6 +104,15 @@
          */
         vm.format = 'pdf';
 
+        // Malawi: whether the report is csv/xls only
+        vm.isASpreadsheetReport = [
+            // Pick Work Sheet report
+            'afbd56e8-bc66-446a-a947-810971f68aef',
+            // Regular vs Emergency Orders
+            'e734ee66-2d14-4f33-99e7-b7a8407e3e39'
+        ].indexOf(vm.report.id) !== -1;
+        // --- ends here ---
+
         /**
          * @ngdoc method
          * @methodOf report.controller:ReportGenerateController
@@ -168,8 +177,8 @@
                     watchDependency(param, dependency);
                 });
             });
-            // Malawi: set default format to csv for Pick Work Sheet report.
-            if (vm.report.id === 'afbd56e8-bc66-446a-a947-810971f68aef') {
+            // Malawi: set default format to csv.
+            if (vm.isASpreadsheetReport) {
                 vm.format = 'csv';
             } // --- ends here ---
         }
