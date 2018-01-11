@@ -79,7 +79,9 @@
          * @description
          * The beginning of the period to search for orders.
          */
-        vm.periodStartDate = undefined;
+        // Malawi: default start date
+        vm.periodStartDate = new Date('2017-08-01T00:00:00.000Z');
+        // --- ends here ---
 
         /**
          * @ngdoc property
