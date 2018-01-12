@@ -151,15 +151,17 @@ describe('RequisitionViewController', function() {
             expect(vm.canSkip).toBe(true);
         });
 
-        it('should display skip button when requisition is rejected', function() {
+        // Malawi: Disable skip button if form has data in it
+        it('should not display skip button when requisition is rejected', function() {
             authorizationServiceSpy.hasRight.andReturn(true);
             requisition.$isInitiated.andReturn(false);
             requisition.$isRejected.andReturn(true);
 
             vm.$onInit();
 
-            expect(vm.canSkip).toBe(true);
+            expect(vm.canSkip).toBe(false);
         });
+        // --- ends here ---
 
         it('should not display skip button if user has no permission to create requisition', function() {
             authorizationServiceSpy.hasRight.andReturn(false);

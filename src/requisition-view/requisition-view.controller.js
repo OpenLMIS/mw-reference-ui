@@ -619,7 +619,9 @@
          * @return {Boolean} true if skip button should be visible, false otherwise
          */
         function displaySkip() {
-            return (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) &&
+            // Malawi: Disable skip button if form has data in it
+            return vm.requisition.$isInitiated() &&
+            // --- ends here ---
                 vm.requisition.program.periodsSkippable &&
                 !vm.requisition.emergency &&
                 hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
