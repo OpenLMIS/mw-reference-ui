@@ -44,17 +44,25 @@ describe('ReportGenerateController', function() {
 
     describe('onInit', function() {
 
-        it('the default format should be pdf', function() {
+        it('should set formats to the ones that report supports', function() {
+            report.supportedFormats = ['pdf', 'html', 'asd'];
             initiateController();
 
-            expect(vm.format).toEqual('pdf');
+            expect(vm.formats).toEqual(['pdf', 'html']);
         });
 
-        it('should set default format to csv for Pick Work Sheet report', function() {
-            report.id = 'afbd56e8-bc66-446a-a947-810971f68aef';
+        it('should set formats to defaults if none supported', function() {
+            report.supportedFormats = [];
             initiateController();
 
-            expect(vm.format).toEqual('csv');
+            expect(vm.formats).toEqual(['pdf', 'csv', 'xls', 'html']);
+        });
+
+        it('the default selected format should be the first one supported', function() {
+            report.supportedFormats = ['html', 'xls'];
+            initiateController();
+
+            expect(vm.format).toEqual('html');
         });
     });
 

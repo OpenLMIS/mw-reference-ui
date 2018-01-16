@@ -34,19 +34,19 @@
 
     <fieldset class="form-group">
         <legend>{{'report.format' | message}}</legend>
-        <label class="radio" ng-if="!vm.isASpreadsheetReport">
+        <label class="radio" ng-if="vm.supportsFormat('pdf')">
             <input type="radio" ng-model="vm.format" value="pdf" required/>
             {{'report.pdf' | message}}
         </label>
-        <label class="radio">
+        <label class="radio"  ng-if="vm.supportsFormat('csv')">
             <input type="radio" ng-model="vm.format" value="csv" required/>
             {{'report.csv' | message}}
         </label>
-        <label class="radio">
+        <label class="radio" ng-if="vm.supportsFormat('xls')">
             <input type="radio" ng-model="vm.format" value="xls" required/>
             {{'report.xls' | message}}
         </label>
-        <label class="radio" ng-if="!vm.isASpreadsheetReport">
+        <label class="radio" ng-if="vm.supportsFormat('html')">
             <input type="radio" ng-model="vm.format" value="html" required/>
             {{'report.html' | message}}
         </label>

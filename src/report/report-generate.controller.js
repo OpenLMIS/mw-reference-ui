@@ -42,6 +42,8 @@
 
         vm.downloadReport = downloadReport;
 
+        vm.supportsFormat = supportsFormat;
+
         vm.paramsInfo = {
             'GeographicZone': 'report.geographicZoneInfo',
             'DueDays': 'report.dueDaysInfo'
@@ -96,6 +98,17 @@
         /**
          * @ngdoc property
          * @propertyOf report.controller:ReportGenerateController
+         * @name formats
+         * @type {String}
+         *
+         * @description
+         * Available formats.
+         */
+        vm.formats = [];
+
+        /**
+         * @ngdoc property
+         * @propertyOf report.controller:ReportGenerateController
          * @name format
          * @type {String}
          *
@@ -103,15 +116,6 @@
          * The format selected for the report. Either 'pdf' (default), 'csv', 'xls' or 'html'.
          */
         vm.format = 'pdf';
-
-        // Malawi: whether the report is csv/xls only
-        vm.isASpreadsheetReport = [
-            // Pick Work Sheet report
-            'afbd56e8-bc66-446a-a947-810971f68aef',
-            // Regular vs Emergency Orders
-            'e734ee66-2d14-4f33-99e7-b7a8407e3e39'
-        ].indexOf(vm.report.id) !== -1;
-        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -172,15 +176,28 @@
          * Initialization method of the ReportGenerateController.
          */
         function onInit() {
+
             angular.forEach(report.templateParameters, function(param) {
                 angular.forEach(param.dependencies, function(dependency) {
                     watchDependency(param, dependency);
                 });
             });
-            // Malawi: set default format to csv.
-            if (vm.isASpreadsheetReport) {
-                vm.format = 'csv';
-            } // --- ends here ---
+        // Malawi: supported formats
+            var defaultFormats = ['pdf', 'csv', 'xls', 'html'];
+            angular.forEach(report.supportedFormats, function(format) {
+                if (defaultFormats.indexOf(format) !== -1) {
+                    vm.formats.push(format);
+                }
+            });
+            if (vm.formats.length === 0) {
+                vm.formats = defaultFormats;
+            }
+            vm.format = vm.formats[0];
         }
+
+        function supportsFormat(format) {
+            return vm.formats.indexOf(format) !== -1;
+        }
+        // --- ends here ---
     }
 })();
