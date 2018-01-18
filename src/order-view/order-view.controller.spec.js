@@ -19,7 +19,7 @@ describe('OrderViewController', function() {
         requestingFacilities, programs, orders, item, $controller, $stateParams, $rootScope, scope,
         requestingFacilityFactory,
         // Malawi: default start date
-        $filter, defaultStartDate = new Date('2017-08-01T00:00:00.000Z');
+        $filter, defaultStartDate = new Date('2017-07-01T00:00:00.000Z');
         // --- ends here ---
 
     beforeEach(function() {
