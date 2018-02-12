@@ -183,9 +183,10 @@
                 });
             });
         // Malawi: supported formats
+            var supportedFormats = ['pdf', 'csv', 'xls', 'xlsx', 'html'];
             var defaultFormats = ['pdf', 'csv', 'xls', 'html'];
             angular.forEach(report.supportedFormats, function(format) {
-                if (defaultFormats.indexOf(format) !== -1) {
+                if (supportedFormats.indexOf(format) !== -1) {
                     vm.formats.push(format);
                 }
             });

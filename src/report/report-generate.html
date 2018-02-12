@@ -46,6 +46,10 @@
             <input type="radio" ng-model="vm.format" value="xls" required/>
             {{'report.xls' | message}}
         </label>
+        <label class="radio" ng-if="vm.supportsFormat('xlsx')">
+            <input type="radio" ng-model="vm.format" value="xlsx" required/>
+            {{'report.xlsx' | message}}
+        </label>
         <label class="radio" ng-if="vm.supportsFormat('html')">
             <input type="radio" ng-model="vm.format" value="html" required/>
             {{'report.html' | message}}
