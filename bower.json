@@ -2,7 +2,8 @@
   "name": "mw-reference-ui",
   "dependencies": {
     "perfect-scrollbar": "^0.7.0",
-    "angular": "1.6.6"
+    "angular": "1.6.6",
+    "autosize-input": "https://raw.githubusercontent.com/yuanqing/autosize-input/cf73892e1b9ceff448c7ea5f4a41b4b8a6a3991c/autosize-input.min.js"
   },
   "resolutions": {
     "angular": "1.6.6"
