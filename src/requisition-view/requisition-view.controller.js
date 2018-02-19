@@ -580,7 +580,7 @@
          */
         function displaySetAllTo0() {
             var approvedQuantityColumn = requisition.template.getColumn(TEMPLATE_COLUMNS.APPROVED_QUANTITY);
-            return approvedQuantityColumn.isDisplayed && displayApproveAndReject();
+            return approvedQuantityColumn.isDisplayed && vm.requisition.$isAuthorized() && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
         }
 
         /**
