@@ -34,7 +34,7 @@
         'confirmService', 'REQUISITION_RIGHTS', 'FULFILLMENT_RIGHTS', 'offlineService', '$window',
         'requisitionUrlFactory', '$filter', '$scope', 'RequisitionWatcher',
         'accessTokenFactory', 'messageService', 'stateTrackerService', 'RequisitionStockCountDateModal',
-        'localStorageFactory', 'REQUISITION_WARNING_PROGRAM_CODE', 'REQUISITION_WARNING_PERIODS', 'TEMPLATE_COLUMNS'
+        'localStorageFactory', 'REQUISITION_WARNING_PROGRAM_CODE', 'REQUISITION_WARNING_PERIODS', 'TEMPLATE_COLUMNS', 'COLUMN_SOURCES'
     ];
 
     function RequisitionViewController($state, requisition, requisitionValidator,
@@ -45,7 +45,7 @@
                                        $scope, RequisitionWatcher, accessTokenFactory,
                                        messageService, stateTrackerService, RequisitionStockCountDateModal,
                                        localStorageFactory, REQUISITION_WARNING_PROGRAM_CODE,
-                                       REQUISITION_WARNING_PERIODS, TEMPLATE_COLUMNS) {
+                                       REQUISITION_WARNING_PERIODS, TEMPLATE_COLUMNS, COLUMN_SOURCES) {
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition, localStorageFactory('requisitions'));
@@ -116,6 +116,7 @@
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
         vm.displayPriceInfo = displayPriceInfo;
         vm.setAllToZero = setAllToZero;
+        vm.enableSkip = enableSkip;
 
         /**
          * @ngdoc method
@@ -619,12 +620,24 @@
          * @return {Boolean} true if skip button should be visible, false otherwise
          */
         function displaySkip() {
-            // Malawi: Disable skip button if form has data in it
-            return vm.requisition.$isInitiated() &&
-            // --- ends here ---
+            return (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) &&
                 vm.requisition.program.periodsSkippable &&
                 !vm.requisition.emergency &&
                 hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name enableSkip
+         *
+         * @description
+         * Determines whether to enable skip requisition button or not.
+         *
+         * @return {Boolean} true if skip button should be enabled, false otherwise
+         */
+        function enableSkip() {
+            return displaySkip() && !hasDataInUserInputs();
         }
 
         /**
@@ -788,5 +801,26 @@
                 programCode: vm.requisition.program.code
             });
         }
+
+        // Malawi: disable skip button if user inputs are not empty
+        function hasDataInUserInputs() {
+          var userInputColumns = requisition.template.getColumns().filter(function(column) {
+            return column.$display === true &&
+                column.source === COLUMN_SOURCES.USER_INPUT &&
+                column.name !== 'beginningBalance';
+          });
+          return requisition.requisitionLineItems.some(function(lineItem) {
+            return userInputColumns.some(function(column) {
+              if (!isEmpty(lineItem[column.name])) {
+                return true
+              }
+            });
+          });
+        }
+
+        function isEmpty(value) {
+          return (value === null || value === undefined || value === '');
+        }
+        // --- ends here ---
     }
 })();

@@ -19,7 +19,7 @@ describe('RequisitionViewController', function() {
         loadingModalService, deferred, requisitionUrlFactoryMock, requisitionValidatorMock,
         fullSupplyItems, nonFullSupplyItems, authorizationServiceSpy, confirmSpy,
         REQUISITION_RIGHTS, accessTokenFactorySpy, $window, stateTrackerService, messageService,
-        RequisitionStockCountDateModal, RequisitionWatcher, watcher;
+        RequisitionStockCountDateModal, RequisitionWatcher, watcher, COLUMN_SOURCES, lineItem;
 
     beforeEach(function() {
         module('requisition-view');
@@ -87,17 +87,31 @@ describe('RequisitionViewController', function() {
             REQUISITION_RIGHTS = $injector.get('REQUISITION_RIGHTS');
             stateTrackerService = $injector.get('stateTrackerService');
             messageService = $injector.get('messageService');
+            COLUMN_SOURCES = $injector.get('COLUMN_SOURCES');
 
             confirmService.confirm.andCallFake(function() {
                 return $q.when(true);
             });
 
-            var template = jasmine.createSpyObj('template', ['getColumn']);
+            var template = jasmine.createSpyObj('template', ['getColumn', 'getColumns']);
             deferred = $q.defer();
             requisition = jasmine.createSpyObj('requisition',
                 ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$isSkipped', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
             requisition.template = template;
             template.getColumn.andReturn({});
+
+            // Malawi: disable skip button if user inputs are not empty
+            template.getColumns.andReturn([{
+              source: COLUMN_SOURCES.USER_INPUT,
+              name: 'beginningBalance',
+              $display: true
+            }, {
+              source: COLUMN_SOURCES.USER_INPUT,
+              name: 'qtyUsed',
+              $display: true
+            }]);
+            // --- ends here ---
+
             requisition.id = '1';
             requisition.program = {
                 id: '2',
@@ -124,12 +138,15 @@ describe('RequisitionViewController', function() {
             return 'http://some.url' + url;
         });
 
-        fullSupplyItems = [{
-            skipped: '',
-            $program: {
-                fullSupply: true
-            }
-        }];
+        // Malawi: disable skip button if user inputs are not empty
+        lineItem = {
+          skipped: '',
+          $program: {
+            fullSupply: true
+          }
+        };
+        fullSupplyItems = [lineItem];
+        // --- ends here ---
 
         nonFullSupplyItems = [{
             skipped: '',
@@ -151,17 +168,15 @@ describe('RequisitionViewController', function() {
             expect(vm.canSkip).toBe(true);
         });
 
-        // Malawi: Disable skip button if form has data in it
-        it('should not display skip button when requisition is rejected', function() {
+        it('should display skip button when requisition is rejected', function() {
             authorizationServiceSpy.hasRight.andReturn(true);
             requisition.$isInitiated.andReturn(false);
             requisition.$isRejected.andReturn(true);
 
             vm.$onInit();
 
-            expect(vm.canSkip).toBe(false);
+            expect(vm.canSkip).toBe(true);
         });
-        // --- ends here ---
 
         it('should not display skip button if user has no permission to create requisition', function() {
             authorizationServiceSpy.hasRight.andReturn(false);
@@ -197,6 +212,38 @@ describe('RequisitionViewController', function() {
 
             expect(vm.canSkip).toBe(false);
         });
+
+        // Malawi: disable skip button if user inputs are not empty
+        it('should enable skip button if there is no data in user inputs', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+            lineItem.beginningBalance = null;
+            lineItem.qtyUsed = null;
+
+            vm.$onInit();
+
+            expect(vm.enableSkip()).toBe(true);
+        });
+
+        it('should not disable skip button if there is data in beginningBalance column', function() {
+          authorizationServiceSpy.hasRight.andReturn(true);
+          lineItem.beginningBalance = 1;
+          lineItem.qtyUsed = null;
+
+          vm.$onInit();
+
+          expect(vm.enableSkip()).toBe(true);
+        });
+
+        it('should disable skip button if requisition has data in user inputs', function() {
+            authorizationServiceSpy.hasRight.andReturn(true);
+            lineItem.beginningBalance = 1;
+            lineItem.qtyUsed = 2;
+
+            vm.$onInit();
+
+            expect(vm.enableSkip()).toBe(false);
+        });
+        // --- ends here ---
 
         it('should display sync button when initiated', function() {
             authorizationServiceSpy.hasRight.andReturn(true);
