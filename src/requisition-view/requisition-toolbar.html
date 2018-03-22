@@ -7,6 +7,6 @@
         <button ng-if="vm.canApproveAndReject" class="primary" ng-disabled="vm.isOffline()" ng-click="vm.approveRnr()">{{'requisitionView.approve.label' | message}}</button>
         <button ng-if="vm.canApproveAndReject" class="danger" ng-disabled="vm.isOffline()" ng-click="vm.rejectRnr()">{{'requisitionView.reject.label' | message}}</button>
         <button ng-if="vm.canDelete" class="danger" ng-disabled="vm.isOffline()" ng-click="vm.removeRnr()">{{'requisitionView.delete.label' | message}}</button>
-        <button ng-if="vm.canSkip" ng-disabled="vm.isOffline() || !vm.enableSkip()" ng-click="vm.skipRnr()">{{'requisitionView.skip.label' | message}}</button>
+        <button ng-if="vm.canSkip && vm.enableSkip()" ng-disabled="vm.isOffline()" ng-click="vm.skipRnr()">{{'requisitionView.skip.label' | message}}</button>
     </div>
 </div>
