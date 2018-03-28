@@ -45,9 +45,22 @@ describe('RequisitionPeriodWarning', function () {
             'then': function(){}
         });
 
+        var canSubmit = true,
+            canAuthorize = false,
+            canApproveAndReject = false,
+            canDelete = true,
+            canSkip = true,
+            canSync = true;
+
         vm = $controller('RequisitionViewController', {
             $scope: $rootScope.$new(),
-            requisition: requisition
+            requisition: requisition,
+            canSubmit: canSubmit,
+            canAuthorize: canAuthorize,
+            canApproveAndReject: canApproveAndReject,
+            canDelete: canDelete,
+            canSkip: canSkip,
+            canSync: canSync
         });
     }));
 

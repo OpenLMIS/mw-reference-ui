@@ -35,7 +35,7 @@
       label: 'orderView.viewOrders',
       showInNavigation: true,
       templateUrl: 'order-view/order-view.html',
-      url: '/view?supplyingFacility&requestingFacility&program&periodStartDate&periodEndDate&page&size',
+      url: '/view?supplyingFacilityId&requestingFacilityId&programId&periodStartDate&periodEndDate&page&size',
       accessRights: [
         FULFILLMENT_RIGHTS.PODS_MANAGE,
         FULFILLMENT_RIGHTS.ORDERS_VIEW
@@ -48,9 +48,9 @@
           );
         },
         requestingFacilities: function(requestingFacilityFactory, $stateParams) {
-          if ($stateParams.supplyingFacility) {
+          if ($stateParams.supplyingFacilityId) {
             return requestingFacilityFactory.loadRequestingFacilities(
-                $stateParams.supplyingFacility).then(function(requestingFacilities) {
+                $stateParams.supplyingFacilityId).then(function(requestingFacilities) {
               return requestingFacilities;
             });
           }
@@ -59,17 +59,18 @@
         programs: function(programService, authorizationService) {
           return programService.getAll();
         },
-        orders: function(paginationService, orderFactory, $stateParams) {
+        orders: function(paginationService, orderRepository, $stateParams) {
           return paginationService.registerUrl($stateParams, function(stateParams) {
-            var params = angular.copy(stateParams);
-            // Malawi: min start date
-            if (!params.periodStartDate
-                || new Date(params.periodStartDate) < new Date(minStartDate)) {
-              params.periodStartDate = minStartDate;
-            }
-            // --- ends here ---
-            if (params.supplyingFacility) {
-              return orderFactory.search(params);
+            if (stateParams.supplyingFacilityId) {
+              stateParams.sort = 'createdDate,desc';
+              // Malawi: min start date
+              var params = angular.copy(stateParams);
+              if (!params.periodStartDate
+                  || new Date(params.periodStartDate) < new Date(minStartDate)) {
+                params.periodStartDate = minStartDate;
+              }
+              return orderRepository.search(params);
+              // --- ends here ---
             }
             return undefined;
           });

@@ -13,13 +13,16 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
+
 describe('RequisitionViewController', function() {
 
     var $scope, $q, $state, notificationService, alertService, confirmService, vm, requisition,
         loadingModalService, deferred, requisitionUrlFactoryMock, requisitionValidatorMock,
         fullSupplyItems, nonFullSupplyItems, authorizationServiceSpy, confirmSpy,
-        REQUISITION_RIGHTS, accessTokenFactorySpy, $window, stateTrackerService, messageService,
+        accessTokenFactorySpy, $window, stateTrackerService, messageService,
+        // Malawi: Disable skip button if there is data in user inputs
         RequisitionStockCountDateModal, RequisitionWatcher, watcher, COLUMN_SOURCES, lineItem;
+        // --- ends here ---
 
     beforeEach(function() {
         module('requisition-view');
@@ -84,31 +87,34 @@ describe('RequisitionViewController', function() {
             alertService = $injector.get('alertService');
             confirmService = $injector.get('confirmService');
             loadingModalService = $injector.get('loadingModalService');
-            REQUISITION_RIGHTS = $injector.get('REQUISITION_RIGHTS');
             stateTrackerService = $injector.get('stateTrackerService');
             messageService = $injector.get('messageService');
+            // Malawi: Disable skip button if there is data in user inputs
             COLUMN_SOURCES = $injector.get('COLUMN_SOURCES');
+            // --- ends here ---
 
             confirmService.confirm.andCallFake(function() {
                 return $q.when(true);
             });
 
-            var template = jasmine.createSpyObj('template', ['getColumn', 'getColumns']);
             deferred = $q.defer();
             requisition = jasmine.createSpyObj('requisition',
                 ['$skip', '$isInitiated', '$isSubmitted', '$isAuthorized', '$isInApproval', '$isReleased', '$isRejected', '$isSkipped', '$save', '$authorize', '$submit', '$remove', '$approve', '$reject']);
+            // Malawi: set all to 0 button
+            var template = jasmine.createSpyObj('template', ['getColumn', 'getColumns']);
             requisition.template = template;
             template.getColumn.andReturn({});
+            // --- ends here ---
 
             // Malawi: disable skip button if user inputs are not empty
             template.getColumns.andReturn([{
-              source: COLUMN_SOURCES.USER_INPUT,
-              name: 'beginningBalance',
-              $display: true
+                source: COLUMN_SOURCES.USER_INPUT,
+                name: 'beginningBalance',
+                $display: true
             }, {
-              source: COLUMN_SOURCES.USER_INPUT,
-              name: 'qtyUsed',
-              $display: true
+                source: COLUMN_SOURCES.USER_INPUT,
+                name: 'qtyUsed',
+                $display: true
             }]);
             // --- ends here ---
 
@@ -116,10 +122,13 @@ describe('RequisitionViewController', function() {
             requisition.program = {
                 id: '2',
                 periodsSkippable: true,
+                skipAuthorization: false,
                 code: 'CODE',
                 enableDatePhysicalStockCountCompleted: true
             };
-            requisition.draftStatusMessage = 'New comment';
+            requisition.facility = {
+                id: '3'
+            };
             requisition.$isInitiated.andReturn(true);
             requisition.$isReleased.andReturn(false);
             requisition.$isRejected.andReturn(false);
@@ -128,9 +137,22 @@ describe('RequisitionViewController', function() {
             requisition.$authorize.andReturn(deferred.promise);
             spyOn(stateTrackerService, 'goToPreviousState');
 
+            var canSubmit = true,
+                canAuthorize = false,
+                canApproveAndReject = false,
+                canDelete = true,
+                canSkip = true,
+                canSync = true;
+
             vm = $injector.get('$controller')('RequisitionViewController', {
                 $scope: $scope,
-                requisition: requisition
+                requisition: requisition,
+                canSubmit: canSubmit,
+                canAuthorize: canAuthorize,
+                canApproveAndReject: canApproveAndReject,
+                canDelete: canDelete,
+                canSkip: canSkip,
+                canSync: canSync
             });
         });
 
@@ -138,12 +160,12 @@ describe('RequisitionViewController', function() {
             return 'http://some.url' + url;
         });
 
-        // Malawi: disable skip button if user inputs are not empty
+        // Malawi: Disable skip button if there is data in user inputs
         lineItem = {
-          skipped: '',
-          $program: {
-            fullSupply: true
-          }
+            skipped: '',
+            $program: {
+                fullSupply: true
+            }
         };
         fullSupplyItems = [lineItem];
         // --- ends here ---
@@ -160,60 +182,28 @@ describe('RequisitionViewController', function() {
 
     describe('$onInit', function() {
 
-        it('should display skip button', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
+        it('should display submit button when user can submit requisition and skip authorization is not configured', function() {
+            vm.canSubmit = true;
+            vm.requisition.program.skipAuthorization = false;
 
             vm.$onInit();
 
-            expect(vm.canSkip).toBe(true);
+            expect(vm.displaySubmitButton).toBe(true);
+            expect(vm.displaySubmitAndAuthorizeButton).toBe(false);
         });
 
-        it('should display skip button when requisition is rejected', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-            requisition.$isInitiated.andReturn(false);
-            requisition.$isRejected.andReturn(true);
+        it('should display submit and authorize button when user can submit requisition and skip authorization is configured', function() {
+            vm.canSubmit = true;
+            vm.requisition.program.skipAuthorization = true;
 
             vm.$onInit();
 
-            expect(vm.canSkip).toBe(true);
+            expect(vm.displaySubmitAndAuthorizeButton).toBe(true);
+            expect(vm.displaySubmitButton).toBe(false);
         });
 
-        it('should not display skip button if user has no permission to create requisition', function() {
-            authorizationServiceSpy.hasRight.andReturn(false);
 
-            vm.$onInit();
-
-            expect(vm.canSkip).toBe(false);
-        });
-
-        it('should not display skip button if program does not allow skipping periods', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-            vm.requisition.program.periodsSkippable = false;
-
-            vm.$onInit();
-
-            expect(vm.canSkip).toBe(false);
-        });
-
-        it('should not display skip button if requisition has emergency type', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-            vm.requisition.emergency = true;
-
-            vm.$onInit();
-
-            expect(vm.canSkip).toBe(false);
-        });
-
-        it('should display skip button if requisition is not in initiated status', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-            vm.requisition.$isInitiated.andReturn(false);
-
-            vm.$onInit();
-
-            expect(vm.canSkip).toBe(false);
-        });
-
-        // Malawi: disable skip button if user inputs are not empty
+        // Malawi: Disable skip button if there is data in user inputs
         it('should enable skip button if there is no data in user inputs', function() {
             authorizationServiceSpy.hasRight.andReturn(true);
             lineItem.beginningBalance = null;
@@ -225,13 +215,13 @@ describe('RequisitionViewController', function() {
         });
 
         it('should not disable skip button if there is data in beginningBalance column', function() {
-          authorizationServiceSpy.hasRight.andReturn(true);
-          lineItem.beginningBalance = 1;
-          lineItem.qtyUsed = null;
+            authorizationServiceSpy.hasRight.andReturn(true);
+            lineItem.beginningBalance = 1;
+            lineItem.qtyUsed = null;
 
-          vm.$onInit();
+            vm.$onInit();
 
-          expect(vm.enableSkip()).toBe(true);
+            expect(vm.enableSkip()).toBe(true);
         });
 
         it('should disable skip button if requisition has data in user inputs', function() {
@@ -244,131 +234,6 @@ describe('RequisitionViewController', function() {
             expect(vm.enableSkip()).toBe(false);
         });
         // --- ends here ---
-
-        it('should display sync button when initiated', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(true);
-            vm.requisition.$isSubmitted.andReturn(false);
-            vm.requisition.$isAuthorized.andReturn(false);
-            vm.requisition.$isInApproval.andReturn(false);
-
-            vm.$onInit();
-
-            expect(vm.canSync).toBe(true);
-        });
-
-        it('should display sync button when rejected', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(false);
-            vm.requisition.$isSubmitted.andReturn(false);
-            vm.requisition.$isAuthorized.andReturn(false);
-            vm.requisition.$isInApproval.andReturn(false);
-            vm.requisition.$isRejected.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canSync).toBe(true);
-        });
-
-        it('should display sync button when submitted', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(false);
-            vm.requisition.$isSubmitted.andReturn(true);
-            vm.requisition.$isAuthorized.andReturn(false);
-            vm.requisition.$isInApproval.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canSync).toBe(true);
-        });
-
-        it('should display sync button when authorized', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(false);
-            vm.requisition.$isSubmitted.andReturn(false);
-            vm.requisition.$isAuthorized.andReturn(true);
-            vm.requisition.$isInApproval.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canSync).toBe(true);
-        });
-
-        it('should display sync button in approval', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(false);
-            vm.requisition.$isSubmitted.andReturn(false);
-            vm.requisition.$isAuthorized.andReturn(false);
-            vm.requisition.$isInApproval.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canSync).toBe(true);
-        });
-
-        it('should not display sync button', function() {
-            vm.requisition.$isInitiated.andReturn(false);
-            vm.requisition.$isSubmitted.andReturn(false);
-            vm.requisition.$isAuthorized.andReturn(false);
-            vm.requisition.$isInApproval.andReturn(false);
-
-            vm.$onInit();
-
-            expect(vm.canSync).toBe(false);
-        });
-
-        it('should display delete button when initiated', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canDelete).toBe(true);
-        });
-
-        it('should display delete button when rejected', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isInitiated.andReturn(false);
-            vm.requisition.$isRejected.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canDelete).toBe(true);
-        });
-
-
-        it('should display delete button when submitted', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isSubmitted.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canDelete).toBe(true);
-        });
-
-        it('should display delete button when skipped', function() {
-            authorizationServiceSpy.hasRight.andReturn(true);
-
-            vm.requisition.$isSkipped.andReturn(true);
-
-            vm.$onInit();
-
-            expect(vm.canDelete).toBe(true);
-        });
-
-        it('should not display delete button', function() {
-            vm.$onInit();
-
-            expect(vm.canDelete).toBe(false);
-        });
 
     });
 
@@ -406,9 +271,11 @@ describe('RequisitionViewController', function() {
         expect(notificationServiceSpy).toHaveBeenCalledWith('requisitionView.skip.failure');
     });
 
+    // Malawi: link to the updated requisition printout
     it('getPrintUrl should prepare URL correctly', function() {
-        expect(vm.getPrintUrl()).toEqual('http://some.url/api/requisitions/1/print');
+        expect(vm.getPrintUrl()).toEqual('http://some.url/api/reports/requisitions/1/print');
     });
+    // --- ends here ---
 
     describe('Sync error handling', function() {
 
@@ -493,7 +360,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isFullSupplyTabValid()).toBe(true);
             expect(requisitionValidatorMock.areLineItemsValid)
-                .toHaveBeenCalledWith([fullSupplyItems[0]]);
+            .toHaveBeenCalledWith([fullSupplyItems[0]]);
             expect(vm.invalidFullSupply).toBe(undefined);
         });
 
@@ -504,7 +371,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isFullSupplyTabValid()).toBe(false);
             expect(requisitionValidatorMock.areLineItemsValid)
-                .toHaveBeenCalledWith([fullSupplyItems[0]]);
+            .toHaveBeenCalledWith([fullSupplyItems[0]]);
             expect(vm.invalidFullSupply).toBe(message);
             expect(messageService.get).toHaveBeenCalledWith('requisitionView.requisition.error');
         });
@@ -527,7 +394,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isNonFullSupplyTabValid()).toBe(true);
             expect(requisitionValidatorMock.areLineItemsValid)
-                .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
+            .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
             expect(vm.invalidNonFullSupply).toBe(undefined);
         });
 
@@ -538,7 +405,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isNonFullSupplyTabValid()).toBe(false);
             expect(requisitionValidatorMock.areLineItemsValid)
-                .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
+            .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
             expect(vm.invalidNonFullSupply).toBe(message);
             expect(messageService.get).toHaveBeenCalledWith('requisitionView.requisition.error');
         });
@@ -726,12 +593,14 @@ describe('RequisitionViewController', function() {
 
     describe('rejectRnr', function() {
 
+        // Malawi: Rejecting LMIS form should require a reason
         var confirmDeferred, saveDeferred, alertService;
 
         beforeEach(inject(function(_alertService_) {
             alertService = _alertService_;
             spyOn(alertService, 'error');
-
+            vm.requisition.draftStatusMessage = 'test';
+        // --- ends here ---
             confirmDeferred = $q.defer();
             saveDeferred = $q.defer();
 
@@ -757,6 +626,7 @@ describe('RequisitionViewController', function() {
             expect(requisition.$reject).toHaveBeenCalled();
         });
 
+        // Malawi: Rejecting LMIS form should require a reason
         it('should show error when trying to reject requisition with no comment added', function() {
             vm.requisition.draftStatusMessage = null;
             vm.rejectRnr();
@@ -773,6 +643,7 @@ describe('RequisitionViewController', function() {
             expect(requisition.$save).not.toHaveBeenCalled();
             expect(requisition.$reject).not.toHaveBeenCalled();
         });
+        // --- ends here ---
 
         it('should redirect to previous state', function() {
             authorizationServiceSpy.hasRight.andReturn(false);
@@ -784,14 +655,14 @@ describe('RequisitionViewController', function() {
             $scope.$apply();
 
             expect(stateTrackerService.goToPreviousState)
-                .toHaveBeenCalledWith('openlmis.requisitions.approvalList');
+            .toHaveBeenCalledWith('openlmis.requisitions.approvalList');
         });
 
         it('should disable RequisitionWatcher', function() {
             vm.rejectRnr();
             confirmDeferred.resolve();
             saveDeferred.resolve();
-            $scope.$apply();
+            $scope.$apply()
 
             expect(watcher.disableWatcher).toHaveBeenCalled();
         });
@@ -801,8 +672,7 @@ describe('RequisitionViewController', function() {
 
         beforeEach(function() {
             spyOn($window, 'open').andCallThrough();
-            authorizationServiceSpy.hasRight.andReturn(true);
-            vm.requisition.$isInitiated.andReturn(true);
+            vm.$onInit();
         });
 
         it('should open window with report when sync succeeded', function() {
@@ -812,7 +682,9 @@ describe('RequisitionViewController', function() {
             $scope.$apply();
 
             expect(accessTokenFactorySpy.addAccessToken)
-                .toHaveBeenCalledWith('http://some.url/api/requisitions/1/print');
+            // Malawi: link to the updated requisition printout
+            .toHaveBeenCalledWith('http://some.url/api/reports/requisitions/1/print');
+            // --- ends here ---
         });
 
         it('should not open report when sync failed', function() {
@@ -838,7 +710,7 @@ describe('RequisitionViewController', function() {
 
         it('should open window with report when has no right for sync', function() {
             accessTokenFactorySpy.addAccessToken.andReturn('token');
-            authorizationServiceSpy.hasRight.andReturn(false);
+            vm.displaySyncButton = false;
 
             vm.syncRnrAndPrint();
 

@@ -12,7 +12,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th class="col-sticky" colspan="2"></th>
+                        <th class="col-sticky" colspan="2">
+                            {{'requisitionBatchApproval.product' | message}}
+                        </th>
                         <th ng-repeat="requisition in vm.requisitions track by requisition.id"
                             popover="{{requisition.$error}}"
                             colspan="2"
@@ -23,8 +25,8 @@
                         <th class="col-sticky col-sticky-right" colspan="2">{{'requisitionBatchApproval.totalForAllFacilities' | message}}</th>
                     </tr>
                     <tr>
-                        <th class="col-sticky" >{{'requisitionBatchApproval.productCode' | message}}</th>
-                        <th class="col-sticky" >{{'requisitionBatchApproval.product' | message}}</th>
+                        <th class="col-sticky" >{{'requisitionBatchApproval.code' | message}}</th>
+                        <th class="col-sticky" >{{'requisitionBatchApproval.name' | message}}</th>
                         <th ng-repeat-start="requisition in ::vm.requisitions track by requisition.id"
                             ng-class="{'requisition-error': requisition.$error}">
                             {{'requisitionBatchApproval.approvedQuantity' | message}}

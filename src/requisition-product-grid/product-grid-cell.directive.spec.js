@@ -15,8 +15,9 @@
 describe('ProductGridCell', function() {
 
     var $compile, scope, requisition, directiveElem, requisitionValidatorMock,
-        authorizationServiceSpy, TEMPLATE_COLUMNS, fullSupplyColumns, nonFullSupplyColumns,
-        REQUISITION_RIGHTS, userAlwaysHasRight, userHasAuthorizedRight;
+        authorizationServiceSpy, fullSupplyColumns, nonFullSupplyColumns,
+        REQUISITION_RIGHTS, userAlwaysHasRight, userHasAuthorizedRight,
+        RequisitionColumnDataBuilder;
 
     beforeEach(function() {
         module('requisition-product-grid', function($compileProvider) {
@@ -61,7 +62,7 @@ describe('ProductGridCell', function() {
         inject(function($injector) {
             $compile = $injector.get('$compile');
             scope = $injector.get('$rootScope').$new();
-            TEMPLATE_COLUMNS =  $injector.get('TEMPLATE_COLUMNS');
+            RequisitionColumnDataBuilder = $injector.get('RequisitionColumnDataBuilder');
 
             REQUISITION_RIGHTS = $injector.get('REQUISITION_RIGHTS');
 
@@ -92,7 +93,10 @@ describe('ProductGridCell', function() {
                 return nonFullSupply ? nonFullSupplyColumns : fullSupplyColumns;
             });
             requisition.program = {
-                code: 'CODE'
+                id: '1'
+            };
+            requisition.facility = {
+                id: '2'
             };
 
             scope.requisition = requisition;
@@ -113,7 +117,9 @@ describe('ProductGridCell', function() {
 
             scope.lineItem.$errors = {};
 
+            // Malawi: Added auto calculation and suggestion how much should be adjusted
             scope.lineItem.difference = {};
+            // --- ends here ---
         });
     });
 
@@ -177,36 +183,42 @@ describe('ProductGridCell', function() {
             scope.column, requisition);
     });
 
-    it('should call authorizationService only during linking for total losses and adjustments column', function() {
-        scope.column.name = "totalLossesAndAdjustments";
+    describe('Skip Column', function() {
 
-        directiveElem = getCompiledElement();
+        var skipColumn, element;
 
-        expect(authorizationServiceSpy.hasRight.calls.length).toBe(1);
+        beforeEach(function() {
+            skipColumn = new RequisitionColumnDataBuilder().buildSkipColumn();
+            scope.column = skipColumn;
+        });
 
-        scope.$digest();
-        scope.$digest();
-        scope.$digest();
+        it('should change disabled state if lineItem changes its skipability and user has right to edit', function() {
+            scope.userCanEdit = true;
+            scope.lineItem.canBeSkipped.andReturn(true);
 
-        expect(authorizationServiceSpy.hasRight.calls.length).toBe(1);
-    });
+            element = getCompiledElement();
 
-    it('should call authorizationService only during linking for Skip column', function() {
-        scope.column.name = "skipped";
+            expect(getSkipInput().attr('disabled')).toBe(undefined);
 
-        directiveElem = getCompiledElement();
+            scope.lineItem.canBeSkipped.andReturn(false);
+            scope.$digest();
 
-        expect(authorizationServiceSpy.hasRight.calls.length).toBe(1);
+            expect(getSkipInput().attr('disabled')).toBe('disabled');
 
-        scope.$digest();
-        scope.$digest();
-        scope.$digest();
+            scope.lineItem.canBeSkipped.andReturn(true);
+            scope.$digest();
 
-        expect(authorizationServiceSpy.hasRight.calls.length).toBe(1);
+            expect(getSkipInput().attr('disabled')).toBe(undefined);
+        });
+
+        function getSkipInput() {
+            return element.find('input.skip');
+        }
+
     });
 
     function getCompiledElement() {
-        var rootElement = angular.element('<div><div product-grid-cell requisition="requisition" column="column" line-item="lineItem"></div></div>');
+        var rootElement = angular.element('<div><div product-grid-cell requisition="requisition" column="column" line-item="lineItem" user-can-edit="userCanEdit"></div></div>');
         var compiledElement = $compile(rootElement)(scope);
         angular.element('body').append(compiledElement);
         scope.$digest();

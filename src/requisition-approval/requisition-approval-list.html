@@ -1,4 +1,5 @@
 <h2>{{'requisitionApproval.approveRequisitions' | message}}</h2>
+<h4>{{ 'requisitionApproval.instruction' | message }}</h4>
 <div class="openlmis-table-container">
     <form class="openlmis-table-filters" ng-submit="vm.search()">
         <label for=program>{{'requisitionApproval.program' | message}}</label>
@@ -19,46 +20,44 @@
             {{'requisitionApproval.noRnrPendingForApproval' | message}}
         </caption>
         <thead>
-            <tr>
-                <th class="col-sticky">
-                    {{ 'requisitionApproval.approve' | message }}
-                </th>
-                <th>{{'requisitionApproval.program' | message}}</th>
-                <th>{{'requisitionApproval.facility' | message}}</th>
-                <th>{{'requisitionApproval.period' | message}}</th>
-                <th>{{'requisitionApproval.startDate' | message}}</th>
-                <th>{{'requisitionApproval.endDate' | message}}</th>
-                <th>{{'requisitionApproval.dateSubmitted' | message}}</th>
-                <th>{{'requisitionApproval.emergency' | message}}</th>
-                <th popover="{{'requisitionApproval.offlineInfo' | message}}" popover-trigger-area="element">
-                    {{'requisitionApproval.offline' | message}}
-                </th>
-                <th class="col-sticky sticky-right">{{'requisitionApproval.actions' | message}}</th>
-            </tr>
+        <tr>
+            <th class="col-sticky">
+                {{ 'requisitionApproval.approve' | message }}
+            </th>
+            <th>{{'requisitionApproval.program' | message}}</th>
+            <th>{{'requisitionApproval.facility' | message}}</th>
+            <th>{{'requisitionApproval.period' | message}}</th>
+            <th>{{'requisitionApproval.startDate' | message}}</th>
+            <th>{{'requisitionApproval.endDate' | message}}</th>
+            <th>{{'requisitionApproval.dateSubmitted' | message}}</th>
+            <th>{{'requisitionApproval.emergency' | message}}</th>
+            <th>{{'requisitionApproval.offline' | message}}</th>
+            <th class="col-sticky sticky-right">{{'requisitionApproval.actions' | message}}</th>
+        </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="requisition in vm.requisitions">
-                <td>
-                    <input type="checkbox" ng-model="requisition.$selected">
-                </td>
-                <td>{{requisition.program.name}}</td>
-                <td>{{requisition.facility.code}} - {{requisition.facility.name}}</td>
-                <td>{{requisition.processingPeriod.name}}</td>
-                <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
-                <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
-                <td>{{requisition.statusChanges.SUBMITTED.changeDate | openlmisDate}}</td>
-                <td class="col-emergency">
-                    <span ng-if="requisition.emergency" class="icon-ok"></span>
-                </td>
-                <td class="col-emergency">
-                    <i ng-class="{'icon-ok': requisition.$availableOffline}"></i>
-                </td>
-                <td>
-                    <button ng-if="vm.isFullRequisitionAvailable(requisition.id)" class="primary" ng-click="vm.openRnr(requisition.id)">
-                        {{'requisitionApproval.viewRequisition' | message}}
-                    </button>
-                </td>
-            </tr>
+        <tr ng-repeat="requisition in vm.requisitions">
+            <td>
+                <input type="checkbox" ng-model="requisition.$selected">
+            </td>
+            <td>{{requisition.program.name}}</td>
+            <td>{{requisition.facility.code}} - {{requisition.facility.name}}</td>
+            <td>{{requisition.processingPeriod.name}}</td>
+            <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
+            <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
+            <td>{{requisition.statusChanges.SUBMITTED.changeDate | openlmisDate}}</td>
+            <td class="col-emergency">
+                <span ng-if="requisition.emergency" class="icon-ok"></span>
+            </td>
+            <td class="col-emergency">
+                <i ng-class="{'icon-ok': requisition.$availableOffline}"></i>
+            </td>
+            <td>
+                <button ng-if="vm.isFullRequisitionAvailable(requisition.id)" class="primary" ng-click="vm.openRnr(requisition.id)">
+                    {{'requisitionApproval.viewRequisition' | message}}
+                </button>
+            </td>
+        </tr>
         </tbody>
     </table>
     <openlmis-pagination/>

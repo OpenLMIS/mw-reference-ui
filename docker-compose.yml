@@ -2,7 +2,7 @@ version: "2"
 services:
 
   mw-ui:
-    image: openlmis/dev-ui:5
+    image: openlmis/dev-ui:7.0.0-SNAPSHOT
     working_dir: /app
     volumes:
       - '.:/app'
@@ -15,8 +15,9 @@ services:
       - fulfillment-ui
       - referencedata-ui
       - requisition-ui
-      - stockmanagement-ui
       - report-ui
+      - stockmanagement-ui
+      - cce-ui
       - ui-components
       - ui-layout
     depends_on:
@@ -24,48 +25,54 @@ services:
       - fulfillment-ui
       - referencedata-ui
       - requisition-ui
-      - stockmanagement-ui
       - report-ui
+      - stockmanagement-ui
+      - cce-ui
       - ui-components
       - ui-layout
 
   auth-ui:
-    image: openlmis/auth-ui:6.0.1
+    image: openlmis/auth-ui:6.0.2-SNAPSHOT
     volumes:
       - '/openlmis-auth-ui'
 
   fulfillment-ui:
-    image: openlmis/fulfillment-ui:5.1.0
+    image: openlmis/fulfillment-ui:5.1.1-SNAPSHOT
     volumes:
       - '/openlmis-fulfillment-ui'
 
   referencedata-ui:
-    image: openlmis/referencedata-ui:5.2.2
+    image: openlmis/referencedata-ui:5.3.0-SNAPSHOT
     volumes:
       - '/openlmis-referencedata-ui'
 
   stockmanagement-ui:
-    image: openlmis/stockmanagement-ui:1.0.1
+    image: openlmis/stockmanagement-ui:1.0.2-SNAPSHOT
     volumes:
       - '/openlmis-stockmanagement-ui'
 
+  cce-ui:
+    image: openlmis/cce-ui:1.0.0-SNAPSHOT
+    volumes:
+     - '/openlmis-cce-ui'
+
   report-ui:
-    image: openlmis/report-ui:5.0.4
+    image: openlmis/report-ui:5.0.5-SNAPSHOT
     volumes:
       - '/openlmis-report-ui'
 
   requisition-ui:
-    image: openlmismw/requisition-ui:5.2.2-SNAPSHOT
+    image: openlmis/requisition-ui:5.3.0-SNAPSHOT
     volumes:
       - '/openlmis-requisition-ui'
 
   ui-components:
-    image: openlmis/ui-components:5.2.0
+    image: openlmis/ui-components:5.3.0-SNAPSHOT
     volumes:
       - '/openlmis-ui-components'
 
   ui-layout:
-    image: openlmis/ui-layout:5.0.3
+    image: openlmis/ui-layout:5.0.4-SNAPSHOT
     volumes:
       - '/openlmis-ui-layout'
 

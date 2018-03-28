@@ -33,16 +33,22 @@
      * ```
      */
     angular
-        .module('requisition-product-grid')
-        .directive('productGridCell', productGridCell);
+    .module('requisition-product-grid')
+    .directive('productGridCell', productGridCell);
 
     productGridCell.$inject = [
-        '$templateRequest', '$compile', 'requisitionValidator', 'authorizationService',
-        'TEMPLATE_COLUMNS', 'COLUMN_TYPES', 'REQUISITION_RIGHTS'
+        '$q', '$timeout', '$templateRequest', '$compile', 'requisitionValidator',
+        'TEMPLATE_COLUMNS', 'COLUMN_TYPES', 'REQUISITION_RIGHTS',
+        // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
+        'authorizationService'
+        // --- ends here ---
     ];
 
-    function productGridCell($templateRequest, $compile, requisitionValidator, authorizationService,
-                            TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS) {
+    function productGridCell($q, $timeout, $templateRequest, $compile, requisitionValidator,
+        TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS,
+        // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
+        authorizationService) {
+        // --- ends here ---
 
         return {
             restrict: 'A',
@@ -50,7 +56,8 @@
             scope: {
                 requisition: '=',
                 column: '=',
-                lineItem: '='
+                lineItem: '=',
+                userCanEdit: '='
             }
         };
 
@@ -64,7 +71,7 @@
             scope.validate = validate;
             scope.update = update;
             scope.isReadOnly = isReadOnly();
-            scope.canNotSkip = canNotSkip();
+            scope.canSkip = canSkip;
 
             if(!scope.isReadOnly){
                 scope.$watch(function(){
@@ -76,10 +83,11 @@
                 });
             }
 
-            scope.$watch(function() {
-                if(lineItem.skipped) {
+            scope.$watch(function(){
+                if(lineItem.skipped){
                     return false;
                 }
+            // Malawi: Added auto calculation and suggestion how much should be adjusted
                 return lineItem.$errors[column.name];
             }, function(error) {
                 if (lineItem.difference[column.name]) {
@@ -97,6 +105,7 @@
             }, function(difference) {
                 scope.invalidMessage = displayError(lineItem.$errors[column.name], difference);
             });
+            // --- ends here ---
 
             scope.$on('openlmisInvalid.update', validate);
 
@@ -131,9 +140,11 @@
 
                     element = cell;
 
+                    // Malawi: Made product-name column collapsable
                     if(column.name === TEMPLATE_COLUMNS.PRODUCT_NAME) {
                         element.wrapInner('<div class="collapsable"></div>');
                     }
+                    // --- ends here ---
                 });
             }
 
@@ -154,21 +165,26 @@
                 return lineItem.isReadOnly(requisition, column);
             }
 
-            function canNotSkip() {
-                return !requisition.$isInitiated() && !requisition.$isRejected() &&
-                    !(hasAuthorizeRightForProgram() && requisition.$isSubmitted()) ||
-                    !lineItem.canBeSkipped(scope.requisition);
-            }
 
-            function hasAuthorizeRightForProgram() {
-                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
-                    programCode: requisition.program.code
-                });
-            }
-
+            // Malawi: Added auto calculation and suggestion how much should be adjusted
             function displayError(error, difference) {
                 return !difference ? error : error.concat('. The difference between the calculated and entered value is ', difference, '.');
             }
+            // --- ends here ---
+
+            // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
+            function hasAuthorizeRightForProgram() {
+                return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
+                    programId: requisition.program.id
+                });
+            }
+
+            function canSkip() {
+                return (scope.userCanEdit || hasAuthorizeRightForProgram())
+                    && lineItem.canBeSkipped(scope.requisition);
+            }
+            // --- ends here ---
+
         }
     }
 

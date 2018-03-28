@@ -1,6 +1,6 @@
 <header>
     <h2>{{'requisitionView.reportAndRequisitionFor' | message}} {{vm.requisition.program.name}} ({{vm.requisition.facility.type.name}})</h2>
-    <button ng-if="!vm.isOffline()" ng-click="vm.syncRnrAndMalawiPrint()" class="primary">{{'requisitionView.print' | message}}</button>
+    <button ng-if="!vm.isOffline()" ng-click="vm.syncRnrAndPrint()" class="primary">{{'requisitionView.print' | message}}</button>
 </header>
 <p class="alert is-error" ng-if="vm.requisition.$outdated">
     {{ 'requisitionView.outdated' | message}}

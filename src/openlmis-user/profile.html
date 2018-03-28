@@ -1,12 +1,18 @@
-<div class="user-profile">
+<div>
     <h2>{{'openlmisUser.basicInformation' | message}}</h2>
     <dl>
         <dt>{{'openlmisUser.firstName' | message}}</dt>
-        <dd>{{vm.user.firstName}}</dd>
+        <dd>{{vm.user.firstName}}<dd>
+    </dl>
+    <dl>
         <dt>{{'openlmisUser.lastName' | message}}</dt>
-        <dd>{{vm.user.lastName}}</dd>
+        <dd>{{vm.user.lastName}}<dd>
+    </dl>
+    <dl>
         <dt>{{'openlmisUser.email' | message}}</dt>
-        <dd>{{vm.user.email}}</dd>
+        <dd>{{vm.user.email}}<dd>
+    </dl>
+    <dl>
         <dt>{{'adminUserForm.homeFacility' | message}}</dt>
         <dd>{{vm.user.homeFacility.name}}</dd>
     </dl>

@@ -43,7 +43,6 @@
         var delegatedLineItem = LineItem;
 
         delegatedLineItem.prototype.getFieldValue = $delegate.prototype.getFieldValue;
-        delegatedLineItem.prototype.updateFieldValue = $delegate.prototype.updateFieldValue;
         delegatedLineItem.prototype.updateDependentFields = $delegate.prototype.updateDependentFields;
         delegatedLineItem.prototype.canBeSkipped = canBeSkipped;
         delegatedLineItem.prototype.isNonFullSupply = $delegate.prototype.isNonFullSupply;

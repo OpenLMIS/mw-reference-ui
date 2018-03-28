@@ -25,16 +25,19 @@
      * Responsible for parse periods and requisitions for initiate screen.
      */
     angular
-        .module('requisition-initiate')
-        .factory('periodFactory', periodFactory);
+    .module('requisition-initiate')
+    .config(function($provide) {
+        $provide.decorator('periodFactory', decorator);
+    });
 
-    periodFactory.$inject = ['periodService', 'requisitionService', 'messageService', '$q', 'REQUISITION_STATUS'];
+    decorator.$inject = ['$delegate', 'periodService', 'requisitionService', 'messageService', '$q', 'REQUISITION_STATUS'];
 
-    function periodFactory(periodService, requisitionService, messageService, $q, REQUISITION_STATUS) {
-        var factory = {
-            get: get
-        };
-        return factory;
+    function decorator($delegate, periodService, requisitionService, messageService, $q, REQUISITION_STATUS) {
+        var periodFactory = $delegate;
+
+        periodFactory.get = get;
+
+        return periodFactory;
 
         /**
          * @ngdoc method
@@ -78,9 +81,9 @@
             angular.forEach(periods, function(period, id) {
                 if(emergency) {
                     periodGridLineItems.push(createPeriodGridItem(period, null, 0));
-                // Malawi: check if the period is active
+                    // Malawi: check if the period is active
                 } else if (period.isActive === true) {
-                // --- ends here ---
+                    // --- ends here ---
                     var foundRequisition = null;
                     angular.forEach(requisitions, function (requisition) {
                         if (requisition.processingPeriod.id == period.id) {

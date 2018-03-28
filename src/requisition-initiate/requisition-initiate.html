@@ -1,26 +1,26 @@
 <h2>{{'requisitionInitiate.initiateReportAndRequisition' | message}}</h2>
 <div ng-if="vm.error" class="alert is-error" ng-show="vm.error">{{vm.error}}</div>
+<form class="sidebar" ng-submit="vm.loadPeriods()">
+    <openlmis-facility-program-select
+        is-supervised="vm.isSupervised"
+        facility="vm.facility"
+        program="vm.program"
+        module="'requisition-initiate'">
+    </openlmis-facility-program-select>
+    <fieldset class="form-group">
+        <legend>{{'requisitionInitiate.type' | message}}</legend>
+        <label class="radio">
+            <input type="radio" ng-model="vm.emergency" ng-value="false"/>
+            {{'requisitionInitiate.regular' | message}}
+        </label>
+        <label class="radio">
+            <input type="radio" ng-model="vm.emergency" ng-value="true"/>
+            {{'requisitionInitiate.emergency' | message}}
+        </label>
+    </fieldset>
+    <input type="submit" value="{{'requisitionInitiate.search'|message}}"/>
+</form>
 <section class="openlmis-table-container">
-    <form name="filterForm" ng-submit="vm.loadPeriods()">
-        <openlmis-facility-program-select
-                is-supervised="vm.isSupervised"
-                facility="vm.facility"
-                program="vm.program"
-                module="'requisition-initiate'">
-        </openlmis-facility-program-select>
-        <fieldset class="form-group">
-            <legend>{{'requisitionInitiate.type' | message}}</legend>
-            <label class="radio">
-                <input type="radio" ng-model="vm.emergency" ng-value="false"/>
-                {{'requisitionInitiate.regular' | message}}
-            </label>
-            <label class="radio">
-                <input type="radio" ng-model="vm.emergency" ng-value="true"/>
-                {{'requisitionInitiate.emergency' | message}}
-            </label>
-        </fieldset>
-        <input type="submit" value="{{'requisitionInitiate.search'|message}}"/>
-    </form>
     <table ng-class="{changed:filterForm.$dirty || vm.isUpdated}">
         <caption ng-if="!vm.periods.length">
             {{'requisitionInitiate.selectRequiredFields' | message}}
@@ -32,29 +32,29 @@
             {{'requisitionInitiate.formIsUpdated' | message}}
         </caption>
         <thead>
-            <tr>
-                <th>{{'requisitionInitiate.periods' | message}}</th>
-                <th>{{'requisitionInitiate.startDate' | message}}</th>
-                <th>{{'requisitionInitiate.endDate' | message}}</th>
-                <th>{{'requisitionInitiate.rnrStatus' | message}}</th>
-                <th class="col-sticky sticky-right">{{'requisitionInitiate.actions' | message}}</th>
-            </tr>
+        <tr>
+            <th>{{'requisitionInitiate.periods' | message}}</th>
+            <th>{{'requisitionInitiate.startDate' | message}}</th>
+            <th>{{'requisitionInitiate.endDate' | message}}</th>
+            <th>{{'requisitionInitiate.rnrStatus' | message}}</th>
+            <th class="col-sticky sticky-right">{{'requisitionInitiate.actions' | message}}</th>
+        </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="period in vm.periods">
-                <td>{{period.name}}</td>
-                <td>{{period.startDate | openlmisDate}}</td>
-                <td>{{period.endDate | openlmisDate}}</td>
-                <td>{{period.rnrStatus}}</td>
-                <td>
-                    <input id="proceedButton" type="button" ng-click="vm.initRnr(period)"
-                           value="{{'requisitionInitiate.proceed'| message}}" class="primary"
-                           ng-if="period.activeForRnr && !vm.periodHasRequisition(period)"/>
-                    <input id="proceedButton" type="button" ng-click="vm.goToRequisition(period.rnrId)"
-                           value="{{'requisitionInitiate.proceed'| message}}" class="primary"
-                           ng-if="period.activeForRnr && vm.periodHasRequisition(period)"/>
-                </td>
-            </tr>
+        <tr ng-repeat="period in vm.periods">
+            <td>{{period.name}}</td>
+            <td>{{period.startDate | openlmisDate}}</td>
+            <td>{{period.endDate | openlmisDate}}</td>
+            <td>{{period.rnrStatus}}</td>
+            <td>
+                <input id="proceedButton" type="button" ng-click="vm.initRnr(period)"
+                       value="{{'requisitionInitiate.proceed'| message}}" class="primary"
+                       ng-if="period.activeForRnr && !vm.periodHasRequisition(period)"/>
+                <input id="proceedButton" type="button" ng-click="vm.goToRequisition(period.rnrId)"
+                       value="{{'requisitionInitiate.proceed'| message}}" class="primary"
+                       ng-if="period.activeForRnr && vm.periodHasRequisition(period)"/>
+            </td>
+        </tr>
         </tbody>
     </table>
 </section>

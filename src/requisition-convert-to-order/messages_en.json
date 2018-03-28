@@ -1,4 +1,5 @@
 {
   "requisitionConvertToOrder.districtName": "Zone",
+  "requisitionConvertToOrder.convertRequisitionsToOrder": "Convert LMIS Forms to Order",
   "requisitionConvertToOrder.searchInfo": "In order to filter LMIS Forms type in one of the following parameters: Program Name, Facility Name or Facility Code and click \"Search\" button."
 }

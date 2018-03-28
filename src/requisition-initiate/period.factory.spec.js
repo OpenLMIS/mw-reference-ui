@@ -15,7 +15,7 @@
 
 describe('periodFactory', function() {
 
-    var $rootScope, $q, periodServiceMock, requisitionServiceMock, periodFactory, periodOne, periodTwo,
+    var $rootScope, $q, periodServiceMock, requisitionServiceMock, periodFactory, periodOne,
         requisition;
 
     beforeEach(function() {
@@ -38,6 +38,7 @@ describe('periodFactory', function() {
             REQUISITION_STATUS = _REQUISITION_STATUS_;
         });
 
+        // Malawi: check if the period is active
         periodOne = {
             id: '1',
             name: 'period1',
@@ -49,11 +50,17 @@ describe('periodFactory', function() {
         periodTwo = {
             id: '2',
             name: 'period2',
-            startDate: new Date("January 1, 2018 00:00:00"),
-            endDate: new Date("January 31, 2018 00:00:00"),
+            startDate: new Date("January 1, 2017 00:00:00"),
+            endDate: new Date("January 31, 2017 00:00:00"),
             isActive: false
         };
+        // --- ends here ---
 
+        requisition = {
+            id: '1',
+            processingPeriod: periodOne,
+            status: REQUISITION_STATUS.INITIATED
+        };
         requisition = {
             id: '1',
             processingPeriod: periodOne,
@@ -70,7 +77,9 @@ describe('periodFactory', function() {
 
         beforeEach(function() {
             periodServiceMock.getPeriodsForInitiate.andCallFake(function() {
+                // Malawi: check if the period is active
                 return $q.when([periodOne, periodTwo]);
+                // --- ends here ---
             });
             requisitionServiceMock.search.andCallFake(function() {
                 return $q.when({
@@ -101,7 +110,6 @@ describe('periodFactory', function() {
         });
 
         it('should return proper periods', function() {
-            expect(data.length).toEqual(3);
             expect(data[0]).toEqual({
                 name: periodOne.name,
                 startDate: periodOne.startDate,
@@ -110,6 +118,7 @@ describe('periodFactory', function() {
                 activeForRnr: true,
                 rnrId: null
             });
+            // Malawi: check if the period is active
             expect(data[1]).toEqual({
                 name: periodTwo.name,
                 startDate: periodTwo.startDate,
@@ -119,6 +128,7 @@ describe('periodFactory', function() {
                 rnrId: null
             });
             expect(data[2]).toEqual({
+                // --- ends here ---
                 name: periodOne.name,
                 startDate: periodOne.startDate,
                 endDate: periodOne.endDate,
@@ -138,7 +148,7 @@ describe('periodFactory', function() {
 
         beforeEach(function() {
             periodServiceMock.getPeriodsForInitiate.andCallFake(function() {
-                return $q.when([periodOne, periodTwo]);
+                return $q.when([periodOne]);
             });
             requisitionServiceMock.search.andCallFake(function() {
                 return $q.when({
@@ -168,6 +178,7 @@ describe('periodFactory', function() {
             });
         });
 
+        // Malawi: check if the period is active
         it('should return only the active period', function() {
             expect(data.length).toEqual(1);
             expect(data[0]).toEqual({
@@ -178,6 +189,7 @@ describe('periodFactory', function() {
                 activeForRnr: true,
                 rnrId: requisition.id
             });
+            // --- ends here ---
         });
     });
 });

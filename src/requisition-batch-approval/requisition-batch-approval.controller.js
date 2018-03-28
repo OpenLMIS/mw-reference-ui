@@ -25,20 +25,20 @@
      * Controller for approval list of requisitions.
      */
     angular
-        .module('requisition-batch-approval')
-        .controller('RequisitionBatchApprovalController', controller);
+    .module('requisition-batch-approval')
+    .controller('RequisitionBatchApprovalController', controller);
 
     controller.$inject = [
         'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
-            'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
-            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
-            'localStorageFactory', '$state', '$stateParams', 'requisitionBatchDisplayFactory'
+        'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
+        'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
+        'localStorageFactory', '$state', '$stateParams', 'requisitionBatchDisplayFactory'
     ];
 
     function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
-                        messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
-                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
-                        localStorageFactory, $state, $stateParams, requisitionBatchDisplayFactory) {
+        messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
+        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
+        localStorageFactory, $state, $stateParams, requisitionBatchDisplayFactory) {
 
         var vm = this;
 
@@ -50,8 +50,12 @@
         vm.updateRequisitions = updateRequisitions;
         vm.areRequisitionsOutdated = areRequisitionsOutdated;
         vm.isOffline = offlineService.isOffline;
+        // Malawi: fix displaying approved quantity on batch approval screen
         vm.isInApproval = isInApproval;
+        // --- ends here ---
+        // Malawi: set all to 0
         vm.setAllToZero = setAllToZero;
+        // --- ends here ---
 
         /**
          * @ngdoc property
@@ -121,17 +125,6 @@
          * It is used to provide 'revert' functionality.
          */
         vm.requisitionsCopy = undefined;
-
-        /**
-         * @ngdoc property
-         * @propertyOf requisition-batch-approval.controller:RequisitionBatchApprovalController
-         * @name columns
-         * @type {Array}
-         *
-         * @description
-         * Holds columns that will be displayed in the batch approval table.
-         */
-        vm.columns = [];
 
         /**
          * @ngdoc method
@@ -262,17 +255,17 @@
             }
 
             confirmService.confirm('requisitionBatchApproval.updateWarning', 'requisitionBatchApproval.update')
-                .then(function(){
-                    var offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
-                        offlineRequisitions = localStorageFactory('requisitions');
+            .then(function(){
+                var offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
+                    offlineRequisitions = localStorageFactory('requisitions');
 
-                    angular.forEach(vm.requisitions, function(requisition) {
-                        offlineBatchRequisitions.removeBy('id', requisition.id);
-                        offlineRequisitions.removeBy('id', requisition.id)
-                    });
-
-                    $state.reload();
+                angular.forEach(vm.requisitions, function(requisition) {
+                    offlineBatchRequisitions.removeBy('id', requisition.id);
+                    offlineRequisitions.removeBy('id', requisition.id)
                 });
+
+                $state.reload();
+            });
         }
 
         /**
@@ -291,6 +284,7 @@
             return $filter('filter')(vm.requisitions, {$outdated: true}).length > 0;
         }
 
+        // Malawi: Fix displaying approved quantity on batch approval screen
         /**
          * @ngdoc method
          * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
@@ -306,7 +300,9 @@
         function isInApproval(requisition) {
             return requisition.status === REQUISITION_STATUS.IN_APPROVAL;
         }
+        // --- ends here ---
 
+        // Malawi: set all to 0
         /**
          * @ngdoc method
          * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
@@ -322,6 +318,7 @@
                 });
             });
         }
+        // --- ends here ---
 
         function handleApprove(successfulRequisitions, loadingPromise) {
             var errors = {},
@@ -389,7 +386,6 @@
 
             vm.lineItems = dataToDisplay.lineItems;
             vm.errors = dataToDisplay.errors;
-            vm.columns = dataToDisplay.columns;
             vm.requisitionsCopy = dataToDisplay.requisitionsCopy;
 
             angular.forEach(requisitions, function(requisition) {

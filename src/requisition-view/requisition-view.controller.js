@@ -25,8 +25,8 @@
      * Controller for managing requisitions.
      */
     angular
-        .module('requisition-view')
-        .controller('RequisitionViewController', RequisitionViewController);
+    .module('requisition-view')
+    .controller('RequisitionViewController', RequisitionViewController);
 
     RequisitionViewController.$inject = [
         '$state', 'requisition', 'requisitionValidator', 'authorizationService',
@@ -34,18 +34,29 @@
         'confirmService', 'REQUISITION_RIGHTS', 'FULFILLMENT_RIGHTS', 'offlineService', '$window',
         'requisitionUrlFactory', '$filter', '$scope', 'RequisitionWatcher',
         'accessTokenFactory', 'messageService', 'stateTrackerService', 'RequisitionStockCountDateModal',
-        'localStorageFactory', 'REQUISITION_WARNING_PROGRAM_CODE', 'REQUISITION_WARNING_PERIODS', 'TEMPLATE_COLUMNS', 'COLUMN_SOURCES'
+        'localStorageFactory', 'canSubmit', 'canAuthorize',
+        'canApproveAndReject', 'canDelete', 'canSkip', 'canSync',
+        // Malawi: Display alternate warning message
+        'REQUISITION_WARNING_PERIODS', 'REQUISITION_WARNING_PROGRAM_CODE',
+        // Malawi: Disable skip button if there is data in user inputs
+        'TEMPLATE_COLUMNS', 'COLUMN_SOURCES'
+        // --- ends here ---
     ];
 
     function RequisitionViewController($state, requisition, requisitionValidator,
-                                       authorizationService, requisitionService,
-                                       loadingModalService, alertService, notificationService,
-                                       confirmService, REQUISITION_RIGHTS, FULFILLMENT_RIGHTS,
-                                       offlineService, $window, requisitionUrlFactory, $filter,
-                                       $scope, RequisitionWatcher, accessTokenFactory,
-                                       messageService, stateTrackerService, RequisitionStockCountDateModal,
-                                       localStorageFactory, REQUISITION_WARNING_PROGRAM_CODE,
-                                       REQUISITION_WARNING_PERIODS, TEMPLATE_COLUMNS, COLUMN_SOURCES) {
+        authorizationService, requisitionService,
+        loadingModalService, alertService, notificationService,
+        confirmService, REQUISITION_RIGHTS, FULFILLMENT_RIGHTS,
+        offlineService, $window, requisitionUrlFactory, $filter,
+        $scope, RequisitionWatcher, accessTokenFactory,
+        messageService, stateTrackerService, RequisitionStockCountDateModal,
+        localStorageFactory, canSubmit, canAuthorize, canApproveAndReject,
+        canDelete, canSkip, canSync,
+        // Malawi: Display alternate warning message
+        REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE,
+        // Malawi: Disable skip button if there is data in user inputs
+        TEMPLATE_COLUMNS, COLUMN_SOURCES) {
+        // --- ends here ---
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition, localStorageFactory('requisitions'));
@@ -96,13 +107,88 @@
          */
         vm.invalidFullSupply = undefined;
 
-        // Functions
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displaySubmitButton
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the submit button.
+         */
+        vm.displaySubmitButton = undefined;
 
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displaySubmitAndAuthorizeButton
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the submit and authorize button.
+         */
+        vm.displaySubmitAndAuthorizeButton = undefined;
+
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displayAuthorizeButton
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the authorize button.
+         */
+        vm.displayAuthorizeButton = undefined;
+
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displayDeleteButton
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the delete button.
+         */
+        vm.displayDeleteButton = undefined;
+
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displayApproveAndRejectButtons
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the approve and reject buttons.
+         */
+        vm.displayApproveAndRejectButtons = undefined;
+
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displaySkipButton
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the skip button.
+         */
+        vm.displaySkipButton = undefined;
+
+        /**
+         * ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name displaySyncButton
+         * @type {Boolean}
+         *
+         * @description
+         * Flag defining whether current user should see the sync to server button.
+         */
+        vm.displaySyncButton = undefined;
+
+        // Functions
         vm.$onInit = onInit;
         vm.updateRequisition = updateRequisition;
         vm.syncRnr = syncRnr;
         vm.syncRnrAndPrint = syncRnrAndPrint;
-        vm.syncRnrAndMalawiPrint = syncRnrAndMalawiPrint;
         vm.submitRnr = submitRnr;
         vm.authorizeRnr = authorizeRnr;
         vm.removeRnr = removeRnr;
@@ -111,12 +197,16 @@
         vm.skipRnr = skipRnr;
         vm.isOffline = offlineService.isOffline;
         vm.getPrintUrl = getPrintUrl;
-        vm.getMalawiPrintUrl = getMalawiPrintUrl;
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
+        // Malawi: display price info
         vm.displayPriceInfo = displayPriceInfo;
+        // Malawi: set all to 0 button
         vm.setAllToZero = setAllToZero;
+        // Malawi: disable skip if there is data in user inputs
         vm.enableSkip = enableSkip;
+        // --- ends here ---
+
 
         /**
          * @ngdoc method
@@ -127,13 +217,16 @@
          * Initialization method of the RequisitionViewController.
          */
         function onInit() {
-            vm.canSubmit = displaySubmit();
-            vm.canAuthorize = displayAuthorize();
-            vm.canDelete = displayDelete();
-            vm.canApproveAndReject = displayApproveAndReject();
+            vm.displaySubmitButton = canSubmit && !vm.requisition.program.skipAuthorization;
+            vm.displaySubmitAndAuthorizeButton = canSubmit && vm.requisition.program.skipAuthorization;
+            vm.displayAuthorizeButton = canAuthorize;
+            vm.displayDeleteButton = canDelete;
+            vm.displayApproveAndRejectButtons = canApproveAndReject;
+            vm.displaySkipButton = canSkip;
+            vm.displaySyncButton = canSync;
+            // Malawi: set all to 0 button
             vm.displaySetAllTo0 = displaySetAllTo0();
-            vm.canSkip = displaySkip();
-            vm.canSync = displaySync();
+            // --- ends here ---
         }
 
         /**
@@ -157,10 +250,10 @@
             }
 
             confirmService.confirm('requisitionView.updateWarning', 'requisitionView.update')
-                .then(function(){
-                    requisitionService.removeOfflineRequisition(requisition.id);
-                    $state.reload();
-                });
+            .then(function(){
+                requisitionService.removeOfflineRequisition(requisition.id);
+                $state.reload();
+            });
         }
 
         /**
@@ -186,7 +279,7 @@
             });
         }
 
-         /**
+        /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
          * @name syncRnrAndPrint
@@ -199,7 +292,7 @@
          * indicates a version conflict.
          */
         function syncRnrAndPrint() {
-            if (displaySync()) {
+            if (vm.displaySyncButton) {
                 var popup = $window.open('', '_blank');
                 popup.document.write(messageService.get('requisitionView.sync.pending'));
                 var loadingPromise = loadingModalService.open();
@@ -211,43 +304,11 @@
                     popup.location.href = accessTokenFactory.addAccessToken(vm.getPrintUrl());
                     reloadState();
                 }, function(response) {
-                  handleSaveError(response.status);
-                  popup.close();
-              });
+                    handleSaveError(response.status);
+                    popup.close();
+                });
             } else {
                 $window.open(accessTokenFactory.addAccessToken(vm.getPrintUrl()), '_blank');
-            }
-        }
-
-         /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name syncRnrAndMalawiPrint
-         *
-         * @description
-         * Responsible for syncing requisition with the server. If the requisition fails to sync,
-         * an error notification will be displayed. Otherwise, a success notification will be shown
-         * and the requisition will be printed.
-         * If the error status is 409 (conflict), the requisition will be reloaded, since this
-         * indicates a version conflict.
-         */
-        function syncRnrAndMalawiPrint() {
-            if (displaySync()) {
-                var popup = $window.open('', '_blank');
-                popup.document.write(messageService.get('requisitionView.sync.pending'));
-                var loadingPromise = loadingModalService.open();
-                saveRnr().then(function() {
-                    loadingPromise.then(function() {
-                        notificationService.success('requisitionView.sync.success');
-                    });
-                    popup.location.href = accessTokenFactory.addAccessToken(vm.getMalawiPrintUrl());
-                    reloadState();
-                }, function(response) {
-                  handleSaveError(response.status);
-                  popup.close();
-              });
-            } else {
-                $window.open(accessTokenFactory.addAccessToken(vm.getMalawiPrintUrl()), '_blank');
             }
         }
 
@@ -267,6 +328,7 @@
          * an error occurs during submission, an error notification modal will be displayed.
          * Otherwise, a success notification modal will be shown.
          */
+        // Malawi: Display alternate warning message
         function submitRnr() {
             var isSubmissionWarningProgram = (requisition.program.code === REQUISITION_WARNING_PROGRAM_CODE);
             var isSubmissionWarningPeriod = false;
@@ -278,44 +340,14 @@
                     }
                 });
             }
-            
+
             var submitWarningMessage = 'requisitionView.submit.confirm';
             if(isSubmissionWarningPeriod && isSubmissionWarningProgram){
                 submitWarningMessage = 'requisitionPeriodWarning.confirm';
             }
 
-            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label').then(function() {
-                if (requisitionValidator.validateRequisition(requisition)) {
-                    if (!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
-                        if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
-                            var modal = new RequisitionStockCountDateModal(vm.requisition);
-                            modal.then(saveThenSubmit);
-                        } else {
-                            saveThenSubmit();
-                        }
-                    } else {
-                        failWithMessage('requisitionView.allLineItemsSkipped')();
-                    }
-                } else {
-                    $scope.$broadcast('openlmis-form-submit');
-                    failWithMessage('requisitionView.rnrHasErrors')();
-                }
-            });
-
-            function saveThenSubmit() {
-                var loadingPromise = loadingModalService.open();
-                vm.requisition.$save().then(function () {
-                    vm.requisition.$submit().then(function (response) {
-                        watcher.disableWatcher();
-                        loadingPromise.then(function () {
-                            notificationService.success('requisitionView.submit.success');
-                        });
-                        stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                    }, loadingModalService.close);
-                }, function(response) {
-                    handleSaveError(response.status);
-                });
-            }
+            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label')
+            .then(doSubmitRnr);
         }
 
         /**
@@ -334,23 +366,35 @@
             if (requisitionValidator.validateRequisition(requisition)) {
                 var loadingPromise = loadingModalService.open();
                 if (!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
-                    vm.requisition.$save().then(function () {
-                        vm.requisition.$submit().then(function (response) {
-                            loadingPromise.then(function () {
-                                notificationService.success('requisitionView.submit.success');
-                            });
-                            stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                        }, failWithMessage('requisitionView.submit.failure'));
-                    }, function(response) {
-                        handleSaveError(response.status);
-                    });
+                    if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
+                        var modal = new RequisitionStockCountDateModal(vm.requisition);
+                        modal.then(saveThenSubmit);
+                    } else {
+                        saveThenSubmit();
+                    }
                 } else {
                     failWithMessage('requisitionView.allLineItemsSkipped')();
                 }
             } else {
                 failWithMessage('requisitionView.rnrHasErrors')();
             }
+
+            function saveThenSubmit() {
+                var loadingPromise = loadingModalService.open();
+                vm.requisition.$save().then(function () {
+                    vm.requisition.$submit().then(function (response) {
+                        watcher.disableWatcher();
+                        loadingPromise.then(function () {
+                            notificationService.success('requisitionView.submit.success');
+                        });
+                        stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
+                    }, failWithMessage('requisitionView.submit.failure'));
+                }, function(response) {
+                    handleSaveError(response.status);
+                });
+            }
         }
+        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -453,7 +497,7 @@
                                 notificationService.success('requisitionView.approve.success');
                             });
                             stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                        }, failWithMessage('requisitionView.approve.failure'));
+                        }, loadingModalService.close);
                     }, function(response) {
                         handleSaveError(response.status);
                     });
@@ -474,6 +518,7 @@
          * If an error occurs during rejecting it will display an error notification modal.
          * Otherwise, a success notification modal will be shown.
          */
+        // Malawi: Rejecting LMIS form should require a reason
         function rejectRnr() {
             if (!(vm.requisition.draftStatusMessage)) {
                 alertService.error('requisitionView.rejectMissingCommentError');
@@ -484,7 +529,7 @@
                 ).then(function () {
                     var loadingPromise = loadingModalService.open();
                     vm.requisition.$save().then(function () {
-                        vm.requisition.$reject().then().then(function (response) {
+                        vm.requisition.$reject().then().then(function(response) {
                             watcher.disableWatcher();
                             loadingPromise.then(function () {
                                 notificationService.success('requisitionView.reject.success');
@@ -496,6 +541,7 @@
                 });
             }
         }
+        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -522,148 +568,6 @@
                 }, failWithMessage('requisitionView.skip.failure'));
             });
         }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displayAuthorize
-         *
-         * @description
-         * Determines whether to display authorize button or not. Returns true only if requisition
-         * is submitted and user has permission to authorize requisition.
-         *
-         * @return {Boolean} should authorize button be displayed
-         */
-        function displayAuthorize() {
-            return vm.requisition.$isSubmitted() && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displaySubmit
-         *
-         * @description
-         * Determines whether to display submit button or not. Returns true only if requisition
-         * is initiated and user has permission to create requisition.
-         *
-         * @return {Boolean} should submit button be displayed
-         */
-        function displaySubmit() {
-            return (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displayApproveAndReject
-         *
-         * @description
-         * Determines whether to display approve and reject buttons or not. Returns true only if
-         * requisition is authorized or in approval and user has permission to approve requisition.
-         *
-         * @return {Boolean} should approve and reject buttons be displayed
-         */
-        function displayApproveAndReject() {
-            return (vm.requisition.$isAuthorized() || vm.requisition.$isInApproval()) && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displaySetAllTo0
-         *
-         * @description
-         * Determines whether to display the "Set all to 0" button. Returns true if
-         * the approved quantity column is visible and user can approve or reject.
-         *
-         * @return {Boolean} should approve and reject buttons be displayed
-         */
-        function displaySetAllTo0() {
-            var approvedQuantityColumn = requisition.template.getColumn(TEMPLATE_COLUMNS.APPROVED_QUANTITY);
-            return approvedQuantityColumn.isDisplayed && vm.requisition.$isAuthorized() && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displayDelete
-         *
-         * @description
-         * Determines whether to display delete button or not. Returns true only if
-         * user has permission to delete requisition. User needs to have create right when
-         * requisition is initiated and authorize right when requisition is in submitted state.
-         *
-         * @return {Boolean} should delete button be displayed
-         */
-        function displayDelete() {
-            if (hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_DELETE)) {
-                if (vm.requisition.$isInitiated() || vm.requisition.$isRejected() || vm.requisition.$isSkipped()) {
-                    return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
-                }
-                if (vm.requisition.$isSubmitted()) {
-                    return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE);
-                }
-            }
-            return false;
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displaySkip
-         *
-         * @description
-         * Determines whether to display skip requisition button or not. Returns true only if
-         * requisition program allows to skip requisition.
-         *
-         * @return {Boolean} true if skip button should be visible, false otherwise
-         */
-        function displaySkip() {
-            return (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) &&
-                vm.requisition.program.periodsSkippable &&
-                !vm.requisition.emergency &&
-                hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name enableSkip
-         *
-         * @description
-         * Determines whether to enable skip requisition button or not.
-         *
-         * @return {Boolean} true if skip button should be enabled, false otherwise
-         */
-        function enableSkip() {
-            return displaySkip() && !hasDataInUserInputs();
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displaySync
-         *
-         * @description
-         * Determines whether to display sync with server button or not. Returns true only if
-         * requisition has status INITIATED, SUBMITTED or AUTHORIZED.
-         *
-         * @return {Boolean} true if sync button should be visible, false otherwise
-         */
-        function displaySync() {
-            if (vm.requisition.$isInitiated() || vm.requisition.$isRejected()) {
-                return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_CREATE);
-            }
-            if (vm.requisition.$isSubmitted()) {
-                return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE);
-            }
-            if (vm.requisition.$isAuthorized() || vm.requisition.$isInApproval()) {
-                return hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
-            }
-            return false;
-        }
-
         /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
@@ -674,23 +578,11 @@
          *
          * @return {String} the prepared URL
          */
+        // Malawi: link to the updated requisition printout
         function getPrintUrl() {
-            return requisitionUrlFactory('/api/requisitions/' + vm.requisition.id + '/print');
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name getMalawiPrintUrl
-         *
-         * @description
-         * Prepares a print URL for the given requisition.
-         *
-         * @return {String} the prepared URL
-         */
-        function getMalawiPrintUrl() {
             return requisitionUrlFactory('/api/reports/requisitions/' + vm.requisition.id + '/print');
         }
+        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -740,37 +632,6 @@
             return valid;
         }
 
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name displayPriceInfo
-         *
-         * @param {Object} requisition Requisition with status to check
-         *
-         * @return {boolean} true if requisition is in status IN_APPROVAL or AUTHORIZED, false otherwise
-         *
-         * @description
-         * Determines whether requisition is IN_APPROVAL or AUTHORIZED status.
-         */
-        function displayPriceInfo(requisition) {
-            return requisition.$isInApproval() || requisition.$isAuthorized();
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name setAllToZero
-         *
-         * @description
-         * Sets approved quantities of all products to zero.
-         */
-        function setAllToZero() {
-            angular.forEach(requisition.requisitionLineItems, function(lineItem) {
-                lineItem.approvedQuantity = 0;
-            })
-        }
-
         function handleSaveError(status) {
             if (status === 409) {
                 // in case of conflict, use the server version
@@ -796,30 +657,94 @@
             };
         }
 
+        // Malawi: display price info
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name displayPriceInfo
+         *
+         * @param {Object} requisition Requisition with status to check
+         *
+         * @return {boolean} true if requisition is in status IN_APPROVAL or AUTHORIZED, false otherwise
+         *
+         * @description
+         * Determines whether requisition is IN_APPROVAL or AUTHORIZED status.
+         */
+        function displayPriceInfo(requisition) {
+            return requisition.$isInApproval() || requisition.$isAuthorized();
+        }
+        // --- ends here ---
+
+        // Malawi: set all to 0 button
         function hasRightForProgram(rightName) {
             return authorizationService.hasRight(rightName, {
                 programCode: vm.requisition.program.code
             });
         }
 
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name displaySetAllTo0
+         *
+         * @description
+         * Determines whether to display the "Set all to 0" button. Returns true if
+         * the approved quantity column is visible and user can approve or reject.
+         *
+         * @return {Boolean} should approve and reject buttons be displayed
+         */
+        function displaySetAllTo0() {
+            var approvedQuantityColumn = requisition.template.getColumn(TEMPLATE_COLUMNS.APPROVED_QUANTITY);
+            return approvedQuantityColumn.isDisplayed && vm.requisition.$isAuthorized() && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name setAllToZero
+         *
+         * @description
+         * Sets approved quantities of all products to zero.
+         */
+        function setAllToZero() {
+            angular.forEach(requisition.requisitionLineItems, function(lineItem) {
+                lineItem.approvedQuantity = 0;
+            })
+        }
+        // --- ends here ---
+
         // Malawi: disable skip button if user inputs are not empty
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name enableSkip
+         *
+         * @description
+         * Determines whether to enable skip requisition button or not.
+         *
+         * @return {Boolean} true if skip button should be enabled, false otherwise
+         */
+        function enableSkip() {
+            return vm.displaySkipButton && !hasDataInUserInputs();
+        }
+
         function hasDataInUserInputs() {
-          var userInputColumns = requisition.template.getColumns().filter(function(column) {
-            return column.$display === true &&
-                column.source === COLUMN_SOURCES.USER_INPUT &&
-                column.name !== 'beginningBalance';
-          });
-          return requisition.requisitionLineItems.some(function(lineItem) {
-            return userInputColumns.some(function(column) {
-              if (!isEmpty(lineItem[column.name])) {
-                return true
-              }
+            var userInputColumns = requisition.template.getColumns().filter(function(column) {
+                return column.$display === true &&
+                    column.source === COLUMN_SOURCES.USER_INPUT &&
+                    column.name !== 'beginningBalance';
             });
-          });
+            return requisition.requisitionLineItems.some(function(lineItem) {
+                return userInputColumns.some(function(column) {
+                    if (!isEmpty(lineItem[column.name])) {
+                        return true
+                    }
+                });
+            });
         }
 
         function isEmpty(value) {
-          return (value === null || value === undefined || value === '');
+            return (value === null || value === undefined || value === '');
         }
         // --- ends here ---
     }

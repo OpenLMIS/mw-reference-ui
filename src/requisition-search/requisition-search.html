@@ -2,15 +2,18 @@
 <div ng-if="vm.error" class="alert is-info" ng-show="vm.error">
     {{vm.error | message}}
 </div>
+<form class="sidebar" ng-submit="vm.search()">
+    <label for="facility">{{'requisitionSearch.facility' | message}}</label>
+    <select id="facility" placeholder="{{'requisitionSearch.selectFacility' | message}}"
+            ng-model="vm.selectedFacility"
+            ng-options="facility as facility.name for facility in vm.facilities"
+            required>
+    </select>
+    <input class="btn btn-primary" type="submit" value="{{'requisitionSearch.search' | message}}"/>
+</form>
 <section class="openlmis-table-container">
     <openlmis-sort options="vm.options"/>
     <form class="openlmis-table-filters" ng-submit="vm.search()">
-        <label for="facility">{{'requisitionSearch.facility' | message}}</label>
-        <select id="facility" placeholder="{{'requisitionSearch.selectFacility' | message}}"
-                ng-model="vm.selectedFacility"
-                ng-options="facility as facility.name for facility in vm.facilities"
-                required>
-        </select>
         <label for=program>{{'requisitionSearch.program' | message}}</label>
         <select id="program" placeholder="{{'requisitionSearch.selectProgram' | message}}" ng-required
                 ng-options="program as program.name for program in vm.selectedFacility.supportedPrograms"
@@ -41,43 +44,43 @@
             {{'requisitionSearch.noProgramsForFacility' | message}}
         </caption>
         <thead>
-            <tr>
-                <th>{{'requisitionSearch.program' | message}}</th>
-                <th>{{'requisitionSearch.facility' | message}}</th>
-                <th>{{'requisitionSearch.period' | message}}</th>
-                <th>{{'requisitionSearch.startDate' | message}}</th>
-                <th>{{'requisitionSearch.endDate' | message}}</th>
-                <th>{{'requisitionSearch.status' | message}}</th>
-                <th>{{'requisitionSearch.dateInitiated' | message}}</th>
-                <th>{{'requisitionSearch.emergency' | message}}</th>
-                <th popover="{{'requisitionSearch.offlineInfo' | message}}" popover-trigger-area="element">
-                    {{'requisitionSearch.offline' | message}}
-                </th>
-                <th class="col-sticky sticky-right">{{'requisitionSearch.actions'| message}}</th>
-            </tr>
+        <tr>
+            <th>{{'requisitionSearch.program' | message}}</th>
+            <th>{{'requisitionSearch.facility' | message}}</th>
+            <th>{{'requisitionSearch.period' | message}}</th>
+            <th>{{'requisitionSearch.startDate' | message}}</th>
+            <th>{{'requisitionSearch.endDate' | message}}</th>
+            <th>{{'requisitionSearch.status' | message}}</th>
+            <th>{{'requisitionSearch.dateInitiated' | message}}</th>
+            <th>{{'requisitionSearch.emergency' | message}}</th>
+            <th popover="{{'requisitionSearch.offlineInfo' | message}}" popover-trigger-area="element">
+                {{'requisitionSearch.offline' | message}}
+            </th>
+            <th class="col-sticky sticky-right">{{'requisitionSearch.actions'| message}}</th>
+        </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="requisition in vm.requisitions">
-                <td>{{requisition.program.name}}</td>
-                <td>{{requisition.facility.code}} - {{requisition.facility.name}}</th>
-                <td>{{requisition.processingPeriod.name}}</td>
-                <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
-                <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
-                <td>{{requisition.status}}</td>
-                <td>{{requisition.statusChanges.INITIATED.changeDate | openlmisDate}}</td>
-                <td class="col-emergency">
-                    <i ng-class="{'icon-ok': requisition.emergency}"></i>
-                </td>
-                <td class="col-emergency">
-                    <i ng-class="{'icon-ok': requisition.$availableOffline}"></i>
-                </td>
-                <td>
-                    <button class="primary" ng-click="vm.openRnr(requisition.id)">{{'requisitionSearch.viewRequisition' | message}}</button>
-                    <button class="danger" ng-if="requisition.$availableOffline"
+        <tr ng-repeat="requisition in vm.requisitions">
+            <td>{{requisition.program.name}}</td>
+            <td>{{requisition.facility.code}} - {{requisition.facility.name}}</th>
+            <td>{{requisition.processingPeriod.name}}</td>
+            <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
+            <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
+            <td>{{requisition.status}}</td>
+            <td>{{requisition.statusChanges.INITIATED.changeDate | openlmisDate}}</td>
+            <td class="col-emergency">
+                <i ng-class="{'icon-ok': requisition.emergency}"></i>
+            </td>
+            <td class="col-emergency">
+                <i ng-class="{'icon-ok': requisition.$availableOffline}"></i>
+            </td>
+            <td>
+                <button class="primary" ng-click="vm.openRnr(requisition.id)">{{'requisitionSearch.viewRequisition' | message}}</button>
+                <button class="danger" ng-if="requisition.$availableOffline"
                         ng-click="vm.removeOfflineRequisition(requisition)">{{'requisitionSearch.removeOfflineRequisition.label' | message}}
-                    </button>
-                </td>
-            </tr>
+                </button>
+            </td>
+        </tr>
         </tbody>
     </table>
     <openlmis-pagination/>

@@ -25,24 +25,26 @@
      * Responsible for retrieving periods from server.
      */
     angular
-        .module('requisition-initiate')
-        .service('periodService', service);
+    .module('requisition-initiate')
+    .config(function($provide) {
+        $provide.decorator('periodService', decorator);
+    });
 
-    service.$inject = ['$resource', 'requisitionUrlFactory', 'dateUtils'];
+    decorator.$inject = ['$delegate', '$resource', 'requisitionUrlFactory', 'dateUtils'];
 
-    function service($resource, requisitionUrlFactory, dateUtils) {
-
+    function decorator($delegate, $resource, requisitionUrlFactory, dateUtils) {
         var resource = $resource(requisitionUrlFactory('/api/requisitions/periodsForInitiate'), {}, {
-            periodsForInitiate: {
-                method: 'GET',
-                isArray: true,
-                // Malawi: use our custom transformResponse()
-                transformResponse: transformResponse
-                // --- ends here ---
-            }
-        });
+                periodsForInitiate: {
+                    method: 'GET',
+                    isArray: true,
+                    transformResponse: transformResponse
+                }
+            }),
+            periodService = $delegate;
 
-        this.getPeriodsForInitiate = getPeriodsForInitiate;
+        periodService.getPeriodsForInitiate = getPeriodsForInitiate;
+
+        return periodService;
 
         /**
          * @ngdoc method

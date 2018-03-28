@@ -15,7 +15,7 @@
 
 describe('periodService', function() {
 
-    var $rootScope, $httpBackend, requisitionUrlFactoryMock, dateUtilsMock, periodService, periodOne, periodTwo, periodThree;
+    var $rootScope, $httpBackend, requisitionUrlFactoryMock, dateUtilsMock, periodService, periodOne, periodTwo;
 
     beforeEach(function() {
         module('requisition-initiate', function($provide){
@@ -42,6 +42,7 @@ describe('periodService', function() {
             periodService = _periodService_;
         });
 
+        // Malawi: display only the active periods
         periodOne = {
             id: '1',
             startDate: new Date("January 1, 2017 00:00:00"),
@@ -57,6 +58,7 @@ describe('periodService', function() {
             startDate: new Date("March 1, 2017 00:00:00"),
             endDate: new Date("March 31, 2017 00:00:00")
         };
+        // --- ends here ---
     });
 
     describe('getPeriodsForInitiate', function() {
@@ -66,6 +68,7 @@ describe('periodService', function() {
             emergency = false,
             data;
 
+        // Malawi: display only the active periods
         function prepare(serverDate) {
             $httpBackend.when('GET', requisitionUrlFactoryMock('/api/requisitions/periodsForInitiate?emergency=' + emergency +
                 "&facilityId=" + facilityId + "&programId=" + programId)).respond(200, [periodOne, periodTwo, periodThree], {'Date': serverDate});
@@ -74,14 +77,19 @@ describe('periodService', function() {
 
             $httpBackend.flush();
         }
+        // --- ends here ---
 
         it('should return promise', function() {
+            // Malawi: display only the active periods
             prepare(new Date());
+            // --- ends here ---
             expect(angular.isFunction(promise.then)).toBe(true);
         });
-+
+
         it('should return proper response', function() {
+            // Malawi: display only the active periods
             prepare(new Date());
+            // --- ends here ---
             var data;
 
             promise.then(function(response) {
@@ -93,19 +101,19 @@ describe('periodService', function() {
             expect(data).not.toBe(undefined);
             expect(data[0].id).toEqual(periodOne.id);
             expect(data[1].id).toEqual(periodTwo.id);
-            expect(data[2].id).toEqual(periodThree.id);
         });
 
         it('should call date utils', function() {
+            // Malawi: display only the active periods
             prepare(new Date());
+            // --- ends here ---
             expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodOne.startDate);
             expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodOne.endDate);
             expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodTwo.startDate);
             expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodTwo.endDate);
-            expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodThree.startDate);
-            expect(dateUtilsMock.toDate).toHaveBeenCalledWith(periodThree.endDate);
         });
 
+        // Malawi: display only the active periods
         it('should set isActive = true if serverDate > endDate', function() {
             prepare(new Date("April 1, 2017 00:00:00"));
             var data;
@@ -133,6 +141,7 @@ describe('periodService', function() {
             expect(data.some(function(period) { return period.id === periodThree.id
                 && period.isActive === false })).toEqual(true);
         });
+        // --- ends here ---
     });
 
     afterEach(function() {

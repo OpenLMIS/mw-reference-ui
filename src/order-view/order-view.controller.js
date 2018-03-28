@@ -26,27 +26,25 @@
      * fetches data to populate grid.
      */
     angular
-        .module('order-view')
-        .controller('OrderViewController', controller);
+    .module('order-view')
+    .controller('OrderViewController', controller);
 
     controller.$inject = [
         'supplyingFacilities', 'requestingFacilities', 'programs', 'requestingFacilityFactory',
-        'loadingModalService', 'notificationService', 'fulfillmentUrlFactory',
-        'orders', '$stateParams', '$filter', '$state', '$scope'
+        'loadingModalService', 'notificationService', 'fulfillmentUrlFactory', 'orders',
+        '$stateParams', '$filter', '$state', '$scope'
     ];
 
     function controller(supplyingFacilities, requestingFacilities, programs, requestingFacilityFactory,
-                        loadingModalService, notificationService, fulfillmentUrlFactory,
-                        orders, $stateParams, $filter, $state, $scope) {
+        loadingModalService, notificationService, fulfillmentUrlFactory, orders, $stateParams, $filter,
+        $state, $scope) {
 
         var vm = this;
 
         vm.$onInit = onInit;
         vm.loadOrders = loadOrders;
         vm.getPrintUrl = getPrintUrl;
-        vm.getMalawiPrintUrl = getMalawiPrintUrl;
         vm.getDownloadUrl = getDownloadUrl;
-        vm.getMalawiDownloadUrl = getMalawiDownloadUrl;
 
         /**
          * @ngdoc property
@@ -130,30 +128,31 @@
 
             vm.orders = orders;
 
-            if ($stateParams.supplyingFacility) {
+            if ($stateParams.supplyingFacilityId) {
                 vm.supplyingFacility = $filter('filter')(vm.supplyingFacilities, {
-                    id: $stateParams.supplyingFacility
+                    id: $stateParams.supplyingFacilityId
                 })[0];
             }
 
-            if ($stateParams.requestingFacility) {
+            if ($stateParams.requestingFacilityId) {
                 vm.requestingFacility = $filter('filter')(vm.requestingFacilities, {
-                    id: $stateParams.requestingFacility
+                    id: $stateParams.requestingFacilityId
                 })[0];
             }
 
-            if ($stateParams.program) {
+            if ($stateParams.programId) {
                 vm.program = $filter('filter')(vm.programs, {
-                    id: $stateParams.program
+                    id: $stateParams.programId
                 })[0];
             }
 
             if ($stateParams.periodStartDate) {
-                vm.periodStartDate = new Date($stateParams.periodStartDate);
+                vm.periodStartDate = $stateParams.periodStartDate;
+
             }
 
             if ($stateParams.periodEndDate) {
-                vm.periodEndDate = new Date($stateParams.periodEndDate);
+                vm.periodEndDate = $stateParams.periodEndDate;
             }
 
             $scope.$watch(function() {
@@ -182,11 +181,12 @@
         function loadOrders() {
             var stateParams = angular.copy($stateParams);
 
-            stateParams.supplyingFacility = vm.supplyingFacility ? vm.supplyingFacility.id : null;
-            stateParams.requestingFacility = vm.requestingFacility ? vm.requestingFacility.id : null;
-            stateParams.program = vm.program ? vm.program.id : null;
+            stateParams.supplyingFacilityId = vm.supplyingFacility ? vm.supplyingFacility.id : null;
+            stateParams.requestingFacilityId = vm.requestingFacility ? vm.requestingFacility.id : null;
+            stateParams.programId = vm.program ? vm.program.id : null;
             stateParams.periodStartDate = vm.periodStartDate ? $filter('isoDate')(vm.periodStartDate) : null;
             stateParams.periodEndDate = vm.periodEndDate ? $filter('isoDate')(vm.periodEndDate) : null;
+            stateParams.sort = 'createdDate,desc';
 
             $state.go('openlmis.orders.view', stateParams, {
                 reload: true
@@ -205,7 +205,9 @@
          * @return {String}       the prepared URL
          */
         function getPrintUrl(order) {
-            return fulfillmentUrlFactory('/api/orders/' + order.id + '/print?format=pdf');
+            // Malawi: custom order print url
+            return fulfillmentUrlFactory('/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/pdf?order=' + order.id);
+            // --- ends here ---
         }
 
         /**
@@ -220,37 +222,9 @@
          * @return {String}       the prepared URL
          */
         function getDownloadUrl(order) {
-            return fulfillmentUrlFactory('/api/orders/' + order.id + '/export?type=csv');
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf order-view.controller:OrderViewController
-         * @name getMalawiPrintUrl
-         *
-         * @description
-         * Prepares a print URL for the given order.
-         *
-         * @param  {Object} order the order to prepare the URL for
-         * @return {String}       the prepared URL
-         */
-        function getMalawiPrintUrl(order) {
-            return fulfillmentUrlFactory('/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/pdf?order=' + order.id);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf order-view.controller:OrderViewController
-         * @name getMalawiDownloadUrl
-         *
-         * @description
-         * Prepares a download URL for the given order.
-         *
-         * @param  {Object} order the order to prepare the URL for
-         * @return {String}       the prepared URL
-         */
-        function getMalawiDownloadUrl(order) {
+            // Malawi: custom order download url
             return fulfillmentUrlFactory('/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/csv?order=' + order.id);
+            // --- ends here ---
         }
 
         function loadRequestingFacilities(supplyingFacilityId) {
@@ -261,9 +235,10 @@
         }
 
         function hasSupplyingFacilityChange(newValue, oldValue) {
-            return newValue.id != $stateParams.supplyingFacility
-                || (newValue.id == $stateParams.supplyingFacility && oldValue && oldValue.id != $stateParams.supplyingFacility);
+            return newValue.id != $stateParams.supplyingFacilityId
+                || (newValue.id == $stateParams.supplyingFacilityId && oldValue && oldValue.id != $stateParams.supplyingFacilityId);
         }
+
     }
 
 })();
