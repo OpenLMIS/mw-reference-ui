@@ -1,0 +1,56 @@
+<div class="modal add-product-modal" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4>{{'requisitionViewTab.addProduct' | message}}</h4>
+			</div>
+			<div class="modal-body">
+				<form id="productForm" class="add-product-modal" ng-submit="vm.addProduct()">
+
+					<fieldset class="form-group">
+						<label for="category">
+							{{'requisitionViewTab.category' | message}}
+						</label>
+						<select id="category" ng-model="vm.selectedCategory" ng-disabled="!vm.categories.length" ng-options="category.name for category in vm.categories | orderBy:'name'" required>
+						</select>
+					</fieldset>
+
+					<fieldset class="form-group">
+						<label for="product">
+							{{'requisitionViewTab.product' | message}}
+						</label>
+						<select id="product" ng-model="vm.selectedProduct" ng-disabled="!vm.selectedCategory"
+										ng-options="product as (product.fullProductName + ' (' + product.productCode + ')') for product in vm.selectedCategory.products | orderBy:'fullProductName'"
+										required>
+						</select>
+					</fieldset>
+
+					<fieldset class="form-group">
+						<label for="requestedQuantity">
+							{{'requisitionViewTab.quantity' | message}}
+						</label>
+						<input id="requestedQuantity" ng-model="vm.requestedQuantity" required positive-integer>
+					</fieldset>
+
+					<fieldset class="form-group">
+						<label for="requestedQuantityExplanation">
+							{{'requisitionViewTab.explanation' | message}}
+						</label>
+						<input id="requestedQuantityExplanation" type="text" ng-required="vm.fullSupply" ng-model="vm.requestedQuantityExplanation">
+					</fieldset>
+
+				</form>
+			</div>
+			<div class="modal-footer">
+				<div class="button-group">
+					<button class="primary" type="submit" form="productForm">
+						{{'requisitionViewTab.addProduct' | message}}
+					</button>
+					<button type="button" class="cancel" ng-click="vm.close()">
+						{{'requisitionViewTab.cancel' | message}}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
