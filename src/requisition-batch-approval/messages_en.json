@@ -4,6 +4,7 @@
   "requisitionBatchApproval.update": "Update LMIS Forms",
   "requisitionBatchApproval.updateWarning": "Updating LMIS Forms will remove any changes that have been made to the offline LMIS Forms",
   "requisitionBatchApproval.updateOffline": "Can't update LMIS Forms while offline",
+  "requisitionBatchApproval.invalidRequisition": "This LMIS Form is invalid",
   "requisitionBatchApproval.approvalSuccess": "${successCount} LMIS Forms were approved",
   "requisitionBatchApproval.approvalConfirm": "Are you sure you want to approve these LMIS Forms?",
   "requisitionBatchApproval.pricesAreIndicative": "The prices used in the OpenLMIS are only indicative. Actual prices can only be viewed at the completion of CMST's procurement processes.",
