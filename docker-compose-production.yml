@@ -56,6 +56,11 @@ services:
     volumes:
       - '/openlmis-report-ui'
 
+  cce-ui:
+    image: openlmis/cce-ui:1.0.0
+    volumes:
+     - '/openlmis-cce-ui'
+
   requisition-ui:
     image: openlmis/requisition-ui:5.3.1
     volumes:
