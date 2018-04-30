@@ -2,7 +2,7 @@ version: "2"
 services:
 
   mw-ui:
-    image: openlmis/dev-ui:5
+    image: openlmis/dev-ui:7.0.0
     working_dir: /app
     volumes:
       - '.:/app'
@@ -16,6 +16,7 @@ services:
       - referencedata-ui
       - requisition-ui
       - stockmanagement-ui
+      - cce-ui
       - report-ui
       - ui-components
       - ui-layout
@@ -25,6 +26,7 @@ services:
       - referencedata-ui
       - requisition-ui
       - stockmanagement-ui
+      - cce-ui
       - report-ui
       - ui-components
       - ui-layout
