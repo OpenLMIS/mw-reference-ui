@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-ddescribe('LineItem decorator', function() {
+describe('LineItem decorator', function() {
 
     var LineItem, requisitionLineItem, authorizationServiceSpy, requisition, program,
         calculationFactory, column, lineItem, TEMPLATE_COLUMNS, REQUISITION_RIGHTS,
