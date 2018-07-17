@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-describe('LineItem decorator', function() {
+ddescribe('LineItem decorator', function() {
 
     var LineItem, requisitionLineItem, authorizationServiceSpy, requisition, program,
         calculationFactory, column, lineItem, TEMPLATE_COLUMNS, REQUISITION_RIGHTS,
@@ -450,6 +450,39 @@ describe('LineItem decorator', function() {
             result = lineItem.isReadOnly(requisition, column);
 
             expect(result).toBe(true);
+        });
+
+        it('should return true for non approval column if in approval and for tb program', function() {
+            column.name = TEMPLATE_COLUMNS.BEGINNING_BALANCE;
+
+            requisition.$isInApproval.andReturn(true);
+            requisition.program.code = 'tb';
+
+            result = lineItem.isReadOnly(requisition, column);
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false for approved quantity column if in approval and for tb program', function() {
+            column.name = TEMPLATE_COLUMNS.APPROVED_QUANTITY;
+
+            requisition.$isInApproval.andReturn(true);
+            requisition.program.code = 'tb';
+
+            result = lineItem.isReadOnly(requisition, column);
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false for remarks column if in approval and for tb program', function() {
+            column.name = TEMPLATE_COLUMNS.REMARKS;
+
+            requisition.$isInApproval.andReturn(true);
+            requisition.program.code = 'tb';
+
+            result = lineItem.isReadOnly(requisition, column);
+
+            expect(result).toBe(false);
         });
     })
 

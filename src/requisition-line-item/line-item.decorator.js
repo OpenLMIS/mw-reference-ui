@@ -159,10 +159,10 @@
          * @return {Boolean} true if line item is read only
          */
         function isReadOnly(requisition, column) {
-            if (requisition.$isInApproval() || requisition.$isApproved() || requisition.$isReleased()){
+            if ((requisition.$isInApproval() && !isTbProgram(requisition)) || requisition.$isApproved() || requisition.$isReleased()){
                 return true;
             }
-            if (requisition.$isAuthorized()) {
+            if (requisition.$isAuthorized() || requisition.$isInApproval()) {
                 if (hasApproveRightForProgram(requisition) && isApprovalColumn(column)) {
                     return false;
                 }
@@ -257,6 +257,10 @@
             var bracket = ' (';
             var stringToAdd = bracket.concat(netContent, ')');
             return fullProductName.indexOf(stringToAdd) > -1 ? fullProductName : fullProductName.concat(stringToAdd);
+        }
+
+        function isTbProgram(requisition) {
+            return requisition.program.code === 'tb';
         }
     }
 
