@@ -15,24 +15,24 @@
 
 (function() {
 
-    'use strict';
+	'use strict';
 
-    /**
+	/**
      * @ngdoc service
      * @name requisition-initiate.periodService
      *
      * @description
      * Responsible for retrieving periods from server.
      */
-    angular
-    .module('requisition-initiate')
-    .config(function($provide) {
-        $provide.decorator('periodService', decorator);
-    });
+	angular
+		.module('requisition-initiate')
+        .config(function($provide) {
+            $provide.decorator('periodService', decorator);
+        });
 
-    decorator.$inject = ['$delegate', '$resource', 'requisitionUrlFactory', 'dateUtils'];
+    decorator.$inject = ['$delegate', '$resource', '$q', 'alertService', 'requisitionUrlFactory', 'dateUtils'];
 
-    function decorator($delegate, $resource, requisitionUrlFactory, dateUtils) {
+    function decorator($delegate, $resource, $q, alertService, requisitionUrlFactory, dateUtils) {
         var resource = $resource(requisitionUrlFactory('/api/requisitions/periodsForInitiate'), {}, {
                 periodsForInitiate: {
                     method: 'GET',
@@ -46,7 +46,7 @@
 
         return periodService;
 
-        /**
+		/**
          * @ngdoc method
          * @methodOf requisition-initiate.periodService
          * @name getPeriodsForInitiate
@@ -64,7 +64,18 @@
                 programId: programId,
                 facilityId: facilityId,
                 emergency: emergency
-            }).$promise;
+            }).$promise.catch(function(response) {
+                if (response.status === 400) {
+                    var data = angular.fromJson(response.data);
+                    if (data.messageKey === 'requisition.error.facilityDoesNotSupportProgram') {
+                        alertService.error(
+                            'requisitionInitiate.programNotSupported.label',
+                            'requisitionInitiate.programNotSupported.message'
+                        );
+                    }
+                }
+                $q.reject(response);
+            });
         }
 
         function transformResponse(data, headers, status) {

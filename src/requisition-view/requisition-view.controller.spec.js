@@ -235,6 +235,35 @@ describe('RequisitionViewController', function() {
         });
         // --- ends here ---
 
+        it('should set requisition type label and class for regular requisition', function() {
+            vm.requisition.emergency = false;
+            vm.requisition.reportOnly = false;
+
+            vm.$onInit();
+
+            expect(vm.requisitionType).toBe('requisitionView.regular');
+            expect(vm.requisitionTypeClass).toBe('regular');
+        });
+
+        it('should set requisition type label and class for emergency requisition', function() {
+            vm.requisition.emergency = true;
+            vm.requisition.reportOnly = true;
+
+            vm.$onInit();
+
+            expect(vm.requisitionType).toBe('requisitionView.emergency');
+            expect(vm.requisitionTypeClass).toBe('emergency');
+        });
+
+        it('should set requisition type label and class for report-only requisition', function() {
+            vm.requisition.emergency = false;
+            vm.requisition.reportOnly = true;
+
+            vm.$onInit();
+
+            expect(vm.requisitionType).toBe('requisitionView.reportOnly');
+            expect(vm.requisitionTypeClass).toBe('report-only');
+        });
     });
 
     it('should display message when successfully skipped requisition', function() {
@@ -360,7 +389,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isFullSupplyTabValid()).toBe(true);
             expect(requisitionValidatorMock.areLineItemsValid)
-            .toHaveBeenCalledWith([fullSupplyItems[0]]);
+                .toHaveBeenCalledWith([fullSupplyItems[0]]);
             expect(vm.invalidFullSupply).toBe(undefined);
         });
 
@@ -371,7 +400,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isFullSupplyTabValid()).toBe(false);
             expect(requisitionValidatorMock.areLineItemsValid)
-            .toHaveBeenCalledWith([fullSupplyItems[0]]);
+                .toHaveBeenCalledWith([fullSupplyItems[0]]);
             expect(vm.invalidFullSupply).toBe(message);
             expect(messageService.get).toHaveBeenCalledWith('requisitionView.requisition.error');
         });
@@ -394,7 +423,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isNonFullSupplyTabValid()).toBe(true);
             expect(requisitionValidatorMock.areLineItemsValid)
-            .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
+                .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
             expect(vm.invalidNonFullSupply).toBe(undefined);
         });
 
@@ -405,7 +434,7 @@ describe('RequisitionViewController', function() {
 
             expect(vm.isNonFullSupplyTabValid()).toBe(false);
             expect(requisitionValidatorMock.areLineItemsValid)
-            .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
+                .toHaveBeenCalledWith([nonFullSupplyItems[0]]);
             expect(vm.invalidNonFullSupply).toBe(message);
             expect(messageService.get).toHaveBeenCalledWith('requisitionView.requisition.error');
         });
@@ -600,7 +629,7 @@ describe('RequisitionViewController', function() {
             alertService = _alertService_;
             spyOn(alertService, 'error');
             vm.requisition.draftStatusMessage = 'test';
-        // --- ends here ---
+            // --- ends here ---
             confirmDeferred = $q.defer();
             saveDeferred = $q.defer();
 
@@ -655,14 +684,14 @@ describe('RequisitionViewController', function() {
             $scope.$apply();
 
             expect(stateTrackerService.goToPreviousState)
-            .toHaveBeenCalledWith('openlmis.requisitions.approvalList');
+                .toHaveBeenCalledWith('openlmis.requisitions.approvalList');
         });
 
         it('should disable RequisitionWatcher', function() {
             vm.rejectRnr();
             confirmDeferred.resolve();
             saveDeferred.resolve();
-            $scope.$apply()
+            $scope.$apply();
 
             expect(watcher.disableWatcher).toHaveBeenCalled();
         });

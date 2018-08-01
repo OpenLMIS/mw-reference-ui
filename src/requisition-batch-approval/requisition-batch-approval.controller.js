@@ -25,20 +25,20 @@
      * Controller for approval list of requisitions.
      */
     angular
-    .module('requisition-batch-approval')
-    .controller('RequisitionBatchApprovalController', controller);
+        .module('requisition-batch-approval')
+        .controller('RequisitionBatchApprovalController', controller);
 
     controller.$inject = [
         'requisitions', 'calculationFactory', 'stateTrackerService', 'loadingModalService', 'messageService',
-        'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
-        'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
-        'localStorageFactory', '$state', '$stateParams', 'requisitionBatchDisplayFactory'
+            'alertService', 'confirmService', 'notificationService', 'requisitionBatchSaveFactory',
+            'requisitionBatchApproveFactory', 'offlineService', 'RequisitionWatcher', '$scope', '$filter', 'REQUISITION_STATUS',
+            'localStorageFactory', '$state', '$stateParams', 'requisitionBatchDisplayFactory'
     ];
 
     function controller(requisitions, calculationFactory, stateTrackerService, loadingModalService,
-        messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
-        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
-        localStorageFactory, $state, $stateParams, requisitionBatchDisplayFactory) {
+                        messageService, alertService, confirmService, notificationService, requisitionBatchSaveFactory,
+                        requisitionBatchApproveFactory, offlineService, RequisitionWatcher, $scope, $filter, REQUISITION_STATUS,
+                        localStorageFactory, $state, $stateParams, requisitionBatchDisplayFactory) {
 
         var vm = this;
 
@@ -248,6 +248,20 @@
          * change.
          *
          */
+        /**
+         * @ngdoc method
+         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
+         * @name updateRequisitions
+         *
+         * @description
+         * After confirming with the user, the outdated offline requisitions are removed,
+         * and the state is reloaded. This will fetch a fresh version of the
+         * requisitions.
+         *
+         * If the browser is offline, an error will be thrown, and nothing will
+         * change.
+         *
+         */
         function updateRequisitions() {
             if(vm.isOffline()) {
                 alertService.error('requisitionBatchApproval.updateOffline');
@@ -255,17 +269,17 @@
             }
 
             confirmService.confirm('requisitionBatchApproval.updateWarning', 'requisitionBatchApproval.update')
-            .then(function(){
-                var offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
-                    offlineRequisitions = localStorageFactory('requisitions');
+                .then(function(){
+                    var offlineBatchRequisitions = localStorageFactory('batchApproveRequisitions'),
+                        offlineRequisitions = localStorageFactory('requisitions');
 
-                angular.forEach(vm.requisitions, function(requisition) {
-                    offlineBatchRequisitions.removeBy('id', requisition.id);
-                    offlineRequisitions.removeBy('id', requisition.id)
+                    angular.forEach(vm.requisitions, function(requisition) {
+                        offlineBatchRequisitions.removeBy('id', requisition.id);
+                        offlineRequisitions.removeBy('id', requisition.id)
+                    });
+
+                    $state.reload();
                 });
-
-                $state.reload();
-            });
         }
 
         /**
@@ -394,7 +408,8 @@
                     requisition.$error = $stateParams.errors[requisition.id];
                 }
 
-                new RequisitionWatcher($scope, requisition, localStorageFactory('batchApproveRequisitions')).enableWatcher();
+                new RequisitionWatcher($scope, requisition, localStorageFactory('batchApproveRequisitions'))
+                .enableWatcher();
             });
         }
 

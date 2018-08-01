@@ -33,8 +33,8 @@
      * ```
      */
     angular
-    .module('requisition-product-grid')
-    .directive('productGridCell', productGridCell);
+        .module('requisition-product-grid')
+        .directive('productGridCell', productGridCell);
 
     productGridCell.$inject = [
         '$q', '$timeout', '$templateRequest', '$compile', 'requisitionValidator',
@@ -45,7 +45,7 @@
     ];
 
     function productGridCell($q, $timeout, $templateRequest, $compile, requisitionValidator,
-        TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS,
+                            TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS,
         // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
         authorizationService) {
         // --- ends here ---
@@ -111,11 +111,11 @@
 
             updateCellContents();
 
-            function updateCellContents(){
+            function updateCellContents() {
                 var templateUrl = '';
                 if(column.name === TEMPLATE_COLUMNS.SKIPPED) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-skip.html';
-                } else if(column.name === TEMPLATE_COLUMNS.TOTAL_LOSSES_AND_ADJUSTMENTS) {
+                } else if(column.name === TEMPLATE_COLUMNS.TOTAL_LOSSES_AND_ADJUSTMENTS && !requisition.template.populateStockOnHandFromStockCards) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-total-losses-and-adjustments.html';
                 } else if(column.$type === COLUMN_TYPES.NUMERIC && !scope.isReadOnly){
                     templateUrl = 'requisition-product-grid/product-grid-cell-input-numeric.html';
@@ -124,7 +124,7 @@
                 } else if(column.$type === COLUMN_TYPES.CURRENCY) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-currency.html';
                 } else {
-                    templateUrl = 'requisition-product-grid/product-grid-cell-text.html'
+                    templateUrl = 'requisition-product-grid/product-grid-cell-text.html';
                 }
                 $templateRequest(templateUrl).then(replaceCell);
             }

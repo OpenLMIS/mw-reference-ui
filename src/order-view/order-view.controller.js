@@ -26,18 +26,18 @@
      * fetches data to populate grid.
      */
     angular
-    .module('order-view')
-    .controller('OrderViewController', controller);
+        .module('order-view')
+        .controller('OrderViewController', controller);
 
     controller.$inject = [
         'supplyingFacilities', 'requestingFacilities', 'programs', 'requestingFacilityFactory',
         'loadingModalService', 'notificationService', 'fulfillmentUrlFactory', 'orders',
-        '$stateParams', '$filter', '$state', '$scope'
+        'orderService', 'orderStatusFactory', 'canRetryTransfer', '$stateParams', '$filter', '$state', '$scope'
     ];
 
     function controller(supplyingFacilities, requestingFacilities, programs, requestingFacilityFactory,
-        loadingModalService, notificationService, fulfillmentUrlFactory, orders, $stateParams, $filter,
-        $state, $scope) {
+                        loadingModalService, notificationService, fulfillmentUrlFactory, orders, orderService,
+                        orderStatusFactory, canRetryTransfer, $stateParams, $filter, $state, $scope) {
 
         var vm = this;
 
@@ -45,6 +45,7 @@
         vm.loadOrders = loadOrders;
         vm.getPrintUrl = getPrintUrl;
         vm.getDownloadUrl = getDownloadUrl;
+        vm.retryTransfer = retryTransfer;
 
         /**
          * @ngdoc property
@@ -113,6 +114,28 @@
         vm.orders = undefined;
 
         /**
+         * @ngdoc property
+         * @propertyOf order-view.controller:OrderViewController
+         * @name canRetryTransfer
+         * @type {Boolean}
+         *
+         * @description
+         * Becomes true if user has permission to retry transfer of failed order.
+         */
+        vm.canRetryTransfer = undefined;
+
+        /**
+         * @ngdoc property
+         * @propertyOf order-view.controller:OrderViewController
+         * @name orderStatuses
+         * @type {Array}
+         *
+         * @description
+         * Contains a list of possible order statuses to allow filtering.
+         */
+        vm.orderStatuses = undefined;
+
+        /**
          * @ngdoc method
          * @methodOf order-view.controller:OrderViewController
          * @name $onInit
@@ -124,7 +147,9 @@
         function onInit() {
             vm.supplyingFacilities = supplyingFacilities;
             vm.requestingFacilities = requestingFacilities;
+            vm.canRetryTransfer = canRetryTransfer;
             vm.programs = programs;
+            vm.orderStatuses = orderStatusFactory.getAll();
 
             vm.orders = orders;
 
@@ -155,13 +180,17 @@
                 vm.periodEndDate = $stateParams.periodEndDate;
             }
 
+            if ($stateParams.status) {
+                vm.status = $stateParams.status;
+            }
+
             $scope.$watch(function() {
                 return vm.supplyingFacility;
             }, function(newValue, oldValue) {
                 if (newValue && hasSupplyingFacilityChange(newValue, oldValue)) {
                     loadRequestingFacilities(vm.supplyingFacility.id);
                 }
-                if (!newValue){
+                if (!newValue) {
                     vm.requestingFacilities = undefined;
                 }
             }, true);
@@ -184,6 +213,7 @@
             stateParams.supplyingFacilityId = vm.supplyingFacility ? vm.supplyingFacility.id : null;
             stateParams.requestingFacilityId = vm.requestingFacility ? vm.requestingFacility.id : null;
             stateParams.programId = vm.program ? vm.program.id : null;
+            stateParams.status = vm.status ? vm.status : null;
             stateParams.periodStartDate = vm.periodStartDate ? $filter('isoDate')(vm.periodStartDate) : null;
             stateParams.periodEndDate = vm.periodEndDate ? $filter('isoDate')(vm.periodEndDate) : null;
             stateParams.sort = 'createdDate,desc';
@@ -227,16 +257,44 @@
             // --- ends here ---
         }
 
+        /**
+         * @ngdoc method
+         * @methodOf order-view.controller:OrderViewController
+         * @name retryTransfer
+         *
+         * @description
+         * For an order that failed to transfer correctly, retry the transfer of order file.
+         *
+         * @param  {Object} order the order to retry the transfer for
+         */
+        function retryTransfer(order) {
+            loadingModalService.open();
+            orderService.retryTransfer(order.id).then(function(response) {
+                if (response.result) {
+                    notificationService.success('orderView.transferComplete');
+                    $state.reload();
+                } else {
+                    notificationService.error('orderView.transferFailed');
+                }
+            })
+                .catch(function(error) {
+                    notificationService.error(error.description);
+                })
+                .finally(loadingModalService.close);
+        }
+
         function loadRequestingFacilities(supplyingFacilityId) {
             loadingModalService.open();
             requestingFacilityFactory.loadRequestingFacilities(supplyingFacilityId).then(function(facilities) {
                 vm.requestingFacilities = facilities;
-            }).finally(loadingModalService.close);
+            })
+                .finally(loadingModalService.close);
         }
 
         function hasSupplyingFacilityChange(newValue, oldValue) {
-            return newValue.id != $stateParams.supplyingFacilityId
-                || (newValue.id == $stateParams.supplyingFacilityId && oldValue && oldValue.id != $stateParams.supplyingFacilityId);
+            return newValue.id !== $stateParams.supplyingFacilityId
+                || (newValue.id === $stateParams.supplyingFacilityId &&
+                    oldValue && oldValue.id !== $stateParams.supplyingFacilityId);
         }
 
     }

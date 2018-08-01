@@ -153,6 +153,20 @@ describe('ProductGridCell', function() {
         expect(directiveElem.find("a").length).toEqual(1);
     });
 
+    it('should produce read only for losesAndAdjustment and stock based requisition', function() {
+        scope.requisition.$isApproved.andReturn(false);
+        scope.requisition.$isReleased.andReturn(false);
+        scope.requisition.$isAuthorized.andReturn(false);
+        scope.column.name = "totalLossesAndAdjustments";
+        scope.lineItem.isReadOnly.andReturn(true);
+        scope.requisition.template.populateStockOnHandFromStockCards = true;
+
+        directiveElem = getCompiledElement();
+
+        expect(directiveElem.html()).toContain("readOnlyFieldValue");
+        expect(directiveElem.find("input").length).toEqual(0);
+    });
+
     it('should validate full supply line item columns after updating fields', function() {
         scope.requisition.$isInitiated.andReturn(true);
         var element = getCompiledElement(),
@@ -168,7 +182,7 @@ describe('ProductGridCell', function() {
     });
 
     it('should validate non full supply line item columns after updating fields', function() {
-        scope.requisition.$isInitiated.andReturn(true);
+       scope.requisition.$isInitiated.andReturn(true);
         var element = getCompiledElement(),
             input = element.find('input');
 
@@ -190,6 +204,29 @@ describe('ProductGridCell', function() {
         beforeEach(function() {
             skipColumn = new RequisitionColumnDataBuilder().buildSkipColumn();
             scope.column = skipColumn;
+            userAlwaysHasRight = false;
+            
+        });
+
+        it('should be always disabled if user can not edit', function() {
+            userHasAuthorizedRight = false;
+
+            scope.userCanEdit = false;
+            scope.lineItem.canBeSkipped.andReturn(true);
+
+            element = getCompiledElement();
+
+            expect(getSkipInput().attr('disabled')).toBe('disabled');
+
+            scope.lineItem.canBeSkipped.andReturn(false);
+            scope.$digest();
+
+            expect(getSkipInput().attr('disabled')).toBe('disabled');
+
+            scope.lineItem.canBeSkipped.andReturn(true);
+            scope.$digest();
+
+            expect(getSkipInput().attr('disabled')).toBe('disabled');
         });
 
         it('should change disabled state if lineItem changes its skipability and user has right to edit', function() {

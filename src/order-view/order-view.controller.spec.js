@@ -17,7 +17,9 @@ describe('OrderViewController', function() {
 
     var vm, $rootScope, fulfillmentUrlFactoryMock, supplyingFacilities, requestingFacilities,
         programs, orders, $controller, $stateParams, scope, requestingFacilityFactory, $state,
-        BasicOrderResponseDataBuilder, ORDER_STATUS, ProgramDataBuilder, FacilityDataBuilder;
+        BasicOrderResponseDataBuilder, ORDER_STATUS, orderService, canRetryTransfer, $q,
+        notificationService, loadingModalService, orderStatusFactory, ProgramDataBuilder,
+        FacilityDataBuilder;
 
     beforeEach(function() {
         module('order-view');
@@ -27,6 +29,7 @@ describe('OrderViewController', function() {
         inject(function($injector) {
             $controller = $injector.get('$controller');
             $stateParams = $injector.get('$stateParams');
+            $q = $injector.get('$q');
             $state = $injector.get('$state');
             $rootScope = $injector.get('$rootScope');
             scope = $rootScope.$new();
@@ -34,7 +37,11 @@ describe('OrderViewController', function() {
             BasicOrderResponseDataBuilder = $injector.get('BasicOrderResponseDataBuilder');
             ProgramDataBuilder = $injector.get('ProgramDataBuilder');
             FacilityDataBuilder = $injector.get('FacilityDataBuilder');
+            orderService = $injector.get('orderService');
+            notificationService = $injector.get('notificationService');
+            loadingModalService = $injector.get('loadingModalService');
             ORDER_STATUS = $injector.get('ORDER_STATUS');
+            orderStatusFactory = $injector.get('orderStatusFactory');
         });
 
         supplyingFacilities = [
@@ -54,14 +61,15 @@ describe('OrderViewController', function() {
 
         orders = [
             new BasicOrderResponseDataBuilder()
-            .withStatus(ORDER_STATUS.ORDERED)
-            .withId('order-one')
-            .build(),
+                .withStatus(ORDER_STATUS.ORDERED)
+                .withId('order-one')
+                .build(),
             new BasicOrderResponseDataBuilder()
             .withStatus(ORDER_STATUS.FULFILLING)
             .withId('order-two')
             .build()
         ];
+        canRetryTransfer =true;
     });
 
     describe('initialization', function() {
@@ -72,6 +80,10 @@ describe('OrderViewController', function() {
                 requestingFacilities: requestingFacilities,
                 programs: programs,
                 orders: orders,
+                canRetryTransfer: canRetryTransfer,
+                notificationService: notificationService,
+                loadingModalService: loadingModalService,
+                orderStatusFactory: orderStatusFactory,
                 $scope: scope
             });
 
@@ -171,6 +183,7 @@ describe('OrderViewController', function() {
                 supplyingFacilityId: null,
                 programId: vm.program.id,
                 requestingFacilityId: null,
+                status: null,
                 periodStartDate: null,
                 periodEndDate: null,
                 sort: 'createdDate,desc'
@@ -186,6 +199,7 @@ describe('OrderViewController', function() {
                 supplyingFacilityId: vm.supplyingFacility.id,
                 programId: null,
                 requestingFacilityId: null,
+                status: null,
                 periodStartDate: null,
                 periodEndDate: null,
                 sort: 'createdDate,desc'
@@ -201,6 +215,7 @@ describe('OrderViewController', function() {
                 supplyingFacilityId: null,
                 programId: null,
                 requestingFacilityId: vm.requestingFacility.id,
+                status: null,
                 periodStartDate: null,
                 periodEndDate: null,
                 sort: 'createdDate,desc'
@@ -216,6 +231,7 @@ describe('OrderViewController', function() {
                 supplyingFacilityId: null,
                 programId: null,
                 requestingFacilityId: null,
+                status: null,
                 periodStartDate: '2017-01-31',
                 periodEndDate: null,
                 sort: 'createdDate,desc'
@@ -231,6 +247,7 @@ describe('OrderViewController', function() {
                 supplyingFacilityId: null,
                 programId: null,
                 requestingFacilityId: null,
+                status: null,
                 periodStartDate: null,
                 periodEndDate: '2017-01-31',
                 sort: 'createdDate,desc'
@@ -238,8 +255,8 @@ describe('OrderViewController', function() {
         });
 
         it('should reload state', function() {
-            vm.loadOrders();
-            expect($state.go).toHaveBeenCalled();
+           vm.loadOrders();
+           expect($state.go).toHaveBeenCalled();
         });
 
     });
@@ -257,7 +274,9 @@ describe('OrderViewController', function() {
                 requestingFacilities: requestingFacilities,
                 programs: programs,
                 orders: orders,
+                canRetryTransfer: canRetryTransfer,
                 fulfillmentUrlFactory: fulfillmentUrlFactoryMock,
+                orderStatusFactory: orderStatusFactory,
                 $scope: scope
             });
         });
@@ -284,6 +303,8 @@ describe('OrderViewController', function() {
                 programs: programs,
                 orders: orders,
                 fulfillmentUrlFactory: fulfillmentUrlFactoryMock,
+                canRetryTransfer: canRetryTransfer,
+                orderStatusFactory: orderStatusFactory,
                 $scope: scope
             });
         });
@@ -296,12 +317,77 @@ describe('OrderViewController', function() {
         });
     });
 
+    describe('retryTransfer', function(){
+        var order, retryTransferDeferred;
+
+        beforeEach(function(){
+            retryTransferDeferred = $q.defer();
+            spyOn(loadingModalService, 'open').andReturn();
+            spyOn(loadingModalService, 'close').andReturn();
+            spyOn(notificationService, 'error').andReturn();
+            spyOn(notificationService, 'success').andReturn();
+            spyOn(orderService, 'retryTransfer').andReturn(retryTransferDeferred.promise);
+
+            vm = $controller('OrderViewController', {
+                supplyingFacilities: supplyingFacilities,
+                requestingFacilities: requestingFacilities,
+                programs: programs,
+                orders: orders,
+                canRetryTransfer: canRetryTransfer,
+                orderService: orderService,
+                notificationService: notificationService,
+                loadingModalService: loadingModalService,
+                fulfillmentUrlFactory: fulfillmentUrlFactoryMock,
+                orderStatusFactory: orderStatusFactory,
+                $scope: scope
+            });
+            order = new BasicOrderResponseDataBuilder()
+                .withStatus(ORDER_STATUS.TRANSFER_FAILED)
+                .withId('order-one')
+                .build();
+        });
+
+        it('should call retry transfer service', function(){
+            vm.retryTransfer(order);
+            expect(orderService.retryTransfer).toHaveBeenCalledWith(order.id);
+        });
+
+        it('should show successful message when transfer is complete', function(){
+            vm.retryTransfer(order);
+            retryTransferDeferred.resolve({result: true});
+            $rootScope.$apply();
+
+            expect(notificationService.success).toHaveBeenCalledWith('orderView.transferComplete');
+        });
+
+        it('should show error message when server responded with OK but transfer was not complete', function(){
+            vm.retryTransfer(order);
+            retryTransferDeferred.resolve({result: false});
+            $rootScope.$apply();
+
+            expect(notificationService.error).toHaveBeenCalledWith('orderView.transferFailed');
+        });
+
+        it('should show error message when server responded with error message', function(){
+            vm.retryTransfer(order);
+            retryTransferDeferred.reject({description: 'some-other-error'});
+            $rootScope.$apply();
+
+            expect(notificationService.error).toHaveBeenCalledWith('some-other-error');
+        });
+    });
+
     function initController() {
         vm = $controller('OrderViewController', {
             supplyingFacilities: supplyingFacilities,
             requestingFacilities: requestingFacilities,
             programs: programs,
             orders: orders,
+            canRetryTransfer: canRetryTransfer,
+            notificationService: notificationService,
+            loadingModalService: loadingModalService,
+            orderService: orderService,
+            orderStatusFactory: orderStatusFactory,
             $scope: scope
         });
         vm.$onInit();

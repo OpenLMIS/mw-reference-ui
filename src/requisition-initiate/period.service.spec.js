@@ -15,7 +15,7 @@
 
 describe('periodService', function() {
 
-    var $rootScope, $httpBackend, requisitionUrlFactoryMock, dateUtilsMock, periodService, periodOne, periodTwo;
+    var $rootScope, $httpBackend, requisitionUrlFactoryMock, dateUtilsMock, alertServiceMock, periodService, periodOne, periodTwo;
 
     beforeEach(function() {
         module('requisition-initiate', function($provide){
@@ -34,6 +34,11 @@ describe('periodService', function() {
             dateUtilsMock.toDate.andCallFake(function(parameter) {
                 return parameter;
             });
+
+            alertServiceMock = jasmine.createSpyObj('alertService', ['error']);
+            $provide.factory('alertService', function() {
+                return alertServiceMock;
+            });
         });
 
         inject(function(_$httpBackend_, _$rootScope_, _periodService_) {
@@ -41,6 +46,7 @@ describe('periodService', function() {
             $rootScope = _$rootScope_;
             periodService = _periodService_;
         });
+
 
         // Malawi: display only the active periods
         periodOne = {
@@ -142,6 +148,18 @@ describe('periodService', function() {
                 && period.isActive === false })).toEqual(true);
         });
         // --- ends here ---
+
+        it('should show an alert if facility is not supported', function() {
+            $httpBackend.when('GET', requisitionUrlFactoryMock('/api/requisitions/periodsForInitiate?emergency=' + emergency +
+                "&facilityId=" + facilityId + "&programId=" + programId))
+            .respond(400, {"messageKey": "requisition.error.facilityDoesNotSupportProgram"});
+
+            promise = periodService.getPeriodsForInitiate(programId, facilityId, emergency);
+
+            $httpBackend.flush();
+            expect(angular.isFunction(promise.then)).toBe(true);
+            expect(alertServiceMock.error).toHaveBeenCalledWith('requisitionInitiate.programNotSupported.label', 'requisitionInitiate.programNotSupported.message');
+        });
     });
 
     afterEach(function() {

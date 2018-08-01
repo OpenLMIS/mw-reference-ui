@@ -1,5 +1,5 @@
 <h2>{{'requisitionApproval.approveRequisitions' | message}}</h2>
-<h4>{{ 'requisitionApproval.instruction' | message }}</h4>
+<h4 ng-if="vm.isBatchApproveScreenActive">{{ 'requisitionApproval.instruction' | message }}</h4>
 <div class="openlmis-table-container">
     <form class="openlmis-table-filters" ng-submit="vm.search()">
         <label for=program>{{'requisitionApproval.program' | message}}</label>
@@ -10,8 +10,8 @@
         </select>
         <input class="btn btn-primary" type="submit" value="{{'requisitionApproval.search' | message}}"/>
     </form>
-    <h4>{{ 'requisitionApproval.select' | message }}</h4>
-    <ul>
+    <h4 ng-if="vm.isBatchApproveScreenActive">{{ 'requisitionApproval.select' | message }}</h4>
+    <ul ng-if="vm.isBatchApproveScreenActive">
         <li><a ng-click="vm.toggleSelectAll(true)">{{'requisitionApproval.all' | message}}</a></li>
         <li><a ng-click="vm.toggleSelectAll(false)">{{'requisitionApproval.none' | message}}</a></li>
     </ul>
@@ -21,7 +21,7 @@
         </caption>
         <thead>
         <tr>
-            <th class="col-sticky">
+            <th class="col-sticky" ng-if="vm.isBatchApproveScreenActive">
                 {{ 'requisitionApproval.approve' | message }}
             </th>
             <th>{{'requisitionApproval.program' | message}}</th>
@@ -37,7 +37,7 @@
         </thead>
         <tbody>
         <tr ng-repeat="requisition in vm.requisitions">
-            <td>
+            <td ng-if="vm.isBatchApproveScreenActive">
                 <input type="checkbox" ng-model="requisition.$selected">
             </td>
             <td>{{requisition.program.name}}</td>
@@ -62,6 +62,6 @@
     </table>
     <openlmis-pagination/>
 </div>
-<div class="openlmis-toolbar" ng-if="vm.requisitions.length">
+<div class="openlmis-toolbar" ng-if="vm.requisitions.length && vm.isBatchApproveScreenActive">
     <button class="primary" ng-click="vm.viewSelectedRequisitions()">{{'requisitionApproval.viewSelectedRequisitions' | message}}</button>
 </div>

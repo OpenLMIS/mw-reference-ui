@@ -25,8 +25,8 @@
      * Controller for managing requisitions.
      */
     angular
-    .module('requisition-view')
-    .controller('RequisitionViewController', RequisitionViewController);
+        .module('requisition-view')
+        .controller('RequisitionViewController', RequisitionViewController);
 
     RequisitionViewController.$inject = [
         '$state', 'requisition', 'requisitionValidator', 'authorizationService',
@@ -50,7 +50,7 @@
         offlineService, $window, requisitionUrlFactory, $filter,
         $scope, RequisitionWatcher, accessTokenFactory,
         messageService, stateTrackerService, RequisitionStockCountDateModal,
-        localStorageFactory, canSubmit, canAuthorize, canApproveAndReject,
+        localStorageFactory, canSubmit, canAuthorize, canApproveAndReject, 
         canDelete, canSkip, canSync,
         // Malawi: Display alternate warning message
         REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE,
@@ -60,7 +60,6 @@
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition, localStorageFactory('requisitions'));
-
         /**
          * @ngdoc property
          * @propertyOf requisition-view.controller:RequisitionViewController
@@ -79,11 +78,20 @@
          * @type {String}
          *
          * @description
-         * Holds message key to display, depending on the requisition type (regular/emergency).
+         * Holds message key to display, depending on the requisition type (regular/emergency/report-only).
          */
-        vm.requisitionType = vm.requisition.emergency ?
-            'requisitionView.emergency' :
-            'requisitionView.regular';
+        vm.requisitionType = undefined;
+
+        /**
+         * @ngdoc property
+         * @propertyOf requisition-view.controller:RequisitionViewController
+         * @name requisitionTypeClass
+         * @type {String}
+         *
+         * @description
+         * Holds CSS class to use, depending on the requisition type (regular/emergency/report-only).
+         */
+        vm.requisitionTypeClass = undefined;
 
         /**
          * @ngdoc property
@@ -217,6 +225,7 @@
          * Initialization method of the RequisitionViewController.
          */
         function onInit() {
+            setTypeAndClass();
             vm.displaySubmitButton = canSubmit && !vm.requisition.program.skipAuthorization;
             vm.displaySubmitAndAuthorizeButton = canSubmit && vm.requisition.program.skipAuthorization;
             vm.displayAuthorizeButton = canAuthorize;
@@ -227,6 +236,19 @@
             // Malawi: set all to 0 button
             vm.displaySetAllTo0 = displaySetAllTo0();
             // --- ends here ---
+        }
+
+        function setTypeAndClass() {
+            if (vm.requisition.emergency) {
+                vm.requisitionType = 'requisitionView.emergency';
+                vm.requisitionTypeClass = 'emergency';
+            } else if (vm.requisition.reportOnly) {
+                vm.requisitionType = 'requisitionView.reportOnly';
+                vm.requisitionTypeClass = 'report-only';
+            } else {
+                vm.requisitionType = 'requisitionView.regular';
+                vm.requisitionTypeClass = 'regular';
+            }
         }
 
         /**
@@ -256,7 +278,7 @@
             });
         }
 
-        /**
+         /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
          * @name syncRnr
@@ -279,7 +301,7 @@
             });
         }
 
-        /**
+         /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
          * @name syncRnrAndPrint
@@ -304,9 +326,9 @@
                     popup.location.href = accessTokenFactory.addAccessToken(vm.getPrintUrl());
                     reloadState();
                 }, function(response) {
-                    handleSaveError(response.status);
-                    popup.close();
-                });
+                  handleSaveError(response.status);
+                  popup.close();
+              });
             } else {
                 $window.open(accessTokenFactory.addAccessToken(vm.getPrintUrl()), '_blank');
             }
@@ -526,18 +548,22 @@
                 confirmService.confirmDestroy(
                     'requisitionView.reject.confirm',
                     'requisitionView.reject.label'
-                ).then(function () {
+                ).then(function() {
                     var loadingPromise = loadingModalService.open();
-                    vm.requisition.$save().then(function () {
-                        vm.requisition.$reject().then().then(function(response) {
+                    vm.requisition.$save().then(function() {
+                        vm.requisition.$reject()
+                        .then(function() {
                             watcher.disableWatcher();
-                            loadingPromise.then(function () {
+                            loadingPromise.then(function() {
                                 notificationService.success('requisitionView.reject.success');
                             });
                             stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                        }, failWithMessage('requisitionView.reject.failure'));
-                    });
-
+                        })
+                        .catch(function() {
+                            failWithMessage('requisitionView.reject.failure');
+                        });
+                    })
+                    .catch(loadingModalService.close);
                 });
             }
         }

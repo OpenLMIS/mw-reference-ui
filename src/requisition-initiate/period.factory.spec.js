@@ -15,19 +15,13 @@
 
 describe('periodFactory', function() {
 
-    var $rootScope, $q, periodServiceMock, requisitionServiceMock, periodFactory, periodOne,
-        requisition;
+    var $rootScope, $q, periodServiceMock, periodFactory, periodOne, periodTwo;
 
     beforeEach(function() {
         module('requisition-initiate', function($provide){
             periodServiceMock = jasmine.createSpyObj('periodService', ['getPeriodsForInitiate']);
             $provide.service('periodService', function() {
                 return periodServiceMock;
-            });
-
-            requisitionServiceMock = jasmine.createSpyObj('requisitionService', ['search']);
-            $provide.service('requisitionService', function() {
-                return requisitionServiceMock;
             });
         });
 
@@ -44,7 +38,7 @@ describe('periodFactory', function() {
             name: 'period1',
             startDate: new Date("January 1, 2017 00:00:00"),
             endDate: new Date("January 31, 2017 00:00:00"),
-            isActive: true
+            isActive: false
         };
 
         periodTwo = {
@@ -52,20 +46,11 @@ describe('periodFactory', function() {
             name: 'period2',
             startDate: new Date("January 1, 2017 00:00:00"),
             endDate: new Date("January 31, 2017 00:00:00"),
-            isActive: false
+            isActive: true,
+            requisitionId: '05eb8040-66a9-4cd7-8da4-0735c9c44ab2',
+            requisitionStatus: REQUISITION_STATUS.INITIATED
         };
         // --- ends here ---
-
-        requisition = {
-            id: '1',
-            processingPeriod: periodOne,
-            status: REQUISITION_STATUS.INITIATED
-        };
-        requisition = {
-            id: '1',
-            processingPeriod: periodOne,
-            status: REQUISITION_STATUS.INITIATED
-        };
     });
 
     describe('get emergency periods', function() {
@@ -77,16 +62,7 @@ describe('periodFactory', function() {
 
         beforeEach(function() {
             periodServiceMock.getPeriodsForInitiate.andCallFake(function() {
-                // Malawi: check if the period is active
                 return $q.when([periodOne, periodTwo]);
-                // --- ends here ---
-            });
-            requisitionServiceMock.search.andCallFake(function() {
-                return $q.when({
-                    content: [
-                        requisition
-                    ]
-                });
             });
 
             periodFactory.get(programId, facilityId, emergency).then(function(response) {
@@ -100,16 +76,8 @@ describe('periodFactory', function() {
             expect(periodServiceMock.getPeriodsForInitiate).toHaveBeenCalledWith(programId, facilityId, emergency);
         });
 
-        it('should call requisitionService search method with proper params', function() {
-            expect(requisitionServiceMock.search).toHaveBeenCalledWith(false, {
-                emergency: emergency,
-                facility: facilityId,
-                program: programId,
-                requisitionStatus: [REQUISITION_STATUS.INITIATED, REQUISITION_STATUS.SUBMITTED, REQUISITION_STATUS.REJECTED]
-            });
-        });
-
         it('should return proper periods', function() {
+            // Malawi: check if the period is active
             expect(data[0]).toEqual({
                 name: periodOne.name,
                 startDate: periodOne.startDate,
@@ -118,24 +86,15 @@ describe('periodFactory', function() {
                 activeForRnr: true,
                 rnrId: null
             });
-            // Malawi: check if the period is active
             expect(data[1]).toEqual({
                 name: periodTwo.name,
                 startDate: periodTwo.startDate,
                 endDate: periodTwo.endDate,
-                rnrStatus: 'requisitionInitiate.notYetStarted',
-                activeForRnr: true,
-                rnrId: null
-            });
-            expect(data[2]).toEqual({
-                // --- ends here ---
-                name: periodOne.name,
-                startDate: periodOne.startDate,
-                endDate: periodOne.endDate,
                 rnrStatus: REQUISITION_STATUS.INITIATED,
                 activeForRnr: true,
-                rnrId: requisition.id
+                rnrId: periodTwo.requisitionId
             });
+            // --- ends here ---
         });
     });
 
@@ -148,14 +107,7 @@ describe('periodFactory', function() {
 
         beforeEach(function() {
             periodServiceMock.getPeriodsForInitiate.andCallFake(function() {
-                return $q.when([periodOne]);
-            });
-            requisitionServiceMock.search.andCallFake(function() {
-                return $q.when({
-                    content: [
-                        requisition
-                    ]
-                });
+                return $q.when([periodOne, periodTwo]);
             });
 
             periodFactory.get(programId, facilityId, emergency).then(function(response) {
@@ -169,25 +121,16 @@ describe('periodFactory', function() {
             expect(periodServiceMock.getPeriodsForInitiate).toHaveBeenCalledWith(programId, facilityId, emergency);
         });
 
-        it('should call requisitionService search method with proper params', function() {
-            expect(requisitionServiceMock.search).toHaveBeenCalledWith(false, {
-                emergency: emergency,
-                facility: facilityId,
-                program: programId,
-                requisitionStatus: undefined
-            });
-        });
-
         // Malawi: check if the period is active
         it('should return only the active period', function() {
             expect(data.length).toEqual(1);
             expect(data[0]).toEqual({
-                name: periodOne.name,
-                startDate: periodOne.startDate,
-                endDate: periodOne.endDate,
+                name: periodTwo.name,
+                startDate: periodTwo.startDate,
+                endDate: periodTwo.endDate,
                 rnrStatus: REQUISITION_STATUS.INITIATED,
-                activeForRnr: true,
-                rnrId: requisition.id
+                activeForRnr: false,
+                rnrId: periodTwo.requisitionId
             });
             // --- ends here ---
         });
