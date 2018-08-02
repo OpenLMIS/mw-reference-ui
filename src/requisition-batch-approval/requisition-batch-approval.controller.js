@@ -248,20 +248,6 @@
          * change.
          *
          */
-        /**
-         * @ngdoc method
-         * @methodOf requisition-batch-approval.controller:RequisitionBatchApprovalController
-         * @name updateRequisitions
-         *
-         * @description
-         * After confirming with the user, the outdated offline requisitions are removed,
-         * and the state is reloaded. This will fetch a fresh version of the
-         * requisitions.
-         *
-         * If the browser is offline, an error will be thrown, and nothing will
-         * change.
-         *
-         */
         function updateRequisitions() {
             if(vm.isOffline()) {
                 alertService.error('requisitionBatchApproval.updateOffline');
