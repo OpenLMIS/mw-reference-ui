@@ -168,7 +168,7 @@
 
             // Malawi: Added auto calculation and suggestion how much should be adjusted
             function displayError(error, difference) {
-                return !difference ? error : error.concat('. The difference between the calculated and entered value is ', difference, '.');
+                return error && difference ? error.concat(". The difference between the calculated and entered value is ", difference, ".") : error;
             }
             // --- ends here ---
 
