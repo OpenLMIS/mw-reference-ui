@@ -44,7 +44,7 @@
                     <td class="col-sticky"> {{product.code}} </td>
                     <td class="col-sticky requisition-product-grid-cell"><div class="collapsable">{{product.name}}</div></td>
                     <td ng-repeat-start="requisition in vm.requisitions" class="numeric">
-                        <div ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][product.productId].skipped) && !vm.isInApproval(requisition)"
+                        <div ng-if="(product.requisitions | contains: requisition.id) && !(vm.lineItems[requisition.id][product.productId].skipped)"
                              class="input-control" input-control openlmis-invalid>
                             <input positive-integer required validate-requisition="requisition" product-id="product.productId"
                                    ng-model="vm.lineItems[requisition.id][product.productId].approvedQuantity"
@@ -53,7 +53,7 @@
                         <p ng-if="vm.lineItems[requisition.id][product.productId].skipped">
                             {{'requisitionBatchApproval.skipped' | message}}
                         </p>
-                        <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && vm.isInApproval(requisition)">
+                        <p ng-if="!(vm.lineItems[requisition.id][productId].skipped)">
                             {{vm.lineItems[requisition.id][productId].approvedQuantity}}
                         </p>
                     </td>
