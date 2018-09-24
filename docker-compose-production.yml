@@ -15,9 +15,9 @@ services:
       - fulfillment-ui
       - referencedata-ui
       - requisition-ui
+      - report-ui
       - stockmanagement-ui
       - cce-ui
-      - report-ui
       - ui-components
       - ui-layout
     depends_on:
@@ -25,9 +25,9 @@ services:
       - fulfillment-ui
       - referencedata-ui
       - requisition-ui
+      - report-ui
       - stockmanagement-ui
       - cce-ui
-      - report-ui
       - ui-components
       - ui-layout
 
@@ -51,15 +51,15 @@ services:
     volumes:
       - '/openlmis-stockmanagement-ui'
 
-  report-ui:
-    image: openlmis/report-ui:5.0.6
-    volumes:
-      - '/openlmis-report-ui'
-
   cce-ui:
     image: openlmis/cce-ui:1.0.1
     volumes:
      - '/openlmis-cce-ui'
+
+  report-ui:
+    image: openlmis/report-ui:5.0.6
+    volumes:
+      - '/openlmis-report-ui'
 
   requisition-ui:
     image: openlmis/requisition-ui:5.4.0
