@@ -185,19 +185,19 @@
 
         function hasApproveRightForProgram(requisition) {
             return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_APPROVE, {
-                programCode: requisition.program.code
+                programId: requisition.program.id
             });
         }
 
         function hasAuthorizeRightForProgram(requisition) {
             return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
-                programCode: requisition.program.code
+                programId: requisition.program.id
             });
         }
 
         function hasCreateRightForProgram(requisition) {
             return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
-                programCode: requisition.program.code
+                programId: requisition.program.id
             });
         }
 

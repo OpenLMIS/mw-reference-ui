@@ -24,7 +24,7 @@
      * Updates approved quantity value.
      */
     angular.module('requisition-line-item', [
-        'requisition',
+        'requisition'
     ]);
 
 })();
