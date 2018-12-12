@@ -704,7 +704,7 @@
         // Malawi: set all to 0 button
         function hasRightForProgram(rightName) {
             return authorizationService.hasRight(rightName, {
-                programCode: vm.requisition.program.code
+                programId: vm.requisition.program.id
             });
         }
 
