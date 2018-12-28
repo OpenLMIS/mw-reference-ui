@@ -16,5 +16,6 @@
   "currencySymbol": "MK",
   "currencySymbolSide": "right",
   "applicationLoadingMessage": "Starting Malawi OpenLMIS",
-  "applicationTitle": "Malawi OpenLMIS"
+  "applicationTitle": "Malawi OpenLMIS",
+  "noLint": true
 }
