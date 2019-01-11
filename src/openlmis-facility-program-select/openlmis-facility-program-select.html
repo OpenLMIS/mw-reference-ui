@@ -1,0 +1,59 @@
+<fieldset class="form-group">
+
+    <legend>{{'openlmisFacilityProgramSelect.facilityType' | message}}</legend>
+
+    <label class="radio">
+        <input type="radio"
+            ng-model="vm.isSupervised"
+            ng-disabled="!vm.homeFacility"
+            ng-value="false"
+            ng-change="vm.updateForm()"/>
+        {{'openlmisFacilityProgramSelect.myFacility' | message}}
+    </label>
+
+    <label class="radio">
+        <input type="radio"
+            ng-model="vm.isSupervised"
+            ng-disabled="vm.supervisedPrograms.length == 0"
+            ng-value="true"
+            ng-change="vm.updateForm()"/>
+        {{'openlmisFacilityProgramSelect.supervisedFacility' | message}}
+    </label>
+
+</fieldset>
+<fieldset class="form-group" ng-if="!vm.isSupervised">
+
+    <label for="facilityName">{{'openlmisFacilityProgramSelect.facility' | message}}</label>
+    <select id="facilityName"
+        ng-model="vm.facility"
+        ng-options="facility as facility.name for facility in vm.facilities"
+        placeholder="{{'openlmisFacilityProgramSelect.selectFacility' | message}}"
+        disabled
+        required></select>
+
+    <label for="programListMyFacility">{{'openlmisFacilityProgramSelect.program' | message}}</label>
+    <select id="programListMyFacility"
+        ng-model="vm.program"
+        ng-options="program as program.name for program in vm.programs | orderBy:'name' track by program.id"
+        placeholder="{{'openlmisFacilityProgramSelect.selectProgram' | message}}"
+        required></select>
+
+</fieldset>
+<fieldset class="form-group" ng-if="vm.isSupervised">
+
+    <label for="programListSupervisedFacility">{{'openlmisFacilityProgramSelect.program' | message}}</label>
+    <select id="programListSupervisedFacility"
+        ng-model="vm.program"
+        ng-options="program as program.name for program in vm.programs | orderBy:'name' track by program.id"
+        ng-change="vm.updateFacilities()"
+        placeholder="{{'openlmisFacilityProgramSelect.selectProgram' | message}}"
+        required></select>
+
+    <label for="supervisedFacilityName">{{'openlmisFacilityProgramSelect.facility' | message}}</label>
+    <select id="supervisedFacilityName"
+        ng-model="vm.facility"
+        ng-options="facility as facility.name for facility in vm.facilities | unique:'id' | orderBy:'name' track by facility.id"
+        placeholder="{{'openlmisFacilityProgramSelect.selectFacility' | message}}"
+        required></select>
+
+</fieldset>
