@@ -1,6 +1,8 @@
 <h2>{{'report.chooseReportOptions' | message}}</h2>
 <form ng-submit="vm.downloadReport()">
+    <!-- Malawi: add report header name -->
     <h2>{{vm.report.name}}</h2>
+    <!-- ends here -->
 
     <label for="{{parameter.name}}" ng-repeat-start="parameter in vm.report.templateParameters">{{parameter.displayName}}</label>
 
@@ -8,7 +10,7 @@
             ng-if="vm.paramsOptions[parameter.name].length > 0 || parameter.dependencies.length > 0"
             ng-model="vm.selectedParamsOptions[parameter.name]"
             ng-disabled="vm.paramsOptions[parameter.name].length == 0"
-            ng-options="option as option.name for option in vm.paramsOptions[parameter.name]"
+            ng-options="option.value as option.name for option in vm.paramsOptions[parameter.name]"
             ng-required="{{parameter.required}}"
             aria-labelledby="infolabelForSelect">
     </select>
@@ -34,23 +36,33 @@
 
     <fieldset class="form-group">
         <legend>{{'report.format' | message}}</legend>
+        <!-- Malawi: hide pdf option for reports not supporting pdf -->
         <label class="radio" ng-if="vm.supportsFormat('pdf')">
+        <!-- ends here -->
             <input type="radio" ng-model="vm.format" value="pdf" required/>
             {{'report.pdf' | message}}
         </label>
-        <label class="radio"  ng-if="vm.supportsFormat('csv')">
+        <!-- Malawi: hide csv option for reports not supporting csv -->
+        <label class="radio" ng-if="vm.supportsFormat('csv')">
+        <!-- ends here -->
             <input type="radio" ng-model="vm.format" value="csv" required/>
             {{'report.csv' | message}}
         </label>
+        <!-- Malawi: hide xls option for reports not supporting xls -->
         <label class="radio" ng-if="vm.supportsFormat('xls')">
+        <!-- ends here -->
             <input type="radio" ng-model="vm.format" value="xls" required/>
             {{'report.xls' | message}}
         </label>
+        <!-- Malawi: add xlsx option -->
         <label class="radio" ng-if="vm.supportsFormat('xlsx')">
             <input type="radio" ng-model="vm.format" value="xlsx" required/>
             {{'report.xlsx' | message}}
         </label>
+        <!-- ends here -->
+        <!-- Malawi: hide html option for reports not supporting html -->
         <label class="radio" ng-if="vm.supportsFormat('html')">
+        <!-- ends here -->
             <input type="radio" ng-model="vm.format" value="html" required/>
             {{'report.html' | message}}
         </label>

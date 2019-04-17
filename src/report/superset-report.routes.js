@@ -25,6 +25,7 @@
 
     function config($stateProvider, SUPERSET_REPORTS) {
 
+        /* Malawi: removed all superset subpages
         $stateProvider.state('openlmis.reports.list.superset', {
             abstract: true,
             url: '/superset',
@@ -36,7 +37,32 @@
             }
         });
 
-        // Malawi: removed all superset subpages
+        addReporingPage($stateProvider, SUPERSET_REPORTS.REPORTING_RATE_AND_TIMELINESS);
+        addReporingPage($stateProvider, SUPERSET_REPORTS.STOCK_STATUS);
+        addReporingPage($stateProvider, SUPERSET_REPORTS.STOCKOUTS);
+        addReporingPage($stateProvider, SUPERSET_REPORTS.CONSUMPTION);
+        addReporingPage($stateProvider, SUPERSET_REPORTS.ORDERS);
+        addReporingPage($stateProvider, SUPERSET_REPORTS.ADJUSTMENTS);
+        addReporingPage($stateProvider, SUPERSET_REPORTS.ADMINISTRATIVE);
+        -- - ends here-- - */
+    }
+
+    function addReporingPage($stateProvider, report) {
+        $stateProvider.state('openlmis.reports.list.superset.' + report.code, {
+            url: '/' + report.code,
+            label: 'report.superset.' + report.code,
+            controller: 'SupersetReportController',
+            templateUrl: 'report/superset-report.html',
+            controllerAs: 'vm',
+            resolve: {
+                reportUrl: function($sce) {
+                    return $sce.trustAsResourceUrl(report.url);
+                },
+                reportCode: function() {
+                    return report.code;
+                }
+            }
+        });
     }
 
 })();

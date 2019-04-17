@@ -29,7 +29,41 @@
         .constant('SUPERSET_REPORTS', getReports());
 
     function getReports() {
-        // Malawi: returning empty list of superset reports to not show them on reports screen
+        /* Malawi: returning empty list of superset reports to not show them on reports screen
+        return {
+            REPORTING_RATE_AND_TIMELINESS: createReport('reportingRateAndTimeliness',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/1/',
+                'REPORTING_RATE_AND_TIMELINESS_REPORT_VIEW'),
+            STOCK_STATUS: createReport('stockStatus',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/6/',
+                'STOCK_STATUS_REPORT_VIEW'),
+            STOCKOUTS: createReport('stockouts',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/2/',
+                'STOCKOUTS_REPORT_VIEW'),
+            CONSUMPTION: createReport('consumption',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/3/',
+                'CONSUMPTION_REPORT_VIEW'),
+            ORDERS: createReport('orders',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/4/',
+                'ORDERS_REPORT_VIEW'),
+            ADJUSTMENTS: createReport('adjustments',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/5/',
+                'ADJUSTMENTS_REPORT_VIEW'),
+            ADMINISTRATIVE: createReport('administrative',
+                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/7/',
+                'ADMINISTRATIVE_REPORT_VIEW')
+        };
+        */
         return {};
+        // --- ends here ---
     }
+
+    function createReport(code, url, right) {
+        return {
+            code: code,
+            url: url,
+            right: right
+        };
+    }
+
 })();

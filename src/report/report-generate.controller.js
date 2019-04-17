@@ -13,7 +13,6 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-
 (function() {
 
     'use strict';
@@ -40,13 +39,15 @@
 
         vm.$onInit = onInit;
 
+        // Malawi: supported formats
+        vm.supportsFormat = supportsFormat;
+        // --- ends here ---
+
         vm.downloadReport = downloadReport;
 
-        vm.supportsFormat = supportsFormat;
-
         vm.paramsInfo = {
-            'GeographicZone': 'report.geographicZoneInfo',
-            'DueDays': 'report.dueDaysInfo'
+            GeographicZone: 'report.geographicZoneInfo',
+            DueDays: 'report.dueDaysInfo'
         };
 
         /**
@@ -98,17 +99,6 @@
         /**
          * @ngdoc property
          * @propertyOf report.controller:ReportGenerateController
-         * @name formats
-         * @type {String}
-         *
-         * @description
-         * Available formats.
-         */
-        vm.formats = [];
-
-        /**
-         * @ngdoc property
-         * @propertyOf report.controller:ReportGenerateController
          * @name format
          * @type {String}
          *
@@ -140,7 +130,6 @@
             );
         }
 
-
         /**
          * @ngdoc method
          * @methodOf report.controller:ReportGenerateController
@@ -156,8 +145,8 @@
          */
         function watchDependency(param, dep) {
             var watchProperty = 'vm.selectedParamsOptions.' + dep.dependency;
-            $scope.$watch(watchProperty, function(newVal, oldVal) {
-                vm.selectedParamsDependencies[dep.placeholder] = newVal;
+            $scope.$watch(watchProperty, function(newVal) {
+                vm.selectedParamsDependencies[dep.dependency] = newVal;
                 if (newVal) {
                     reportFactory.getReportParamOptions(param, vm.selectedParamsDependencies)
                         .then(function(items) {
@@ -176,15 +165,17 @@
          * Initialization method of the ReportGenerateController.
          */
         function onInit() {
-
             angular.forEach(report.templateParameters, function(param) {
                 angular.forEach(param.dependencies, function(dependency) {
                     watchDependency(param, dependency);
                 });
             });
-        // Malawi: supported formats
+            // Malawi: supported formats
             var supportedFormats = ['pdf', 'csv', 'xls', 'xlsx', 'html'];
             var defaultFormats = ['pdf', 'csv', 'xls', 'html'];
+
+            vm.formats = [];
+
             angular.forEach(report.supportedFormats, function(format) {
                 if (supportedFormats.indexOf(format) !== -1) {
                     vm.formats.push(format);
@@ -194,8 +185,10 @@
                 vm.formats = defaultFormats;
             }
             vm.format = vm.formats[0];
+            // --- ends here ---
         }
 
+        // Malawi: supported formats
         function supportsFormat(format) {
             return vm.formats.indexOf(format) !== -1;
         }

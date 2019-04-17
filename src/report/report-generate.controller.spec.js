@@ -17,7 +17,9 @@ describe('ReportGenerateController', function() {
 
     var vm, $controller, $q, $scope;
 
-    var report = {'id': '86f7b7b6-41b2-4f5c-8c93-389cc4bdec65'};
+    var report = {
+        id: '86f7b7b6-41b2-4f5c-8c93-389cc4bdec65'
+    };
 
     beforeEach(function() {
         module('report');

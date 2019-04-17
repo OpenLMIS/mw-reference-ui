@@ -57,7 +57,7 @@ services:
      - '/openlmis-cce-ui'
 
   report-ui:
-    image: openlmis/report-ui:5.1.0
+    image: openlmis/report-ui:5.2.0-RC1
     volumes:
       - '/openlmis-report-ui'
 
