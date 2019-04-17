@@ -37,17 +37,15 @@
         .directive('productGridCell', productGridCell);
 
     productGridCell.$inject = [
-        '$q', '$timeout', '$templateRequest', '$compile', 'requisitionValidator',
-        'TEMPLATE_COLUMNS', 'COLUMN_TYPES', 'REQUISITION_RIGHTS',
         // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
-        'authorizationService'
+        '$templateRequest', '$compile', 'requisitionValidator', 'TEMPLATE_COLUMNS', 'COLUMN_TYPES', 'COLUMN_SOURCES',
+        'authorizationService', 'REQUISITION_RIGHTS'
         // --- ends here ---
     ];
 
-    function productGridCell($q, $timeout, $templateRequest, $compile, requisitionValidator,
-                            TEMPLATE_COLUMNS, COLUMN_TYPES, REQUISITION_RIGHTS,
-        // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
-        authorizationService) {
+    // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
+    function productGridCell($templateRequest, $compile, requisitionValidator, TEMPLATE_COLUMNS, COLUMN_TYPES,
+                             COLUMN_SOURCES, authorizationService, REQUISITION_RIGHTS) {
         // --- ends here ---
 
         return {
@@ -57,7 +55,8 @@
                 requisition: '=',
                 column: '=',
                 lineItem: '=',
-                userCanEdit: '='
+                userCanEdit: '=',
+                canApprove: '='
             }
         };
 
@@ -70,42 +69,17 @@
             scope.column = column;
             scope.validate = validate;
             scope.update = update;
-            scope.isReadOnly = isReadOnly();
+            scope.isReadOnly = isReadOnly(requisition, column);
             scope.canSkip = canSkip;
 
-            if(!scope.isReadOnly){
-                scope.$watch(function(){
-                    return lineItem[column.name];
-                }, function(newValue, oldValue) {
-                    if (newValue !== oldValue) {
-                        lineItem.updateDependentFields(column, requisition);
-                    }
-                });
+            if (!scope.isReadOnly) {
+                setupValueWatcher(scope);
+                // Malawi: Added auto calculation and suggestion how much should be adjusted
+                setupDifferenceWatcher(scope);
+                // --- ends here ---
             }
 
-            scope.$watch(function(){
-                if(lineItem.skipped){
-                    return false;
-                }
-            // Malawi: Added auto calculation and suggestion how much should be adjusted
-                return lineItem.$errors[column.name];
-            }, function(error) {
-                if (lineItem.difference[column.name]) {
-                    scope.invalidMessage = error ? displayError(error, lineItem.difference[column.name]) : undefined;
-                } else {
-                    scope.invalidMessage = error ? error : undefined;
-                }
-            });
-
-            scope.$watch(function() {
-                if(lineItem.skipped) {
-                    return false;
-                }
-                return lineItem.difference[column.name];
-            }, function(difference) {
-                scope.invalidMessage = displayError(lineItem.$errors[column.name], difference);
-            });
-            // --- ends here ---
+            setupErrorWatcher(scope);
 
             scope.$on('openlmisInvalid.update', validate);
 
@@ -113,15 +87,16 @@
 
             function updateCellContents() {
                 var templateUrl = '';
-                if(column.name === TEMPLATE_COLUMNS.SKIPPED) {
+                if (column.name === TEMPLATE_COLUMNS.SKIPPED) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-skip.html';
-                } else if(column.name === TEMPLATE_COLUMNS.TOTAL_LOSSES_AND_ADJUSTMENTS && !requisition.template.populateStockOnHandFromStockCards) {
+                } else if (column.name === TEMPLATE_COLUMNS.TOTAL_LOSSES_AND_ADJUSTMENTS &&
+                    !requisition.template.populateStockOnHandFromStockCards) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-total-losses-and-adjustments.html';
-                } else if(column.$type === COLUMN_TYPES.NUMERIC && !scope.isReadOnly){
+                } else if (column.$type === COLUMN_TYPES.NUMERIC && !scope.isReadOnly) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-input-numeric.html';
-                } else if(!scope.isReadOnly) {
+                } else if (!scope.isReadOnly) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-input-text.html';
-                } else if(column.$type === COLUMN_TYPES.CURRENCY) {
+                } else if (column.$type === COLUMN_TYPES.CURRENCY) {
                     templateUrl = 'requisition-product-grid/product-grid-cell-currency.html';
                 } else {
                     templateUrl = 'requisition-product-grid/product-grid-cell-text.html';
@@ -131,7 +106,7 @@
 
             function replaceCell(newTemplate) {
                 var cellWrapperPath = 'requisition-product-grid/product-grid-cell.html';
-                $templateRequest(cellWrapperPath).then(function(template){
+                $templateRequest(cellWrapperPath).then(function(template) {
                     template = angular.element(template);
                     template.html(newTemplate);
 
@@ -141,7 +116,7 @@
                     element = cell;
 
                     // Malawi: Made product-name column collapsable
-                    if(column.name === TEMPLATE_COLUMNS.PRODUCT_NAME) {
+                    if (column.name === TEMPLATE_COLUMNS.PRODUCT_NAME) {
                         element.wrapInner('<div class="collapsable"></div>');
                     }
                     // --- ends here ---
@@ -161,16 +136,24 @@
                 );
             }
 
-            function isReadOnly() {
-                return lineItem.isReadOnly(requisition, column);
+            function isReadOnly(requisition, column) {
+                if (requisition.$isApproved() || requisition.$isReleased()) {
+                    return true;
+                }
+                if (scope.canApprove && isApprovalColumn(column)) {
+                    return false;
+                }
+                if (canEditColumn(column)) {
+                    return false;
+                }
+
+                // If we don't know that the field is editable, its read only
+                return true;
             }
 
-
-            // Malawi: Added auto calculation and suggestion how much should be adjusted
-            function displayError(error, difference) {
-                return error && difference ? error.concat(". The difference between the calculated and entered value is ", difference, ".") : error;
+            function canEditColumn(column) {
+                return column.source === COLUMN_SOURCES.USER_INPUT && scope.userCanEdit;
             }
-            // --- ends here ---
 
             // Malawi: Zonal approver should be able to change requisitions IN_APPROVAL
             function hasAuthorizeRightForProgram() {
@@ -180,12 +163,68 @@
             }
 
             function canSkip() {
-                return (scope.userCanEdit || hasAuthorizeRightForProgram())
-                    && lineItem.canBeSkipped(scope.requisition);
+                return (scope.userCanEdit || hasAuthorizeRightForProgram()) &&
+                    lineItem.canBeSkipped(scope.requisition);
             }
             // --- ends here ---
 
         }
+
+        function setupValueWatcher(scope) {
+            scope.$watch(function() {
+                return scope.lineItem[scope.column.name];
+            }, function(newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    scope.lineItem.updateDependentFields(scope.column, scope.requisition);
+                }
+            });
+        }
+
+        function setupErrorWatcher(scope) {
+            scope.$watch(function() {
+                if (scope.lineItem.skipped) {
+                    return false;
+                }
+                return scope.lineItem.$errors[scope.column.name];
+            }, function(error) {
+                // Malawi: Added auto calculation and suggestion how much should be adjusted
+                if (scope.lineItem.difference[scope.column.name]) {
+                    scope.invalidMessage = displayError(error, scope.lineItem.difference[scope.column.name]);
+                } else {
+                    scope.invalidMessage = error ? error : undefined;
+                }
+                // --- ends here ---
+            });
+        }
+
+        // Malawi: Added auto calculation and suggestion how much should be adjusted
+        function setupDifferenceWatcher(scope) {
+            scope.$watch(function() {
+                if (scope.lineItem.skipped) {
+                    return false;
+                }
+                return scope.lineItem.difference[scope.column.name];
+            }, function(difference) {
+                scope.invalidMessage = displayError(scope.lineItem.$errors[scope.column.name], difference);
+            });
+        }
+        // --- ends here ---
+
+        function isApprovalColumn(column) {
+            return [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS]
+                .indexOf(column.name) !== -1;
+        }
+
+        // Malawi: Added auto calculation and suggestion how much should be adjusted
+        function displayError(error, difference) {
+            if (!error) {
+                return;
+            }
+            return difference ? error.concat(
+                '. The difference between the calculated and entered value is ', difference, '.'
+            ) : error;
+        }
+        // --- ends here ---
     }
 
 })();
