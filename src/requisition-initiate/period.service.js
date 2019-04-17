@@ -15,17 +15,17 @@
 
 (function() {
 
-	'use strict';
+    'use strict';
 
-	/**
+    /**
      * @ngdoc service
      * @name requisition-initiate.periodService
      *
      * @description
      * Responsible for retrieving periods from server.
      */
-	angular
-		.module('requisition-initiate')
+    angular
+        .module('requisition-initiate')
         .config(function($provide) {
             $provide.decorator('periodService', decorator);
         });
@@ -46,7 +46,7 @@
 
         return periodService;
 
-		/**
+        /**
          * @ngdoc method
          * @methodOf requisition-initiate.periodService
          * @name getPeriodsForInitiate

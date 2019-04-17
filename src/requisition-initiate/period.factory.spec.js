@@ -15,10 +15,10 @@
 
 describe('periodFactory', function() {
 
-    var $rootScope, $q, periodServiceMock, periodFactory, periodOne, periodTwo;
+    var $rootScope, $q, periodServiceMock, periodFactory, periodOne, periodTwo, REQUISITION_STATUS;
 
     beforeEach(function() {
-        module('requisition-initiate', function($provide){
+        module('requisition-initiate', function($provide) {
             periodServiceMock = jasmine.createSpyObj('periodService', ['getPeriodsForInitiate']);
             $provide.service('periodService', function() {
                 return periodServiceMock;
@@ -36,16 +36,16 @@ describe('periodFactory', function() {
         periodOne = {
             id: '1',
             name: 'period1',
-            startDate: new Date("January 1, 2017 00:00:00"),
-            endDate: new Date("January 31, 2017 00:00:00"),
+            startDate: new Date('January 1, 2017 00:00:00'),
+            endDate: new Date('January 31, 2017 00:00:00'),
             isActive: false
         };
 
         periodTwo = {
             id: '2',
             name: 'period2',
-            startDate: new Date("January 1, 2017 00:00:00"),
-            endDate: new Date("January 31, 2017 00:00:00"),
+            startDate: new Date('January 1, 2017 00:00:00'),
+            endDate: new Date('January 31, 2017 00:00:00'),
             isActive: true,
             requisitionId: '05eb8040-66a9-4cd7-8da4-0735c9c44ab2',
             requisitionStatus: REQUISITION_STATUS.INITIATED
@@ -77,7 +77,6 @@ describe('periodFactory', function() {
         });
 
         it('should return proper periods', function() {
-            // Malawi: check if the period is active
             expect(data[0]).toEqual({
                 name: periodOne.name,
                 startDate: periodOne.startDate,
@@ -86,6 +85,7 @@ describe('periodFactory', function() {
                 activeForRnr: true,
                 rnrId: null
             });
+
             expect(data[1]).toEqual({
                 name: periodTwo.name,
                 startDate: periodTwo.startDate,
@@ -94,7 +94,6 @@ describe('periodFactory', function() {
                 activeForRnr: true,
                 rnrId: periodTwo.requisitionId
             });
-            // --- ends here ---
         });
     });
 
@@ -107,7 +106,9 @@ describe('periodFactory', function() {
 
         beforeEach(function() {
             periodServiceMock.getPeriodsForInitiate.andCallFake(function() {
+                // Malawi: check if the period is active
                 return $q.when([periodOne, periodTwo]);
+                // --- ends here ---
             });
 
             periodFactory.get(programId, facilityId, emergency).then(function(response) {
@@ -132,7 +133,7 @@ describe('periodFactory', function() {
                 activeForRnr: false,
                 rnrId: periodTwo.requisitionId
             });
-            // --- ends here ---
         });
+        // --- ends here ---
     });
 });

@@ -21,40 +21,44 @@
     <input type="submit" value="{{'requisitionInitiate.search'|message}}"/>
 </form>
 <section class="openlmis-table-container">
+    <!-- Malawi: hide table on errors -->
     <table ng-class="{changed:filterForm.$dirty || vm.isUpdated}">
+    <!-- ends here -->
         <caption ng-if="!vm.periods.length">
             {{'requisitionInitiate.selectRequiredFields' | message}}
         </caption>
+        <!-- Malawi: add captions for changed form -->
         <caption ng-if="vm.periods.length && filterForm.$dirty">
             {{'requisitionInitiate.hasBeenChanged' | message}}
         </caption>
         <caption ng-if="vm.periods.length && vm.isUpdated">
             {{'requisitionInitiate.formIsUpdated' | message}}
         </caption>
+        <!-- ends here -->
         <thead>
-        <tr>
-            <th>{{'requisitionInitiate.periods' | message}}</th>
-            <th>{{'requisitionInitiate.startDate' | message}}</th>
-            <th>{{'requisitionInitiate.endDate' | message}}</th>
-            <th>{{'requisitionInitiate.rnrStatus' | message}}</th>
-            <th class="col-sticky sticky-right">{{'requisitionInitiate.actions' | message}}</th>
-        </tr>
+            <tr>
+                <th>{{'requisitionInitiate.periods' | message}}</th>
+                <th>{{'requisitionInitiate.startDate' | message}}</th>
+                <th>{{'requisitionInitiate.endDate' | message}}</th>
+                <th>{{'requisitionInitiate.rnrStatus' | message}}</th>
+                <th class="col-sticky sticky-right">{{'requisitionInitiate.actions' | message}}</th>
+            </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="period in vm.periods">
-            <td>{{period.name}}</td>
-            <td>{{period.startDate | openlmisDate}}</td>
-            <td>{{period.endDate | openlmisDate}}</td>
-            <td>{{period.rnrStatus}}</td>
-            <td>
-                <input id="proceedButton" type="button" ng-click="vm.initRnr(period)"
-                       value="{{'requisitionInitiate.proceed'| message}}" class="primary"
-                       ng-if="period.activeForRnr && !vm.periodHasRequisition(period) && vm.canInitiateRnr"/>
-                <input id="proceedButton" type="button" ng-click="vm.goToRequisition(period.rnrId)"
-                       value="{{'requisitionInitiate.proceed'| message}}" class="primary"
-                       ng-if="period.activeForRnr && vm.periodHasRequisition(period)"/>
-            </td>
-        </tr>
+            <tr ng-repeat="period in vm.periods">
+                <td>{{period.name}}</td>
+                <td>{{period.startDate | openlmisDate}}</td>
+                <td>{{period.endDate | openlmisDate}}</td>
+                <td>{{period.rnrStatus | requisitionStatus}}</td>
+                <td>
+                    <input id="proceedButton" type="button" ng-click="vm.initRnr(period)"
+                           value="{{'requisitionInitiate.proceed'| message}}" class="primary"
+                           ng-if="period.activeForRnr && !vm.periodHasRequisition(period) && vm.canInitiateRnr"/>
+                    <input id="proceedButton" type="button" ng-click="vm.goToRequisition(period.rnrId)"
+                           value="{{'requisitionInitiate.proceed'| message}}" class="primary"
+                           ng-if="period.activeForRnr && vm.periodHasRequisition(period)"/>
+                </td>
+            </tr>
         </tbody>
     </table>
 </section>

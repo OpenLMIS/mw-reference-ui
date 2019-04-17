@@ -54,11 +54,11 @@
          */
         function get(programId, facilityId, emergency) {
             return periodService.getPeriodsForInitiate(programId, facilityId, emergency)
-            .then(function(response) {
-                var periods = getPeriodGridLineItems(response, emergency);
-                angular.forEach(periods, setStatus(emergency));
-                return periods;
-            });
+                .then(function(response) {
+                    var periods = getPeriodGridLineItems(response, emergency);
+                    angular.forEach(periods, setStatus(emergency));
+                    return periods;
+                });
         }
 
         function getPeriodGridLineItems(periods, emergency) {
@@ -67,9 +67,9 @@
             angular.forEach(periods, function(period, id) {
                 // Malawi: check if the period is active
                 if (emergency || period.isActive === true) {
-                // --- ends here ---
                     periodGridLineItems.push(createPeriodGridItem(period, emergency, id));
                 }
+                // --- ends here ---
             });
 
             return periodGridLineItems;
@@ -80,7 +80,7 @@
                 name: period.name,
                 startDate: period.startDate,
                 endDate: period.endDate,
-                rnrStatus: (period.requisitionStatus ? period.requisitionStatus : ((emergency || id === 0) ? messageService.get("requisitionInitiate.notYetStarted") : messageService.get("requisitionInitiate.previousPending"))),
+                rnrStatus: messageService.get(getRnrStatus(period, emergency, id)),
                 activeForRnr: (emergency || id === 0),
                 rnrId: (period.requisitionId) ? period.requisitionId : null
             };
@@ -96,10 +96,20 @@
 
         function isNotStarted(period, emergency) {
             return emergency &&
-                (period.rnrStatus == REQUISITION_STATUS.AUTHORIZED ||
-                period.rnrStatus == REQUISITION_STATUS.IN_APPROVAL ||
-                period.rnrStatus == REQUISITION_STATUS.APPROVED ||
-                period.rnrStatus == REQUISITION_STATUS.RELEASED);
+                (period.rnrStatus === REQUISITION_STATUS.AUTHORIZED ||
+                period.rnrStatus === REQUISITION_STATUS.IN_APPROVAL ||
+                period.rnrStatus === REQUISITION_STATUS.APPROVED ||
+                period.rnrStatus === REQUISITION_STATUS.RELEASED);
+        }
+
+        function getRnrStatus(period, emergency, id) {
+            return period.requisitionStatus ?
+                period.requisitionStatus :
+                (
+                    (emergency || id === 0) ?
+                        'requisitionInitiate.notYetStarted' :
+                        'requisitionInitiate.previousPending'
+                );
         }
     }
 

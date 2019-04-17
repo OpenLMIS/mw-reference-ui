@@ -13,7 +13,6 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-
 (function() {
 
     'use strict';
@@ -31,14 +30,13 @@
         .controller('RequisitionInitiateController', RequisitionInitiateController);
 
     RequisitionInitiateController.$inject = [
-        'messageService', 'requisitionService', '$state', 'loadingModalService',
-        'notificationService', 'REQUISITION_RIGHTS', 'permissionService', 'authorizationService',
-        '$stateParams', 'periods', 'canInitiateRnr', 'UuidGenerator'
+        'requisitionService', '$state', 'loadingModalService', 'notificationService', 'REQUISITION_RIGHTS',
+        'permissionService', 'authorizationService', '$stateParams', 'periods', 'canInitiateRnr', 'UuidGenerator'
     ];
 
-    function RequisitionInitiateController(messageService, requisitionService, $state,
-        loadingModalService, notificationService, REQUISITION_RIGHTS, permissionService,
-        authorizationService, $stateParams, periods, canInitiateRnr, UuidGenerator) {
+    function RequisitionInitiateController(requisitionService, $state, loadingModalService, notificationService,
+                                           REQUISITION_RIGHTS, permissionService, authorizationService, $stateParams,
+                                           periods, canInitiateRnr, UuidGenerator) {
 
         var vm = this,
             uuidGenerator = new UuidGenerator(),
@@ -147,24 +145,24 @@
                 programId: vm.program.id,
                 facilityId: vm.facility.id
             })
-            .then(function() {
-                requisitionService.initiate(vm.facility.id, vm.program.id, selectedPeriod.id, vm.emergency, key)
-                .then(function(data) {
-                    vm.goToRequisition(data.id);
+                .then(function() {
+                    requisitionService.initiate(vm.facility.id, vm.program.id, selectedPeriod.id, vm.emergency, key)
+                        .then(function(data) {
+                            goToInitiatedRequisition(data);
+                        })
+                        .catch(function() {
+                            notificationService.error('requisitionInitiate.couldNotInitiateRequisition');
+                            loadingModalService.close();
+                            key = uuidGenerator.generate();
+                        });
                 })
                 .catch(function() {
-                    notificationService.error('requisitionInitiate.couldNotInitiateRequisition');
+                    // Malawi: Add information about reloading periods when any error occurs
+                    vm.isUpdated = true;
+                    // --- ends here ---
+                    notificationService.error('requisitionInitiate.noPermissionToInitiateRequisition');
                     loadingModalService.close();
-                    key = uuidGenerator.generate();
                 });
-            })
-            .catch(function() {
-                // Malawi: Add information about reloading periods when any error occurs
-                vm.isUpdated = true;
-                // --- ends here ---
-                notificationService.error('requisitionInitiate.noPermissionToInitiateRequisition');
-                loadingModalService.close();
-            });
         }
 
         /**
@@ -179,11 +177,11 @@
          * @param {Object} period a period to check if it has a requisition
          */
         function periodHasRequisition(period) {
-            if(period.rnrId) {
+            if (period.rnrId) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
+
         }
 
         /**
@@ -199,6 +197,13 @@
         function goToRequisition(id) {
             $state.go('openlmis.requisitions.requisition.fullSupply', {
                 rnr: id
+            });
+        }
+
+        function goToInitiatedRequisition(requisition) {
+            $state.go('openlmis.requisitions.requisition.fullSupply', {
+                rnr: requisition.id,
+                requisition: requisition
             });
         }
     }

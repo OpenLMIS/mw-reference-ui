@@ -15,10 +15,13 @@
 
 describe('periodService', function() {
 
-    var $rootScope, $httpBackend, requisitionUrlFactoryMock, dateUtilsMock, alertServiceMock, periodService, periodOne, periodTwo;
+    var $rootScope, $httpBackend, requisitionUrlFactoryMock, dateUtilsMock, alertServiceMock, periodService, periodOne,
+        // Malawi: extra data
+        periodTwo, periodThree;
+        // --- ends here ---
 
     beforeEach(function() {
-        module('requisition-initiate', function($provide){
+        module('requisition-initiate', function($provide) {
             requisitionUrlFactoryMock = jasmine.createSpy();
             $provide.factory('requisitionUrlFactory', function() {
                 return requisitionUrlFactoryMock;
@@ -47,22 +50,21 @@ describe('periodService', function() {
             periodService = _periodService_;
         });
 
-
         // Malawi: display only the active periods
         periodOne = {
             id: '1',
-            startDate: new Date("January 1, 2017 00:00:00"),
-            endDate: new Date("January 31, 2017 00:00:00")
+            startDate: new Date('January 1, 2017 00:00:00'),
+            endDate: new Date('January 31, 2017 00:00:00')
         };
         periodTwo = {
             id: '2',
-            startDate: new Date("February 1, 2017 00:00:00"),
-            endDate: new Date("February 28, 2017 00:00:00")
+            startDate: new Date('February 1, 2017 00:00:00'),
+            endDate: new Date('February 28, 2017 00:00:00')
         };
         periodThree = {
             id: '3',
-            startDate: new Date("March 1, 2017 00:00:00"),
-            endDate: new Date("March 31, 2017 00:00:00")
+            startDate: new Date('March 1, 2017 00:00:00'),
+            endDate: new Date('March 31, 2017 00:00:00')
         };
         // --- ends here ---
     });
@@ -72,12 +74,18 @@ describe('periodService', function() {
         var programId = '1',
             facilityId = '2',
             emergency = false,
-            data;
+            promise;
 
         // Malawi: display only the active periods
         function prepare(serverDate) {
-            $httpBackend.when('GET', requisitionUrlFactoryMock('/api/requisitions/periodsForInitiate?emergency=' + emergency +
-                "&facilityId=" + facilityId + "&programId=" + programId)).respond(200, [periodOne, periodTwo, periodThree], {'Date': serverDate});
+            $httpBackend
+                .whenGET(
+                    requisitionUrlFactoryMock('/api/requisitions/periodsForInitiate?emergency=' + emergency +
+                    '&facilityId=' + facilityId + '&programId=' + programId)
+                )
+                .respond(200, [periodOne, periodTwo, periodThree], {
+                    Date: serverDate
+                });
 
             promise = periodService.getPeriodsForInitiate(programId, facilityId, emergency);
 
@@ -121,7 +129,7 @@ describe('periodService', function() {
 
         // Malawi: display only the active periods
         it('should set isActive = true if serverDate > endDate', function() {
-            prepare(new Date("April 1, 2017 00:00:00"));
+            prepare(new Date('April 1, 2017 00:00:00'));
             var data;
 
             promise.then(function(response) {
@@ -129,13 +137,16 @@ describe('periodService', function() {
             });
 
             $rootScope.$apply();
+
             expect(data).not.toBe(undefined);
-            expect(data.some(function(period) { return period.id === periodThree.id
-                && period.isActive === true })).toEqual(true);
+            expect(data.some(function(period) {
+                return period.id === periodThree.id &&
+                    period.isActive === true;
+            })).toEqual(true);
         });
 
         it('should set isActive = false if serverDate < endDate', function() {
-            prepare(new Date("March 15, 2017 00:00:00"));
+            prepare(new Date('March 15, 2017 00:00:00'));
             var data;
 
             promise.then(function(response) {
@@ -143,22 +154,30 @@ describe('periodService', function() {
             });
 
             $rootScope.$apply();
+
             expect(data).not.toBe(undefined);
-            expect(data.some(function(period) { return period.id === periodThree.id
-                && period.isActive === false })).toEqual(true);
+            expect(data.some(function(period) {
+                return period.id === periodThree.id &&
+                    period.isActive === false;
+            })).toEqual(true);
         });
         // --- ends here ---
 
         it('should show an alert if facility is not supported', function() {
-            $httpBackend.when('GET', requisitionUrlFactoryMock('/api/requisitions/periodsForInitiate?emergency=' + emergency +
-                "&facilityId=" + facilityId + "&programId=" + programId))
-            .respond(400, {"messageKey": "requisition.error.facilityDoesNotSupportProgram"});
+            $httpBackend.when('GET', requisitionUrlFactoryMock('/api/requisitions/periodsForInitiate?emergency=' +
+                emergency + '&facilityId=' + facilityId + '&programId=' + programId))
+                .respond(400, {
+                    messageKey: 'requisition.error.facilityDoesNotSupportProgram'
+                });
 
             promise = periodService.getPeriodsForInitiate(programId, facilityId, emergency);
 
             $httpBackend.flush();
+
             expect(angular.isFunction(promise.then)).toBe(true);
-            expect(alertServiceMock.error).toHaveBeenCalledWith('requisitionInitiate.programNotSupported.label', 'requisitionInitiate.programNotSupported.message');
+            expect(alertServiceMock.error).toHaveBeenCalledWith(
+                'requisitionInitiate.programNotSupported.label', 'requisitionInitiate.programNotSupported.message'
+            );
         });
     });
 
