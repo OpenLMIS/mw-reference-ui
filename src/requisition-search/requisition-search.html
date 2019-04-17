@@ -53,9 +53,11 @@
                 <th>{{'requisitionSearch.dateInitiated' | message}}</th>
                 <th>{{'requisitionSearch.status' | message}}</th>
                 <th>{{'requisitionSearch.emergency' | message}}</th>
+                <!-- Malawi: added popover for offline column -->
                 <th popover="{{'requisitionSearch.offlineInfo' | message}}" popover-trigger-area="element">
                     {{'requisitionSearch.offline' | message}}
                 </th>
+                <!-- ends here -->
                 <th class="col-sticky sticky-right">{{'requisitionSearch.actions'| message}}</th>
             </tr>
         </thead>
@@ -67,7 +69,7 @@
                 <td>{{requisition.processingPeriod.startDate | openlmisDate}}</td>
                 <td>{{requisition.processingPeriod.endDate | openlmisDate}}</td>
                 <td>{{requisition.createdDate | openlmisDate}}</td>
-                <td>{{requisition.status}}</td>
+                <td>{{requisition.status | requisitionStatus}}</td>
                 <td class="col-emergency">
                     <i ng-class="{'icon-ok': requisition.emergency}"></i>
                 </td>
