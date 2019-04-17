@@ -15,89 +15,88 @@
 
 (function() {
 
-  'use strict';
+    'use strict';
 
-  angular
-      .module('order-view')
-      .config(config);
+    angular
+        .module('order-view')
+        .config(config);
 
-  config.$inject = ['$stateProvider', 'FULFILLMENT_RIGHTS'];
+    config.$inject = ['$stateProvider', 'FULFILLMENT_RIGHTS'];
 
-  // Malawi: min start date
-  var minStartDate = '2017-07-01';
-  // --- ends here ---
+    // Malawi: min start date
+    var minStartDate = '2017-07-01';
+    // --- ends here ---
 
-  function config($stateProvider, FULFILLMENT_RIGHTS) {
+    function config($stateProvider, FULFILLMENT_RIGHTS) {
 
-    $stateProvider.state('openlmis.orders.view', {
-        controller: 'OrderViewController',
-        controllerAs: 'vm',
-        label: 'orderView.viewOrders',
-        showInNavigation: true,
-        templateUrl: 'order-view/order-view.html',
-        url: '/view?supplyingFacilityId&requestingFacilityId&programId&periodStartDate&periodEndDate&page&size' +
-            '&status',
-        accessRights: [
-            FULFILLMENT_RIGHTS.PODS_MANAGE,
-            FULFILLMENT_RIGHTS.ORDERS_VIEW
-        ],
-        areAllRightsRequired: false,
-        resolve: {
-            supplyingFacilities: function(facilityFactory, authorizationService) {
-                return facilityFactory.getSupplyingFacilities(
-                    authorizationService.getUser().user_id
-                );
-            },
-            requestingFacilities: function(requestingFacilityFactory, $stateParams) {
-                if ($stateParams.supplyingFacilityId) {
-                    return requestingFacilityFactory.loadRequestingFacilities(
-                        $stateParams.supplyingFacilityId
-                    ).then(function(requestingFacilities) {
-                        return requestingFacilities;
+        $stateProvider.state('openlmis.orders.view', {
+            controller: 'OrderViewController',
+            controllerAs: 'vm',
+            label: 'orderView.viewOrders',
+            showInNavigation: true,
+            templateUrl: 'order-view/order-view.html',
+            url: '/view?supplyingFacilityId&requestingFacilityId&programId&periodStartDate&periodEndDate&page&size' +
+                '&status',
+            accessRights: [
+                FULFILLMENT_RIGHTS.PODS_MANAGE,
+                FULFILLMENT_RIGHTS.ORDERS_VIEW
+            ],
+            areAllRightsRequired: false,
+            resolve: {
+                supplyingFacilities: function(facilityFactory, authorizationService) {
+                    return facilityFactory.getSupplyingFacilities(
+                        authorizationService.getUser().user_id
+                    );
+                },
+                requestingFacilities: function(requestingFacilityFactory, $stateParams) {
+                    if ($stateParams.supplyingFacilityId) {
+                        return requestingFacilityFactory.loadRequestingFacilities(
+                            $stateParams.supplyingFacilityId
+                        ).then(function(requestingFacilities) {
+                            return requestingFacilities;
+                        });
+                    }
+                    return undefined;
+                },
+                programs: function(programService) {
+                    return programService.getAll();
+                },
+                canRetryTransfer: function(authorizationService, permissionService, $stateParams) {
+                    if ($stateParams.supplyingFacilityId) {
+                        return permissionService
+                            .hasPermissionWithAnyProgram(authorizationService.getUser().user_id,
+                                {
+                                    right: FULFILLMENT_RIGHTS.ORDERS_TRANSFER,
+                                    facilityId: $stateParams.supplyingFacilityId
+                                })
+                            .then(function() {
+                                return true;
+                            })
+                            .catch(function() {
+                                return false;
+                            });
+                    }
+                    return false;
+
+                },
+                orders: function(paginationService, orderRepository, $stateParams) {
+                    return paginationService.registerUrl($stateParams, function(stateParams) {
+                        if (stateParams.supplyingFacilityId) {
+                            stateParams.sort = 'createdDate,desc';
+                            // Malawi: min start date
+                            var params = angular.copy(stateParams);
+                            if (!params.periodStartDate || new Date(params.periodStartDate) < new Date(minStartDate)) {
+                                params.periodStartDate = minStartDate;
+                            }
+                            return orderRepository.search(params);
+                            // --- ends here ---
+                        }
+                        return undefined;
                     });
                 }
-                return undefined;
-            },
-            programs: function(programService) {
-                return programService.getAll();
-            },
-            canRetryTransfer: function(authorizationService, permissionService, $stateParams) {
-                if ($stateParams.supplyingFacilityId) {
-                    return permissionService
-                        .hasPermissionWithAnyProgram(authorizationService.getUser().user_id,
-                            {
-                                right: FULFILLMENT_RIGHTS.ORDERS_TRANSFER,
-                                facilityId: $stateParams.supplyingFacilityId
-                            })
-                        .then(function() {
-                            return true;
-                        })
-                        .catch(function() {
-                            return false;
-                        });
-                }
-                return false;
-
-            },
-            orders: function(paginationService, orderRepository, $stateParams) {
-                return paginationService.registerUrl($stateParams, function(stateParams) {
-                    if (stateParams.supplyingFacilityId) {
-              stateParams.sort = 'createdDate,desc';
-              // Malawi: min start date
-              var params = angular.copy(stateParams);
-              if (!params.periodStartDate
-                  || new Date(params.periodStartDate) < new Date(minStartDate)) {
-                params.periodStartDate = minStartDate;
-              }
-              return orderRepository.search(params);
-              // --- ends here ---
             }
-            return undefined;
-          });
-      }
-  }
-});
+        });
 
-}
+    }
 
 })();

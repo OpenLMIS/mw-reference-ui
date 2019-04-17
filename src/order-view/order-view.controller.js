@@ -181,7 +181,9 @@
             }
 
             if ($stateParams.status) {
-                vm.status = $stateParams.status;
+                vm.status = vm.orderStatuses.filter(function(status) {
+                    return $stateParams.status === status.value;
+                })[0];
             }
 
             $scope.$watch(function() {
@@ -213,7 +215,7 @@
             stateParams.supplyingFacilityId = vm.supplyingFacility ? vm.supplyingFacility.id : null;
             stateParams.requestingFacilityId = vm.requestingFacility ? vm.requestingFacility.id : null;
             stateParams.programId = vm.program ? vm.program.id : null;
-            stateParams.status = vm.status ? vm.status : null;
+            stateParams.status = vm.status ? vm.status.value : null;
             stateParams.periodStartDate = vm.periodStartDate ? $filter('isoDate')(vm.periodStartDate) : null;
             stateParams.periodEndDate = vm.periodEndDate ? $filter('isoDate')(vm.periodEndDate) : null;
             stateParams.sort = 'createdDate,desc';

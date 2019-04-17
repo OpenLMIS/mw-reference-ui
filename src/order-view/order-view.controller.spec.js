@@ -15,153 +15,174 @@
 
 describe('OrderViewController', function() {
 
-    var vm, $rootScope, fulfillmentUrlFactoryMock, supplyingFacilities, requestingFacilities,
-        programs, orders, $controller, $stateParams, scope, requestingFacilityFactory, $state,
-        BasicOrderResponseDataBuilder, ORDER_STATUS, orderService, canRetryTransfer, $q,
-        notificationService, loadingModalService, orderStatusFactory, ProgramDataBuilder,
-        FacilityDataBuilder;
-
     beforeEach(function() {
         module('order-view');
         module('referencedata-facility');
         module('referencedata-program');
 
+        var ProgramDataBuilder, FacilityDataBuilder;
         inject(function($injector) {
-            $controller = $injector.get('$controller');
-            $stateParams = $injector.get('$stateParams');
-            $q = $injector.get('$q');
-            $state = $injector.get('$state');
-            $rootScope = $injector.get('$rootScope');
-            scope = $rootScope.$new();
-            requestingFacilityFactory = $injector.get('requestingFacilityFactory');
-            BasicOrderResponseDataBuilder = $injector.get('BasicOrderResponseDataBuilder');
+            this.$controller = $injector.get('$controller');
+            this.$stateParams = $injector.get('$stateParams');
+            this.$q = $injector.get('$q');
+            this.$state = $injector.get('$state');
+            this.$rootScope = $injector.get('$rootScope');
+            this.scope = this.$rootScope.$new();
+            this.requestingFacilityFactory = $injector.get('requestingFacilityFactory');
+            this.BasicOrderResponseDataBuilder = $injector.get('BasicOrderResponseDataBuilder');
             ProgramDataBuilder = $injector.get('ProgramDataBuilder');
             FacilityDataBuilder = $injector.get('FacilityDataBuilder');
-            orderService = $injector.get('orderService');
-            notificationService = $injector.get('notificationService');
-            loadingModalService = $injector.get('loadingModalService');
-            ORDER_STATUS = $injector.get('ORDER_STATUS');
-            orderStatusFactory = $injector.get('orderStatusFactory');
+            this.orderService = $injector.get('orderService');
+            this.notificationService = $injector.get('notificationService');
+            this.loadingModalService = $injector.get('loadingModalService');
+            this.ORDER_STATUS = $injector.get('ORDER_STATUS');
+            this.orderStatusFactory = $injector.get('orderStatusFactory');
         });
 
-        supplyingFacilities = [
-            new FacilityDataBuilder().withId('facility-one').build(),
-            new FacilityDataBuilder().withId('facility-two').build()
+        this.supplyingFacilities = [
+            new FacilityDataBuilder().withId('facility-one')
+                .build(),
+            new FacilityDataBuilder().withId('facility-two')
+                .build()
         ];
 
-        requestingFacilities = [
-            new FacilityDataBuilder().withId('facility-three').build(),
-            new FacilityDataBuilder().withId('facility-four').build(),
-            new FacilityDataBuilder().withId('facility-five').build()
+        this.requestingFacilities = [
+            new FacilityDataBuilder().withId('facility-three')
+                .build(),
+            new FacilityDataBuilder().withId('facility-four')
+                .build(),
+            new FacilityDataBuilder().withId('facility-five')
+                .build()
         ];
 
-        programs = [
-            new ProgramDataBuilder().withId('program-one').build()
+        this.programs = [
+            new ProgramDataBuilder().withId('program-one')
+                .build()
         ];
 
-        orders = [
-            new BasicOrderResponseDataBuilder()
-                .withStatus(ORDER_STATUS.ORDERED)
+        this.orders = [
+            new this.BasicOrderResponseDataBuilder()
+                .withStatus(this.ORDER_STATUS.ORDERED)
                 .withId('order-one')
                 .build(),
-            new BasicOrderResponseDataBuilder()
-            .withStatus(ORDER_STATUS.FULFILLING)
-            .withId('order-two')
-            .build()
+            new this.BasicOrderResponseDataBuilder()
+                .withStatus(this.ORDER_STATUS.FULFILLING)
+                .withId('order-two')
+                .build()
         ];
-        canRetryTransfer =true;
+        this.canRetryTransfer = true;
+
+        this.initController = initController;
+        this.orderStatuses = this.orderStatusFactory.getAll();
     });
 
     describe('initialization', function() {
 
         beforeEach(function() {
-            vm = $controller('OrderViewController', {
-                supplyingFacilities: supplyingFacilities,
-                requestingFacilities: requestingFacilities,
-                programs: programs,
-                orders: orders,
-                canRetryTransfer: canRetryTransfer,
-                notificationService: notificationService,
-                loadingModalService: loadingModalService,
-                orderStatusFactory: orderStatusFactory,
-                $scope: scope
+            this.vm = this.$controller('OrderViewController', {
+                supplyingFacilities: this.supplyingFacilities,
+                requestingFacilities: this.requestingFacilities,
+                programs: this.programs,
+                orders: this.orders,
+                canRetryTransfer: this.canRetryTransfer,
+                notificationService: this.notificationService,
+                loadingModalService: this.loadingModalService,
+                orderStatusFactory: this.orderStatusFactory,
+                $scope: this.scope
             });
 
-            spyOn(scope, '$watch').andCallThrough();
-            spyOn(requestingFacilityFactory, 'loadRequestingFacilities').andCallFake(function(supplyingFacilityId) {
-                if (supplyingFacilityId == 'facility-one') {
-                    vm.requestingFacilities = [requestingFacilities[0], requestingFacilities[1]];
-                    return $q.when([requestingFacilities[0], requestingFacilities[1]]);
-                } else {
+            spyOn(this.scope, '$watch').andCallThrough();
+            var vm = this.vm,
+                requestingFacilities = this.requestingFacilities,
+                $q = this.$q;
+            spyOn(this.requestingFacilityFactory, 'loadRequestingFacilities')
+                .andCallFake(function(supplyingFacilityId) {
+                    if (supplyingFacilityId === 'facility-one') {
+                        vm.requestingFacilities = [requestingFacilities[0], requestingFacilities[1]];
+                        return $q.when([requestingFacilities[0], requestingFacilities[1]]);
+                    }
                     vm.requestingFacilities = [requestingFacilities[2]];
                     return $q.when([requestingFacilities[2]]);
-                }
-            });
+
+                });
         });
 
         it('should expose supplying facilities', function() {
-            vm.$onInit();
-            expect(vm.supplyingFacilities).toEqual(supplyingFacilities);
+            this.vm.$onInit();
+
+            expect(this.vm.supplyingFacilities).toEqual(this.supplyingFacilities);
         });
 
         it('should expose requesting facilities', function() {
-            vm.$onInit();
-            expect(vm.requestingFacilities).toEqual(requestingFacilities);
+            this.vm.$onInit();
+
+            expect(this.vm.requestingFacilities).toEqual(this.requestingFacilities);
         });
 
-        it('should expose programs', function() {
-            vm.$onInit();
-            expect(vm.programs).toEqual(programs);
+        it('should expose this.programs', function() {
+            this.vm.$onInit();
+
+            expect(this.vm.programs).toEqual(this.programs);
         });
 
         it('should set periodStartDate if period start date from was passed through the URL', function() {
-            $stateParams.periodStartDate = '2017-01-31';
+            this.$stateParams.periodStartDate = '2017-01-31';
 
-            vm.$onInit();
+            this.vm.$onInit();
 
-            expect(vm.periodStartDate).toEqual('2017-01-31');
+            expect(this.vm.periodStartDate).toEqual('2017-01-31');
         });
 
         it('should not set periodStartDate if period start date from not passed through the URL', function() {
-            $stateParams.periodStartDate = undefined;
+            this.$stateParams.periodStartDate = undefined;
 
-            vm.$onInit();
+            this.vm.$onInit();
 
-            expect(vm.periodStartDate).toBeUndefined();
+            expect(this.vm.periodStartDate).toBeUndefined();
         });
 
         it('should set periodEndDate if period end date to was passed through the URL', function() {
-            $stateParams.periodEndDate = '2017-01-31';
+            this.$stateParams.periodEndDate = '2017-01-31';
 
-            vm.$onInit();
+            this.vm.$onInit();
 
-            expect(vm.periodEndDate).toEqual('2017-01-31');
+            expect(this.vm.periodEndDate).toEqual('2017-01-31');
         });
 
         it('should not set periodEndDate if period end date to not passed through the URL', function() {
-            $stateParams.periodEndDate = undefined;
+            this.$stateParams.periodEndDate = undefined;
 
-            vm.$onInit();
+            this.vm.$onInit();
 
-            expect(vm.periodEndDate).toBeUndefined();
+            expect(this.vm.periodEndDate).toBeUndefined();
+        });
+
+        it('should set status if it was selected', function() {
+            this.$stateParams.status = this.orderStatuses[2].value;
+
+            this.vm.$onInit();
+
+            expect(this.vm.status).toBe(this.vm.orderStatuses[2]);
         });
 
         it('should call watch', function() {
-            vm.$onInit();
+            this.vm.$onInit();
 
-            vm.supplyingFacility = supplyingFacilities[0];
-            $rootScope.$apply();
+            this.vm.supplyingFacility = this.supplyingFacilities[0];
+            this.$rootScope.$apply();
 
-            expect(scope.$watch).toHaveBeenCalled();
-            expect(requestingFacilityFactory.loadRequestingFacilities).toHaveBeenCalledWith(supplyingFacilities[0].id);
-            expect(vm.requestingFacilities).toEqual([requestingFacilities[0], requestingFacilities[1]]);
+            expect(this.scope.$watch).toHaveBeenCalled();
+            expect(this.vm.requestingFacilities).toEqual([this.requestingFacilities[0], this.requestingFacilities[1]]);
+            expect(this.requestingFacilityFactory.loadRequestingFacilities)
+                .toHaveBeenCalledWith(this.supplyingFacilities[0].id);
 
-            vm.supplyingFacility = supplyingFacilities[1];
-            $rootScope.$apply();
+            this.vm.supplyingFacility = this.supplyingFacilities[1];
+            this.$rootScope.$apply();
 
-            expect(scope.$watch).toHaveBeenCalled();
-            expect(requestingFacilityFactory.loadRequestingFacilities).toHaveBeenCalledWith(supplyingFacilities[1].id);
-            expect(vm.requestingFacilities).toEqual([requestingFacilities[2]]);
+            expect(this.scope.$watch).toHaveBeenCalled();
+            expect(this.vm.requestingFacilities).toEqual([this.requestingFacilities[2]]);
+            expect(this.requestingFacilityFactory.loadRequestingFacilities)
+                .toHaveBeenCalledWith(this.supplyingFacilities[1].id);
         });
 
     });
@@ -169,65 +190,77 @@ describe('OrderViewController', function() {
     describe('loadOrders', function() {
 
         beforeEach(function() {
-            initController();
-            vm.$onInit();
-            spyOn($state, 'go').andReturn();
+            this.initController();
+            this.vm.$onInit();
+            spyOn(this.$state, 'go').andReturn();
         });
 
         it('should set program', function() {
-            vm.program = {id: 'program-one'};
+            this.vm.program = {
+                id: 'program-one'
+            };
 
-            vm.loadOrders();
+            this.vm.loadOrders();
 
-            expect($state.go).toHaveBeenCalledWith('openlmis.orders.view', {
+            expect(this.$state.go).toHaveBeenCalledWith('openlmis.orders.view', {
                 supplyingFacilityId: null,
-                programId: vm.program.id,
                 requestingFacilityId: null,
+                programId: this.vm.program.id,
                 status: null,
                 periodStartDate: null,
                 periodEndDate: null,
                 sort: 'createdDate,desc'
-            }, {reload: true});
+            }, {
+                reload: true
+            });
         });
 
         it('should set supplying facility', function() {
-            vm.supplyingFacility = {id: 'facility-one'};
+            this.vm.supplyingFacility = {
+                id: 'facility-one'
+            };
 
-            vm.loadOrders();
+            this.vm.loadOrders();
 
-            expect($state.go).toHaveBeenCalledWith('openlmis.orders.view', {
-                supplyingFacilityId: vm.supplyingFacility.id,
+            expect(this.$state.go).toHaveBeenCalledWith('openlmis.orders.view', {
+                supplyingFacilityId: this.vm.supplyingFacility.id,
                 programId: null,
                 requestingFacilityId: null,
                 status: null,
                 periodStartDate: null,
                 periodEndDate: null,
                 sort: 'createdDate,desc'
-            }, {reload: true});
+            }, {
+                reload: true
+            });
         });
 
         it('should set requesting facility', function() {
-            vm.requestingFacility = {id: 'facility-one'};
+            this.vm.requestingFacility = {
+                id: 'facility-one'
+            };
 
-            vm.loadOrders();
+            this.vm.loadOrders();
 
-            expect($state.go).toHaveBeenCalledWith('openlmis.orders.view', {
+            expect(this.$state.go).toHaveBeenCalledWith('openlmis.orders.view', {
                 supplyingFacilityId: null,
                 programId: null,
-                requestingFacilityId: vm.requestingFacility.id,
+                requestingFacilityId: this.vm.requestingFacility.id,
                 status: null,
                 periodStartDate: null,
                 periodEndDate: null,
                 sort: 'createdDate,desc'
-            }, {reload: true});
+            }, {
+                reload: true
+            });
         });
 
         it('should set periodStartDate', function() {
-            vm.periodStartDate = new Date('2017-01-31T23:00:00.000Z');
+            this.vm.periodStartDate = new Date('2017-01-31T23:00:00.000Z');
 
-            vm.loadOrders();
+            this.vm.loadOrders();
 
-            expect($state.go).toHaveBeenCalledWith('openlmis.orders.view', {
+            expect(this.$state.go).toHaveBeenCalledWith('openlmis.orders.view', {
                 supplyingFacilityId: null,
                 programId: null,
                 requestingFacilityId: null,
@@ -235,15 +268,17 @@ describe('OrderViewController', function() {
                 periodStartDate: '2017-01-31',
                 periodEndDate: null,
                 sort: 'createdDate,desc'
-            }, {reload: true});
+            }, {
+                reload: true
+            });
         });
 
         it('should set periodEndDate', function() {
-            vm.periodEndDate = new Date('2017-01-31T23:00:00.000Z');
+            this.vm.periodEndDate = new Date('2017-01-31T23:00:00.000Z');
 
-            vm.loadOrders();
+            this.vm.loadOrders();
 
-            expect($state.go).toHaveBeenCalledWith('openlmis.orders.view', {
+            expect(this.$state.go).toHaveBeenCalledWith('openlmis.orders.view', {
                 supplyingFacilityId: null,
                 programId: null,
                 requestingFacilityId: null,
@@ -251,12 +286,33 @@ describe('OrderViewController', function() {
                 periodStartDate: null,
                 periodEndDate: '2017-01-31',
                 sort: 'createdDate,desc'
-            }, {reload: true});
+            }, {
+                reload: true
+            });
+        });
+
+        it('should set status', function() {
+            this.vm.status = this.vm.orderStatuses[1];
+
+            this.vm.loadOrders();
+
+            expect(this.$state.go).toHaveBeenCalledWith('openlmis.orders.view', {
+                supplyingFacilityId: null,
+                programId: null,
+                requestingFacilityId: null,
+                status: this.vm.orderStatuses[1].value,
+                periodStartDate: null,
+                periodEndDate: null,
+                sort: 'createdDate,desc'
+            }, {
+                reload: true
+            });
         });
 
         it('should reload state', function() {
-           vm.loadOrders();
-           expect($state.go).toHaveBeenCalled();
+            this.vm.loadOrders();
+
+            expect(this.$state.go).toHaveBeenCalled();
         });
 
     });
@@ -264,27 +320,27 @@ describe('OrderViewController', function() {
     describe('getPrintUrl', function() {
 
         beforeEach(function() {
-            fulfillmentUrlFactoryMock = jasmine.createSpy();
-            fulfillmentUrlFactoryMock.andCallFake(function(url) {
+            this.fulfillmentUrlFactoryMock = jasmine.createSpy();
+            this.fulfillmentUrlFactoryMock.andCallFake(function(url) {
                 return 'http://some.url' + url;
             });
 
-            vm = $controller('OrderViewController', {
-                supplyingFacilities: supplyingFacilities,
-                requestingFacilities: requestingFacilities,
-                programs: programs,
-                orders: orders,
-                canRetryTransfer: canRetryTransfer,
-                fulfillmentUrlFactory: fulfillmentUrlFactoryMock,
-                orderStatusFactory: orderStatusFactory,
-                $scope: scope
+            this.vm = this.$controller('OrderViewController', {
+                supplyingFacilities: this.supplyingFacilities,
+                requestingFacilities: this.requestingFacilities,
+                programs: this.programs,
+                orders: this.orders,
+                canRetryTransfer: this.canRetryTransfer,
+                fulfillmentUrlFactory: this.fulfillmentUrlFactoryMock,
+                orderStatusFactory: this.orderStatusFactory,
+                $scope: this.scope
             });
         });
 
         it('should prepare print URL correctly', function() {
             // Malawi: custom order print url
-            expect(vm.getPrintUrl(orders[0]))
-            .toEqual('http://some.url/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/pdf?order=order-one');
+            expect(this.vm.getPrintUrl(this.orders[0]))
+                .toEqual('http://some.url/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/pdf?order=order-one');
             // --- ends here ---
         });
     });
@@ -292,104 +348,109 @@ describe('OrderViewController', function() {
     describe('getDownloadUrl', function() {
 
         beforeEach(function() {
-            fulfillmentUrlFactoryMock = jasmine.createSpy();
-            fulfillmentUrlFactoryMock.andCallFake(function(url) {
+            this.fulfillmentUrlFactoryMock = jasmine.createSpy();
+            this.fulfillmentUrlFactoryMock.andCallFake(function(url) {
                 return 'http://some.url' + url;
             });
 
-            vm = $controller('OrderViewController', {
-                supplyingFacilities: supplyingFacilities,
-                requestingFacilities: requestingFacilities,
-                programs: programs,
-                orders: orders,
-                fulfillmentUrlFactory: fulfillmentUrlFactoryMock,
-                canRetryTransfer: canRetryTransfer,
-                orderStatusFactory: orderStatusFactory,
-                $scope: scope
+            this.vm = this.$controller('OrderViewController', {
+                supplyingFacilities: this.supplyingFacilities,
+                requestingFacilities: this.requestingFacilities,
+                programs: this.programs,
+                orders: this.orders,
+                fulfillmentUrlFactory: this.fulfillmentUrlFactoryMock,
+                canRetryTransfer: this.canRetryTransfer,
+                orderStatusFactory: this.orderStatusFactory,
+                $scope: this.scope
             });
         });
 
         it('should prepare download URL correctly', function() {
             // Malawi: custom order download url
-            expect(vm.getDownloadUrl(orders[1]))
-            .toEqual('http://some.url/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/csv?order=order-two');
+            expect(this.vm.getDownloadUrl(this.orders[1]))
+                .toEqual('http://some.url/api/reports/templates/malawi/3c9d1e80-1e45-4adb-97d9-208b6fdceeec/csv?order=order-two');
             // --- ends here ---
         });
     });
 
-    describe('retryTransfer', function(){
-        var order, retryTransferDeferred;
+    describe('retryTransfer', function() {
+        beforeEach(function() {
+            this.retryTransferDeferred = this.$q.defer();
+            spyOn(this.loadingModalService, 'open').andReturn();
+            spyOn(this.loadingModalService, 'close').andReturn();
+            spyOn(this.notificationService, 'error').andReturn();
+            spyOn(this.notificationService, 'success').andReturn();
+            spyOn(this.orderService, 'retryTransfer').andReturn(this.retryTransferDeferred.promise);
 
-        beforeEach(function(){
-            retryTransferDeferred = $q.defer();
-            spyOn(loadingModalService, 'open').andReturn();
-            spyOn(loadingModalService, 'close').andReturn();
-            spyOn(notificationService, 'error').andReturn();
-            spyOn(notificationService, 'success').andReturn();
-            spyOn(orderService, 'retryTransfer').andReturn(retryTransferDeferred.promise);
-
-            vm = $controller('OrderViewController', {
-                supplyingFacilities: supplyingFacilities,
-                requestingFacilities: requestingFacilities,
-                programs: programs,
-                orders: orders,
-                canRetryTransfer: canRetryTransfer,
-                orderService: orderService,
-                notificationService: notificationService,
-                loadingModalService: loadingModalService,
-                fulfillmentUrlFactory: fulfillmentUrlFactoryMock,
-                orderStatusFactory: orderStatusFactory,
-                $scope: scope
+            this.vm = this.$controller('OrderViewController', {
+                supplyingFacilities: this.supplyingFacilities,
+                requestingFacilities: this.requestingFacilities,
+                programs: this.programs,
+                orders: this.orders,
+                canRetryTransfer: this.canRetryTransfer,
+                orderService: this.orderService,
+                notificationService: this.notificationService,
+                loadingModalService: this.loadingModalService,
+                fulfillmentUrlFactory: this.fulfillmentUrlFactoryMock,
+                orderStatusFactory: this.orderStatusFactory,
+                $scope: this.scope
             });
-            order = new BasicOrderResponseDataBuilder()
-                .withStatus(ORDER_STATUS.TRANSFER_FAILED)
+            this.order = new this.BasicOrderResponseDataBuilder()
+                .withStatus(this.ORDER_STATUS.TRANSFER_FAILED)
                 .withId('order-one')
                 .build();
         });
 
-        it('should call retry transfer service', function(){
-            vm.retryTransfer(order);
-            expect(orderService.retryTransfer).toHaveBeenCalledWith(order.id);
+        it('should call retry transfer service', function() {
+            this.vm.retryTransfer(this.order);
+
+            expect(this.orderService.retryTransfer).toHaveBeenCalledWith(this.order.id);
         });
 
-        it('should show successful message when transfer is complete', function(){
-            vm.retryTransfer(order);
-            retryTransferDeferred.resolve({result: true});
-            $rootScope.$apply();
+        it('should show successful message when transfer is complete', function() {
+            this.vm.retryTransfer(this.order);
+            this.retryTransferDeferred.resolve({
+                result: true
+            });
+            this.$rootScope.$apply();
 
-            expect(notificationService.success).toHaveBeenCalledWith('orderView.transferComplete');
+            expect(this.notificationService.success).toHaveBeenCalledWith('orderView.transferComplete');
         });
 
-        it('should show error message when server responded with OK but transfer was not complete', function(){
-            vm.retryTransfer(order);
-            retryTransferDeferred.resolve({result: false});
-            $rootScope.$apply();
+        it('should show error message when server responded with OK but transfer was not complete', function() {
+            this.vm.retryTransfer(this.order);
+            this.retryTransferDeferred.resolve({
+                result: false
+            });
+            this.$rootScope.$apply();
 
-            expect(notificationService.error).toHaveBeenCalledWith('orderView.transferFailed');
+            expect(this.notificationService.error).toHaveBeenCalledWith('orderView.transferFailed');
         });
 
-        it('should show error message when server responded with error message', function(){
-            vm.retryTransfer(order);
-            retryTransferDeferred.reject({description: 'some-other-error'});
-            $rootScope.$apply();
+        it('should show error message when server responded with error message', function() {
+            this.vm.retryTransfer(this.order);
+            this.retryTransferDeferred.reject({
+                description: 'some-other-error'
+            });
+            this.$rootScope.$apply();
 
-            expect(notificationService.error).toHaveBeenCalledWith('some-other-error');
+            expect(this.notificationService.error).toHaveBeenCalledWith('some-other-error');
         });
     });
 
     function initController() {
-        vm = $controller('OrderViewController', {
-            supplyingFacilities: supplyingFacilities,
-            requestingFacilities: requestingFacilities,
-            programs: programs,
-            orders: orders,
-            canRetryTransfer: canRetryTransfer,
-            notificationService: notificationService,
-            loadingModalService: loadingModalService,
-            orderService: orderService,
-            orderStatusFactory: orderStatusFactory,
-            $scope: scope
+        this.vm = this.$controller('OrderViewController', {
+            supplyingFacilities: this.supplyingFacilities,
+            requestingFacilities: this.requestingFacilities,
+            programs: this.programs,
+            orders: this.orders,
+            canRetryTransfer: this.canRetryTransfer,
+            notificationService: this.notificationService,
+            loadingModalService: this.loadingModalService,
+            orderService: this.orderService,
+            orderStatusFactory: this.orderStatusFactory,
+            $scope: this.scope
         });
-        vm.$onInit();
+        this.vm.$onInit();
     }
 });
