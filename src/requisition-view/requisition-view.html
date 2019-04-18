@@ -1,6 +1,6 @@
 <header>
     <h2>{{'requisitionView.reportAndRequisitionFor' | message}} {{vm.requisition.program.name}} ({{vm.requisition.facility.type.name}})</h2>
-    <button ng-if="!vm.isOffline()" ng-click="vm.syncRnrAndPrint()" class="primary">{{'requisitionView.print' | message}}</button>
+    <button ng-disabled="vm.isOffline()" ng-click="vm.syncRnrAndPrint()" class="primary">{{'requisitionView.print' | message}}</button>
 </header>
 <p class="alert is-error" ng-if="vm.requisition.$outdated">
     {{ 'requisitionView.outdated' | message}}
@@ -27,6 +27,8 @@
     </ul>
 </nav>
 <div ui-view=""></div>
+<!-- Malawi: added information about prices being indicative -->
 <h4 class="prices-info" ng-if="vm.displayPriceInfo(vm.requisition)">{{'requisitionView.pricesAreIndicative' | message }}</h4>
+<!-- ends here -->
 <requisition-summary requisition="vm.requisition"></requisition-summary>
 <ng-include src="'requisition-view/requisition-toolbar.html'"></ng-include>

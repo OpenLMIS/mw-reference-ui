@@ -29,34 +29,28 @@
         .controller('RequisitionViewController', RequisitionViewController);
 
     RequisitionViewController.$inject = [
-        '$state', 'requisition', 'requisitionValidator', 'authorizationService',
-        'requisitionService', 'loadingModalService', 'alertService', 'notificationService',
-        'confirmService', 'REQUISITION_RIGHTS', 'FULFILLMENT_RIGHTS', 'offlineService', '$window',
-        'requisitionUrlFactory', '$filter', '$scope', 'RequisitionWatcher',
-        'accessTokenFactory', 'messageService', 'stateTrackerService', 'RequisitionStockCountDateModal',
-        'localStorageFactory', 'canSubmit', 'canAuthorize',
-        'canApproveAndReject', 'canDelete', 'canSkip', 'canSync',
+        '$state', 'requisition', 'requisitionValidator', 'requisitionService', 'loadingModalService', 'alertService',
+        'notificationService', 'confirmService', 'offlineService', '$window', 'requisitionUrlFactory', '$filter',
+        '$scope', 'RequisitionWatcher', 'accessTokenFactory', 'messageService', 'stateTrackerService',
+        'RequisitionStockCountDateModal', 'localStorageFactory', 'canSubmit', 'canAuthorize', 'canApproveAndReject',
+        'canDelete', 'canSkip', 'canSync',
         // Malawi: Display alternate warning message
         'REQUISITION_WARNING_PERIODS', 'REQUISITION_WARNING_PROGRAM_CODE',
         // Malawi: Disable skip button if there is data in user inputs
-        'TEMPLATE_COLUMNS', 'COLUMN_SOURCES'
+        'TEMPLATE_COLUMNS', 'COLUMN_SOURCES', 'authorizationService', 'REQUISITION_RIGHTS'
         // --- ends here ---
     ];
 
-    function RequisitionViewController($state, requisition, requisitionValidator,
-        authorizationService, requisitionService,
-        loadingModalService, alertService, notificationService,
-        confirmService, REQUISITION_RIGHTS, FULFILLMENT_RIGHTS,
-        offlineService, $window, requisitionUrlFactory, $filter,
-        $scope, RequisitionWatcher, accessTokenFactory,
-        messageService, stateTrackerService, RequisitionStockCountDateModal,
-        localStorageFactory, canSubmit, canAuthorize, canApproveAndReject, 
-        canDelete, canSkip, canSync,
+    function RequisitionViewController($state, requisition, requisitionValidator, requisitionService,
+                                       loadingModalService, alertService, notificationService, confirmService,
+                                       offlineService, $window, requisitionUrlFactory, $filter, $scope,
+                                       RequisitionWatcher, accessTokenFactory, messageService, stateTrackerService,
+                                       RequisitionStockCountDateModal, localStorageFactory, canSubmit, canAuthorize,
+                                       canApproveAndReject, canDelete, canSkip, canSync,
         // Malawi: Display alternate warning message
-        REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE,
+                                       REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE,
         // Malawi: Disable skip button if there is data in user inputs
-        TEMPLATE_COLUMNS, COLUMN_SOURCES) {
-        // --- ends here ---
+                                       TEMPLATE_COLUMNS, COLUMN_SOURCES, authorizationService, REQUISITION_RIGHTS) {
 
         var vm = this,
             watcher = new RequisitionWatcher($scope, requisition, localStorageFactory('requisitions'));
@@ -215,7 +209,6 @@
         vm.enableSkip = enableSkip;
         // --- ends here ---
 
-
         /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
@@ -231,6 +224,7 @@
             vm.displayAuthorizeButton = canAuthorize;
             vm.displayDeleteButton = canDelete;
             vm.displayApproveAndRejectButtons = canApproveAndReject;
+            vm.displayRejectButton = canApproveAndReject && !vm.requisition.extraData.originalRequisition;
             vm.displaySkipButton = canSkip;
             vm.displaySyncButton = canSync;
             // Malawi: set all to 0 button
@@ -266,19 +260,19 @@
          *
          */
         function updateRequisition() {
-            if(offlineService.isOffline()) {
+            if (offlineService.isOffline()) {
                 alertService.error('requisitionView.updateOffline');
                 return;
             }
 
             confirmService.confirm('requisitionView.updateWarning', 'requisitionView.update')
-            .then(function(){
-                requisitionService.removeOfflineRequisition(requisition.id);
-                $state.reload();
-            });
+                .then(function() {
+                    requisitionService.removeOfflineRequisition(requisition.id);
+                    $state.reload();
+                });
         }
 
-         /**
+        /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
          * @name syncRnr
@@ -295,13 +289,18 @@
                 loadingPromise.then(function() {
                     notificationService.success('requisitionView.sync.success');
                 });
-                reloadState();
+                $state.go($state.current, {
+                    rnr: vm.requisition.id,
+                    requisition: undefined
+                }, {
+                    reload: true
+                });
             }, function(response) {
                 handleSaveError(response.status);
             });
         }
 
-         /**
+        /**
          * @ngdoc method
          * @methodOf requisition-view.controller:RequisitionViewController
          * @name syncRnrAndPrint
@@ -326,9 +325,9 @@
                     popup.location.href = accessTokenFactory.addAccessToken(vm.getPrintUrl());
                     reloadState();
                 }, function(response) {
-                  handleSaveError(response.status);
-                  popup.close();
-              });
+                    handleSaveError(response.status);
+                    popup.close();
+                });
             } else {
                 $window.open(accessTokenFactory.addAccessToken(vm.getPrintUrl()), '_blank');
             }
@@ -350,73 +349,56 @@
          * an error occurs during submission, an error notification modal will be displayed.
          * Otherwise, a success notification modal will be shown.
          */
-        // Malawi: Display alternate warning message
         function submitRnr() {
+            // Malawi: Display alternate warning message
             var isSubmissionWarningProgram = (requisition.program.code === REQUISITION_WARNING_PROGRAM_CODE);
             var isSubmissionWarningPeriod = false;
 
-            if(requisition.processingPeriod) { // Wrapped IF statement so I didn't have to fork RequisitionViewController unit tests
-                REQUISITION_WARNING_PERIODS.forEach(function(month){
-                    if(requisition.processingPeriod.name.indexOf(month) >= 0){
+            if (requisition.processingPeriod) { // Wrapped IF statement so I didn't have to fork RequisitionViewController unit tests
+                REQUISITION_WARNING_PERIODS.forEach(function(month) {
+                    if (requisition.processingPeriod.name.indexOf(month) >= 0) {
                         isSubmissionWarningPeriod = true;
                     }
                 });
             }
 
             var submitWarningMessage = 'requisitionView.submit.confirm';
-            if(isSubmissionWarningPeriod && isSubmissionWarningProgram){
+            if (isSubmissionWarningPeriod && isSubmissionWarningProgram) {
                 submitWarningMessage = 'requisitionPeriodWarning.confirm';
             }
 
-            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label')
-            .then(doSubmitRnr);
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition-view.controller:RequisitionViewController
-         * @name doSubmitRnr
-         *
-         * @description
-         * Responsible for submitting requisition, checking requisition
-         * validity beforesubmission. If the requisition is not valid, fails to
-         * save or an error occurs during submission, an error notification
-         * modal will be displayed. Otherwise, a success notification modal
-         * will be shown.
-         */
-        function doSubmitRnr() {
-            if (requisitionValidator.validateRequisition(requisition)) {
-                var loadingPromise = loadingModalService.open();
-                if (!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
-                    if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
+            confirmService.confirm(submitWarningMessage, 'requisitionView.submit.label').then(function() {
+                // --- ends here ---
+                if (requisitionValidator.validateRequisition(requisition)) {
+                    if (requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
+                        failWithMessage('requisitionView.allLineItemsSkipped')();
+                    } else if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
                         var modal = new RequisitionStockCountDateModal(vm.requisition);
                         modal.then(saveThenSubmit);
                     } else {
                         saveThenSubmit();
                     }
                 } else {
-                    failWithMessage('requisitionView.allLineItemsSkipped')();
+                    $scope.$broadcast('openlmis-form-submit');
+                    failWithMessage('requisitionView.rnrHasErrors')();
                 }
-            } else {
-                failWithMessage('requisitionView.rnrHasErrors')();
-            }
+            });
 
             function saveThenSubmit() {
                 var loadingPromise = loadingModalService.open();
-                vm.requisition.$save().then(function () {
-                    vm.requisition.$submit().then(function (response) {
+                vm.requisition.$save().then(function() {
+                    vm.requisition.$submit().then(function() {
                         watcher.disableWatcher();
-                        loadingPromise.then(function () {
+                        loadingPromise.then(function() {
                             notificationService.success('requisitionView.submit.success');
                         });
                         stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
-                    }, failWithMessage('requisitionView.submit.failure'));
+                    }, loadingModalService.close);
                 }, function(response) {
                     handleSaveError(response.status);
                 });
             }
         }
-        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -435,16 +417,14 @@
                 'requisitionView.authorize.confirm',
                 'requisitionView.authorize.label'
             ).then(function() {
-                if(requisitionValidator.validateRequisition(requisition)) {
-                    if(!requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
-                        if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
-                            var modal = new RequisitionStockCountDateModal(vm.requisition);
-                            modal.then(saveThenAuthorize);
-                        } else {
-                            saveThenAuthorize();
-                        }
-                    } else {
+                if (requisitionValidator.validateRequisition(requisition)) {
+                    if (requisitionValidator.areAllLineItemsSkipped(requisition.requisitionLineItems)) {
                         failWithMessage('requisitionView.allLineItemsSkipped')();
+                    } else if (vm.requisition.program.enableDatePhysicalStockCountCompleted) {
+                        var modal = new RequisitionStockCountDateModal(vm.requisition);
+                        modal.then(saveThenAuthorize);
+                    } else {
+                        saveThenAuthorize();
                     }
                 } else {
                     $scope.$broadcast('openlmis-form-submit');
@@ -454,15 +434,15 @@
 
             function saveThenAuthorize() {
                 var loadingPromise = loadingModalService.open();
-                vm.requisition.$save().then(function () {
-                    vm.requisition.$authorize().then(function (response) {
+                vm.requisition.$save().then(function() {
+                    vm.requisition.$authorize().then(function() {
                         watcher.disableWatcher();
-                        loadingPromise.then(function () {
+                        loadingPromise.then(function() {
                             notificationService.success('requisitionView.authorize.success');
                         });
                         stateTrackerService.goToPreviousState('openlmis.requisitions.initRnr');
                     }, loadingModalService.close);
-                }, function (response) {
+                }, function(response) {
                     handleSaveError(response.status);
                 });
             }
@@ -484,7 +464,7 @@
                 'requisitionView.delete.label'
             ).then(function() {
                 var loadingPromise = loadingModalService.open();
-                vm.requisition.$remove().then(function(response) {
+                vm.requisition.$remove().then(function() {
                     watcher.disableWatcher();
                     loadingPromise.then(function() {
                         notificationService.success('requisitionView.delete.success');
@@ -510,10 +490,10 @@
                 'requisitionView.approve.confirm',
                 'requisitionView.approve.label'
             ).then(function() {
-                if(requisitionValidator.validateRequisition(requisition)) {
+                if (requisitionValidator.validateRequisition(requisition)) {
                     var loadingPromise = loadingModalService.open();
                     vm.requisition.$save().then(function() {
-                        vm.requisition.$approve().then(function(response) {
+                        vm.requisition.$approve().then(function() {
                             watcher.disableWatcher();
                             loadingPromise.then(function() {
                                 notificationService.success('requisitionView.approve.success');
@@ -540,34 +520,30 @@
          * If an error occurs during rejecting it will display an error notification modal.
          * Otherwise, a success notification modal will be shown.
          */
-        // Malawi: Rejecting LMIS form should require a reason
         function rejectRnr() {
-            if (!(vm.requisition.draftStatusMessage)) {
+            // Malawi: Rejecting LMIS form should require a reason
+            if (!vm.requisition.draftStatusMessage) {
                 alertService.error('requisitionView.rejectMissingCommentError');
-            } else {
-                confirmService.confirmDestroy(
-                    'requisitionView.reject.confirm',
-                    'requisitionView.reject.label'
-                ).then(function() {
-                    var loadingPromise = loadingModalService.open();
-                    vm.requisition.$save().then(function() {
-                        vm.requisition.$reject()
-                        .then(function() {
-                            watcher.disableWatcher();
-                            loadingPromise.then(function() {
-                                notificationService.success('requisitionView.reject.success');
-                            });
-                            stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                        })
-                        .catch(function() {
-                            failWithMessage('requisitionView.reject.failure');
-                        });
+                return;
+            }
+            // --- end here ---
+            confirmService.confirmDestroy(
+                'requisitionView.reject.confirm',
+                'requisitionView.reject.label'
+            ).then(function() {
+                loadingModalService.open();
+                vm.requisition.$save()
+                    .then(function() {
+                        return vm.requisition.$reject();
+                    })
+                    .then(function() {
+                        watcher.disableWatcher();
+                        notificationService.success('requisitionView.reject.success');
+                        stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
                     })
                     .catch(loadingModalService.close);
-                });
-            }
+            });
         }
-        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -585,7 +561,7 @@
                 'requisitionView.skip.label'
             ).then(function() {
                 var loadingPromise = loadingModalService.open();
-                vm.requisition.$skip().then(function(response) {
+                vm.requisition.$skip().then(function() {
                     watcher.disableWatcher();
                     loadingPromise.then(function() {
                         notificationService.success('requisitionView.skip.success');
@@ -604,11 +580,11 @@
          *
          * @return {String} the prepared URL
          */
-        // Malawi: link to the updated requisition printout
         function getPrintUrl() {
+            // Malawi: link to the updated requisition printout
             return requisitionUrlFactory('/api/reports/requisitions/' + vm.requisition.id + '/print');
+            // --- ends here ---
         }
-        // --- ends here ---
 
         /**
          * @ngdoc method
@@ -721,7 +697,9 @@
          */
         function displaySetAllTo0() {
             var approvedQuantityColumn = requisition.template.getColumn(TEMPLATE_COLUMNS.APPROVED_QUANTITY);
-            return approvedQuantityColumn.isDisplayed && vm.requisition.$isAuthorized() && hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
+            return approvedQuantityColumn.isDisplayed &&
+                vm.requisition.$isAuthorized() &&
+                hasRightForProgram(REQUISITION_RIGHTS.REQUISITION_APPROVE);
         }
 
         /**
@@ -735,7 +713,7 @@
         function setAllToZero() {
             angular.forEach(requisition.requisitionLineItems, function(lineItem) {
                 lineItem.approvedQuantity = 0;
-            })
+            });
         }
         // --- ends here ---
 
@@ -763,7 +741,7 @@
             return requisition.requisitionLineItems.some(function(lineItem) {
                 return userInputColumns.some(function(column) {
                     if (!isEmpty(lineItem[column.name])) {
-                        return true
+                        return true;
                     }
                 });
             });
