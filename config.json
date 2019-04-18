@@ -12,9 +12,6 @@
   "REPORTING_SERVICES": "requisitions,malawi",
   "requisitionWarningProgramCode": "tb",
   "requisitionWarningPeriods": "Feb,Mar,May,Jun,Aug,Sep,Nov,Dec",
-  "currencyCode": "MWK",
-  "currencySymbol": "MK",
-  "currencySymbolSide": "right",
   "applicationLoadingMessage": "Starting Malawi OpenLMIS",
   "applicationTitle": "Malawi OpenLMIS",
   "noLint": true
