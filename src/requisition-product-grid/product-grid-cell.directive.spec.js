@@ -43,12 +43,16 @@ describe('ProductGridCell', function() {
             this.COLUMN_TYPES = $injector.get('COLUMN_TYPES');
             this.COLUMN_SOURCES = $injector.get('COLUMN_SOURCES');
             this.RequisitionDataBuilder = $injector.get('RequisitionDataBuilder');
+            // Malawi: override isReadOnly
+            this.TEMPLATE_COLUMNS = $injector.get('TEMPLATE_COLUMNS');
+            this.REQUISITION_RIGHTS = $injector.get('REQUISITION_RIGHTS');
+            // --- ends here ---
         });
 
         this.scope = this.$rootScope.$new();
 
         this.fullSupplyColumns = [
-            new this.RequisitionColumnDataBuilder().buildBeginningBalanceColumn()
+            new this.RequisitionColumnDataBuilder().buildRequestedQuantityColumn()
         ];
 
         this.nonFullSupplyColumns = [
@@ -90,6 +94,9 @@ describe('ProductGridCell', function() {
         this.scope.requisition.$isAuthorized.andReturn(false);
         this.scope.column.name = 'totalLossesAndAdjustments';
         this.scope.requisition.template.populateStockOnHandFromStockCards = true;
+        // Malawi: override isReadOnly
+        this.authorizationService.hasRight.andReturn(false);
+        // --- ends here ---
 
         this.directiveElem = this.getCompiledElement();
 
@@ -221,6 +228,9 @@ describe('ProductGridCell', function() {
     });
 
     it('should produce read only cell if user can not edit', function() {
+        // Malawi: override isReadOnly
+        this.authorizationService.hasRight.andReturn(false);
+        // --- ends here ---
         this.scope.userCanEdit = false;
         this.scope.column = new this.RequisitionColumnDataBuilder().buildTotalConsumedQuantityColumn();
 
@@ -237,6 +247,212 @@ describe('ProductGridCell', function() {
 
         expect(cell.text()).toEqual('readOnlyFieldValue');
     });
+
+    // Malawi: override isReadOnly
+    describe('isReadOnly override', function() {
+
+        beforeEach(function() {
+            var context = this;
+            this.userAlwaysHasRight = true;
+            this.authorizationService.hasRight.andCallFake(function(right) {
+                if (context.userAlwaysHasRight) {
+                    return true;
+                }
+                if (context.userHasApprovedRight && right === context.REQUISITION_RIGHTS.REQUISITION_APPROVE) {
+                    return true;
+                }
+                if (context.userHasAuthorizedRight && right === context.REQUISITION_RIGHTS.REQUISITION_AUTHORIZE) {
+                    return true;
+                }
+                if (context.userHasCreateRight && right === context.REQUISITION_RIGHTS.REQUISITION_CREATE) {
+                    return true;
+                }
+                return false;
+            });
+        });
+
+        it('should produce read-only cell if approved', function() {
+            this.scope.requisition.$isApproved.andReturn(true);
+            this.scope.requisition.$isReleased.andReturn(false);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+        });
+
+        it('should produce read-only cell if released', function() {
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(true);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+        });
+
+        it('should produce read-only cell if authorized', function() {
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(true);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+        });
+
+        it('should produce read-only cell if in approval', function() {
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isInitiated.andReturn(false);
+            this.scope.requisition.$isRejected.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(true);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+        });
+
+        it('should produce editable cell if user has no right to approve', function() {
+            this.scope.column.name = this.TEMPLATE_COLUMNS.APPROVED_QUANTITY;
+
+            this.scope.requisition.$isSubmitted.andReturn(true);
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+        it('should produce editable cell', function() {
+            this.scope.requisition.$isInitiated.andReturn(true);
+            this.scope.requisition.$isRejected.andReturn(false);
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+        it('should return false if initiated and user can submit', function() {
+            this.scope.requisition.$isInitiated.andReturn(true);
+            this.scope.requisition.$isRejected.andReturn(false);
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+
+            this.userAlwaysHasRight = false;
+            this.userHasCreateRight = false;
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+
+            this.userHasCreateRight = true;
+
+            cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+        it('should return false if rejected and user can submit', function() {
+            this.scope.requisition.$isInitiated.andReturn(false);
+            this.scope.requisition.$isRejected.andReturn(true);
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+
+            this.userAlwaysHasRight = false;
+            this.userHasCreateRight = false;
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+
+            this.userHasCreateRight = true;
+
+            cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+        it('should return false if submitted and user can approve', function() {
+            this.scope.requisition.$isInitiated.andReturn(false);
+            this.scope.requisition.$isSubmitted.andReturn(true);
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+
+            this.userAlwaysHasRight = false;
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+
+            this.userHasAuthorizedRight = true;
+
+            cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+        it('should return true if column is beginning balance', function() {
+            this.scope.column.name = this.TEMPLATE_COLUMNS.BEGINNING_BALANCE;
+
+            this.scope.requisition.$isApproved.andReturn(false);
+            this.scope.requisition.$isReleased.andReturn(false);
+            this.scope.requisition.$isInApproval.andReturn(false);
+            this.scope.requisition.$isAuthorized.andReturn(false);
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+        });
+
+        it('should return true for non approval column if in approval and for tb program', function() {
+            this.scope.column.name = this.TEMPLATE_COLUMNS.BEGINNING_BALANCE;
+
+            this.scope.requisition.$isInApproval.andReturn(true);
+            this.scope.requisition.program.code = 'tb';
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).toEqual('readOnlyFieldValue');
+        });
+
+        it('should return false for approved quantity column if in approval and for tb program', function() {
+            this.scope.column.name = this.TEMPLATE_COLUMNS.APPROVED_QUANTITY;
+
+            this.scope.requisition.$isInApproval.andReturn(true);
+            this.scope.requisition.program.code = 'tb';
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+        it('should return false for remarks column if in approval and for tb program', function() {
+            this.scope.column.name = this.TEMPLATE_COLUMNS.REMARKS;
+
+            this.scope.requisition.$isInApproval.andReturn(true);
+            this.scope.requisition.program.code = 'tb';
+
+            var cell = angular.element(this.getCompiledElement().children()[0]);
+
+            expect(cell.text()).not.toEqual('readOnlyFieldValue');
+        });
+
+    });
+    // --- ends here ---
 
     describe('Skip Column', function() {
 

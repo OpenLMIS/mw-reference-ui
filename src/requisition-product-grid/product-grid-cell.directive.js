@@ -137,15 +137,27 @@
             }
 
             function isReadOnly(requisition, column) {
-                if (requisition.$isApproved() || requisition.$isReleased()) {
+                // Malawi: override isReadOnly
+                if ((requisition.$isInApproval() && !isTbProgram(requisition)) || requisition.$isApproved() || requisition.$isReleased()) {
                     return true;
                 }
-                if (scope.canApprove && isApprovalColumn(column)) {
-                    return false;
+                if (requisition.$isAuthorized() || requisition.$isInApproval()) {
+                    if (hasApproveRightForProgram(requisition) && isApprovalColumn(column)) {
+                        return false;
+                    }
                 }
-                if (canEditColumn(column)) {
-                    return false;
+                if (column.name === TEMPLATE_COLUMNS.BEGINNING_BALANCE) {
+                    return true;
                 }
+                if (column.source === COLUMN_SOURCES.USER_INPUT) {
+                    if (hasAuthorizeRightForProgram(requisition) && requisition.$isSubmitted()) {
+                        return false;
+                    }
+                    if (hasCreateRightForProgram(requisition) && (requisition.$isInitiated() || requisition.$isRejected())) {
+                        return false;
+                    }
+                }
+                // --- ends here ---
 
                 // If we don't know that the field is editable, its read only
                 return true;
@@ -223,6 +235,24 @@
             return difference ? error.concat(
                 '. The difference between the calculated and entered value is ', difference, '.'
             ) : error;
+        }
+        // --- ends here ---
+
+        // Malawi: override isReadOnly
+        function hasApproveRightForProgram(requisition) {
+            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_APPROVE, {
+                programId: requisition.program.id
+            });
+        }
+
+        function hasCreateRightForProgram(requisition) {
+            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
+                programId: requisition.program.id
+            });
+        }
+
+        function isTbProgram(requisition) {
+            return requisition.program.code === 'tb';
         }
         // --- ends here ---
     }

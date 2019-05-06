@@ -47,7 +47,6 @@
         delegatedLineItem.prototype.canBeSkipped = canBeSkipped;
         delegatedLineItem.prototype.isNonFullSupply = $delegate.prototype.isNonFullSupply;
         delegatedLineItem.prototype.updateFieldValue = updateFieldValue;
-        delegatedLineItem.prototype.isReadOnly = isReadOnly;
 
         return delegatedLineItem;
 
@@ -97,7 +96,7 @@
                 object = getObject(this, fullName),
                 propertyName = getPropertyName(column.name);
 
-            if(object) {
+            if (object) {
                 if (column.source === COLUMN_SOURCES.CALCULATED) {
                     object[propertyName] = calculationFactory[fullName] ? calculationFactory[fullName](this, requisition) : null;
                 } else if (column.$type === COLUMN_TYPES.NUMERIC || column.$type === COLUMN_TYPES.CURRENCY) {
@@ -136,7 +135,7 @@
                 return false;
             }
 
-            columns.forEach(function (column) {
+            columns.forEach(function(column) {
                 if (isInputDisplayedAndNotEmpty(column, lineItem)) {
                     if (!requisition.emergency || column.name !== 'beginningBalance') {
                         result = false;
@@ -144,67 +143,6 @@
                 }
             });
             return result;
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf requisition.LineItem
-         * @name isReadOnly
-         *
-         * @description
-         * Determines whether a column within this line item is read only.
-         *
-         * @param {Object} requisition Requisition to which line item belongs
-         * @param {Object} column Requisition template column
-         * @return {Boolean} true if line item is read only
-         */
-        function isReadOnly(requisition, column) {
-            if ((requisition.$isInApproval() && !isTbProgram(requisition)) || requisition.$isApproved() || requisition.$isReleased()){
-                return true;
-            }
-            if (requisition.$isAuthorized() || requisition.$isInApproval()) {
-                if (hasApproveRightForProgram(requisition) && isApprovalColumn(column)) {
-                    return false;
-                }
-            }
-            if (column.name === TEMPLATE_COLUMNS.BEGINNING_BALANCE) {
-                return true;
-            }
-            if (column.source === COLUMN_SOURCES.USER_INPUT) {
-                if (hasAuthorizeRightForProgram(requisition) && requisition.$isSubmitted()) {
-                    return false;
-                }
-                if (hasCreateRightForProgram(requisition) && (requisition.$isInitiated() || requisition.$isRejected())) {
-                    return false;
-                }
-            }
-
-            // If we don't know that the field is editable, its read only
-            return true;
-        }
-
-        function hasApproveRightForProgram(requisition) {
-            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_APPROVE, {
-                programId: requisition.program.id
-            });
-        }
-
-        function hasAuthorizeRightForProgram(requisition) {
-            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_AUTHORIZE, {
-                programId: requisition.program.id
-            });
-        }
-
-        function hasCreateRightForProgram(requisition) {
-            return authorizationService.hasRight(REQUISITION_RIGHTS.REQUISITION_CREATE, {
-                programId: requisition.program.id
-            });
-        }
-
-        function isApprovalColumn(column) {
-            var approvalColumns = [TEMPLATE_COLUMNS.APPROVED_QUANTITY, TEMPLATE_COLUMNS.REMARKS];
-
-            return approvalColumns.indexOf(column.name) !== -1;
         }
 
         function isInputDisplayedAndNotEmpty(column, lineItem) {
@@ -257,10 +195,6 @@
             var bracket = ' (';
             var stringToAdd = bracket.concat(netContent, ')');
             return fullProductName.indexOf(stringToAdd) > -1 ? fullProductName : fullProductName.concat(stringToAdd);
-        }
-
-        function isTbProgram(requisition) {
-            return requisition.program.code === 'tb';
         }
     }
 
