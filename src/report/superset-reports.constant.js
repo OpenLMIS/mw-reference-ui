@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-(function() {
+(function () {
 
     'use strict';
 
@@ -29,33 +29,35 @@
         .constant('SUPERSET_REPORTS', getReports());
 
     function getReports() {
-        /* Malawi: returning empty list of superset reports to not show them on reports screen
+        // Malawi: set a correct links to superset dashboards
+        var supersetUrl = '${SUPERSET_URL}';
+        if (supersetUrl.substr(0, 2) === '${') {
+            return {};
+        }
+
         return {
             REPORTING_RATE_AND_TIMELINESS: createReport('reportingRateAndTimeliness',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/1/',
+                supersetUrl + '/superset/dashboard/1/',
                 'REPORTING_RATE_AND_TIMELINESS_REPORT_VIEW'),
             STOCK_STATUS: createReport('stockStatus',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/6/',
+                supersetUrl + '/superset/dashboard/6/',
                 'STOCK_STATUS_REPORT_VIEW'),
             STOCKOUTS: createReport('stockouts',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/2/',
+                supersetUrl + '/superset/dashboard/2/',
                 'STOCKOUTS_REPORT_VIEW'),
             CONSUMPTION: createReport('consumption',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/3/',
+                supersetUrl + '/superset/dashboard/3/',
                 'CONSUMPTION_REPORT_VIEW'),
             ORDERS: createReport('orders',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/4/',
+                supersetUrl + '/superset/dashboard/4/',
                 'ORDERS_REPORT_VIEW'),
             ADJUSTMENTS: createReport('adjustments',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/5/',
+                supersetUrl + '/superset/dashboard/5/',
                 'ADJUSTMENTS_REPORT_VIEW'),
             ADMINISTRATIVE: createReport('administrative',
-                'https://superset.uat.openlmis.org/login/openlmis?redirect_url=/superset/dashboard/7/',
+                supersetUrl + '/superset/dashboard/7/',
                 'ADMINISTRATIVE_REPORT_VIEW')
         };
-        */
-        return {};
-        // --- ends here ---
     }
 
     function createReport(code, url, right) {
