@@ -79,7 +79,7 @@ services:
       - '/openlmis-ui-layout'
 
   dhis2-integration-ui:
-    image: openlmismw/dhis2-integration-ui
+    image: openlmismw/dhis2-integration-ui:1.0.0-SNAPSHOT
     volumes:
       - '/dhis2-integration-ui'
 
