@@ -20,7 +20,7 @@ services:
       - cce-ui
       - ui-components
       - ui-layout
-      - dhis2-integration-ui
+      - mw-dhis2-integration-ui
     depends_on:
       - auth-ui
       - fulfillment-ui
@@ -31,7 +31,7 @@ services:
       - cce-ui
       - ui-components
       - ui-layout
-      - dhis2-integration-ui
+      - mw-dhis2-integration-ui
 
   auth-ui:
     image: openlmis/auth-ui:6.2.0
@@ -78,10 +78,10 @@ services:
     volumes:
       - '/openlmis-ui-layout'
 
-  dhis2-integration-ui:
+  mw-dhis2-integration-ui:
     image: openlmismw/dhis2-integration-ui:1.0.0-SNAPSHOT
     volumes:
-      - '/dhis2-integration-ui'
+      - '/mw-dhis2-integration-ui'
 
   image:
     build: .
