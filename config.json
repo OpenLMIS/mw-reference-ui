@@ -8,7 +8,7 @@
     "/openlmis-fulfillment-ui",
     "/openlmis-requisition-ui",
     "/openlmis-stockmanagement-ui",
-    "/dhis2-integration-ui"
+    "/openlmismw-dhis2-integration-ui"
   ],
   "REPORTING_SERVICES": "requisitions,malawi",
   "requisitionWarningProgramCode": "tb",
