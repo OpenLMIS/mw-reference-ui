@@ -29,11 +29,11 @@
   "requisitionView.authorize.failure": "Failed to authorize LMIS Form!",
   "requisitionView.delete.failure": "Failed to delete LMIS Form!",
   "requisitionView.delete.success": "LMIS Form has been deleted!",
-  "requisitionView.reject.failure": "Failed to reject LMIS Form",   
+  "requisitionView.reject.failure": "Failed to reject LMIS Form",
   "requisitionView.reject.success": "LMIS Form has been rejected!",
   "requisitionView.reportAndRequisitionFor": "LMIS Form for",
   "requisitionView.skip.confirm": "Are you sure you want to skip this LMIS Form?",
-  "requisitionView.skip.failure": "Failed to skip LMIS Form!",    
+  "requisitionView.skip.failure": "Failed to skip LMIS Form!",
   "requisitionView.skip.success": "LMIS Form has been skipped!",
   "requisitionView.submit.failure": "Failed to submit LMIS Form!",
   "requisitionView.submit.success": "LMIS Form has been submitted!",
@@ -69,5 +69,6 @@
   "adminRoleForm.requisitionTemplatesManage": "Manage LMIS Form templates",
   "adminRoleForm.requisitionView": "View LMIS Form",
   "adminRoleForm.supervision.description": "Provides rights for managing LMIS Forms.",
-  "adminRoleForm.supervision.label": "LMIS Form"
+  "adminRoleForm.supervision.label": "LMIS Form",
+  "adminRoleForm.dhis2Management": "Manage DHIS2 integration"
 }
