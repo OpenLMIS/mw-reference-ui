@@ -1,5 +1,5 @@
 <header>
-    <h2>{{'requisitionView.reportAndRequisitionFor' | message}} {{vm.requisition.program.name}} ({{vm.requisition.facility.type.name}})</h2>
+    <h2>{{'requisitionView.reportAndRequisitionFor' | message}} {{vm.program.name}} ({{vm.facility.type.name}})</h2>
     <button ng-disabled="vm.isOffline()" ng-click="vm.syncRnrAndPrint()" class="primary">{{'requisitionView.print' | message}}</button>
 </header>
 <p class="alert is-error" ng-if="vm.requisition.$outdated">
@@ -17,7 +17,7 @@
                 {{'requisitionView.fullSupplyProducts' | message}}
             </a>
         </li>
-        <li ui-sref-active="active" ng-if="vm.requisition.program.showNonFullSupplyTab"
+        <li ui-sref-active="active" ng-if="vm.program.showNonFullSupplyTab"
             role="presentation" ng-class="{'is-invalid': !vm.isNonFullSupplyTabValid()}"
             popover="{{vm.invalidNonFullSupply}}">
             <a ui-sref="openlmis.requisitions.requisition.nonFullSupply">

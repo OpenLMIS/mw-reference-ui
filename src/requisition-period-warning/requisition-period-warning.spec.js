@@ -15,7 +15,7 @@
 
 describe('RequisitionPeriodWarning', function () {
 
-    var vm, requisition, confirmService;
+    var vm, requisition, confirmService, program = {}, processingPeriod = {};
 
     beforeEach(module('requisition-view'));
 
@@ -33,10 +33,7 @@ describe('RequisitionPeriodWarning', function () {
     }));
 
     beforeEach(function(){
-        requisition = jasmine.createSpyObj('requisition',
-            ['$isSubmitted', '$submit']);
-        requisition.program = {};
-        requisition.processingPeriod = {};
+        requisition = jasmine.createSpyObj('requisition', ['$isSubmitted', '$submit']);
     });
 
     beforeEach(inject(function($controller, $rootScope, _confirmService_){
@@ -60,25 +57,31 @@ describe('RequisitionPeriodWarning', function () {
             canApproveAndReject: canApproveAndReject,
             canDelete: canDelete,
             canSkip: canSkip,
-            canSync: canSync
+            canSync: canSync,
+            program: program,
+            processingPeriod: processingPeriod,
+            facility: {}
         });
+
+        vm.program = program;
+        vm.processingPeriod = processingPeriod;
     }));
 
     it('shows alternate warning when program code and period match', function(){
         var altMessageKey = "requisitionPeriodWarning.confirm";
         var originalMessageKey = "requisitionView.submit.confirm";
 
-        requisition.processingPeriod.name = "Feb";
-        requisition.program.code = "Not CODE";
+        processingPeriod.name = "Feb";
+        program.code = "Not CODE";
 
         vm.submitRnr();
         expect(confirmService.confirm.mostRecentCall.args[0]).toEqual(originalMessageKey);
 
-        requisition.processingPeriod.name = "Jan2017";
-        requisition.program.code = "CODE";
+        processingPeriod.name = "Jan2017";
+        program.code = "CODE";
 
         vm.submitRnr();
-        expect(confirmService.confirm.mostRecentCall.args[0]).toEqual(altMessageKey);    
+        expect(confirmService.confirm.mostRecentCall.args[0]).toEqual(altMessageKey);
     });
 
 });

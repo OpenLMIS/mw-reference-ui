@@ -19,6 +19,11 @@
                 ng-options="program as program.name for program in vm.selectedFacility.supportedPrograms"
                 ng-model="vm.selectedProgram">
         </select>
+        <label for=status>{{'requisitionSearch.status' | message}}</label>
+        <select id="status" placeholder="{{'requisitionSearch.selectStatus' | message}}"
+                ng-options="status.label as status.label | requisitionStatus for status in vm.statuses"
+                ng-model="vm.selectedStatus">
+        </select>
         <label class="checkbox">
             <input id="offlineSearch" type="checkbox" ng-model="vm.offline"
                    ng-disabled="vm.isOfflineDisabled()"/>
