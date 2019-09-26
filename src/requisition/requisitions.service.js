@@ -31,12 +31,12 @@
     service.$inject = [
         '$q', '$resource', 'requisitionUrlFactory', 'Requisition', 'dateUtils', 'localStorageFactory', 'offlineService',
         '$filter', 'requisitionCacheService', 'OrderableResource', 'FacilityTypeApprovedProductResource',
-        'periodService', 'facilityService'
+        'periodService', 'facilityService', 'programService'
     ];
 
     function service($q, $resource, requisitionUrlFactory, Requisition, dateUtils, localStorageFactory, offlineService,
                      $filter, requisitionCacheService, OrderableResource, FacilityTypeApprovedProductResource,
-                     periodService, facilityService) {
+                     periodService, facilityService, programService) {
 
         var onlineOnlyRequisitions = localStorageFactory('onlineOnly'),
             offlineStatusMessages = localStorageFactory('statusMessages');
@@ -473,8 +473,11 @@
             return $q.all([getByVersionIdentities(requisition.availableProducts, new OrderableResource()),
                 periodService.get(requisition.processingPeriod.id),
                 // MW-949: Added entire facility object to requisition
-                facilityService.get(requisition.facility.id)])
+                facilityService.get(requisition.facility.id),
                 // MW-949: ends here
+                // MALAWISUP-1188: Exclusion of the tb program from the condition for CHAM facilities
+                programService.get(requisition.program.id)])
+                // MALAWISUP-1188: ends here
                 .then(function(result) {
                     requisition.availableFullSupplyProducts =
                         filterOrderables(true, result[0], requisition.program.id);
@@ -485,6 +488,9 @@
                     // MW-949: Added entire facility object to requisition
                     requisition.facility = result[2];
                     // MW-949: ends here
+                    // MALAWISUP-1188: Exclusion of the tb program from the condition for CHAM facilities
+                    requisition.program = result[3];
+                    // MALAWISUP-1188: ends here
                     return requisition;
                 })
                 .then(function(requisition) {

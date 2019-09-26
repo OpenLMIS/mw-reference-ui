@@ -80,6 +80,9 @@ describe('requisitionService', function() {
             // MW-949: Added entire facility object to requisition
             this.facilityService = $injector.get('facilityService');
             // MW-949: ends here
+            // MALAWISUP-1188: Exclusion of the tb program from the condition for CHAM facilities
+            this.programService = $injector.get('programService');
+            // MALAWISUP-1188: ends here
         });
 
         this.formatDatesInRequisition = formatDatesInRequisition;
@@ -214,6 +217,9 @@ describe('requisitionService', function() {
         // MW-949: Added entire facility object to requisition
         spyOn(this.facilityService, 'get').andReturn(this.requisition.facility);
         // MW-949: ends here
+        // MALAWISUP-1188: Exclusion of the tb program from the condition for CHAM facilities
+        spyOn(this.programService, 'get').andReturn(this.requisition.program);
+        // MALAWISUP-1188: ends here
 
         this.OrderableResource.prototype.getByVersionIdentities.andCallFake(function(identities) {
             if (JSON.stringify(identities) === JSON.stringify(context.availableProductsIdentities)) {
