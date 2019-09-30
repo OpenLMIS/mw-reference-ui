@@ -217,6 +217,18 @@ describe('LineItem decorator', function() {
 
             expect(lineItem.approvedQuantity).toEqual(undefined);
         });
+
+        // MW-949: Protected from null facility operator object
+        it('should not update approved quantity in line item if facility operator is null', function() {
+            requisition.facility.operator = null;
+            lineItem = new LineItem(requisitionLineItem, requisition);
+
+            lineItem.approvedQuantity = undefined;
+            lineItem.updateFieldValue(requisition.template.columnsMap[6], requisition);
+
+            expect(lineItem.approvedQuantity).toEqual(undefined);
+        });
+        // MW-949: ends here
     });
 
     describe('canBeSkipped', function() {

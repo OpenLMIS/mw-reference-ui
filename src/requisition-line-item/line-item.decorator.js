@@ -100,9 +100,11 @@
                 if (column.source === COLUMN_SOURCES.CALCULATED) {
                     object[propertyName] = calculationFactory[fullName] ? calculationFactory[fullName](this, requisition) : null;
                 } else if (column.$type === COLUMN_TYPES.NUMERIC || column.$type === COLUMN_TYPES.CURRENCY) {
-                    if (requisition.facility.operator.code == 'CHAM' && fullName == 'approvedQuantity' && !this.skipped
+                    // MW-949: Protected from null facility operator object
+                    if (requisition.facility.operator && requisition.facility.operator.code == 'CHAM' && fullName == 'approvedQuantity'
+                    // MW-949: ends here
                         // MALAWISUP-1188: Exclusion of the tb program from the condition for CHAM facilities
-                        && requisition.program.code !== 'tb') {
+                        && !this.skipped && requisition.program.code !== 'tb') {
                         // MALAWISUP-1188: ends here
                         object[propertyName] = 0;
                     } else {
