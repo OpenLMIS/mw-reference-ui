@@ -2,7 +2,7 @@ version: "2"
 services:
 
   mw-ui:
-    image: openlmis/dev-ui:9.0.1-RC2
+    image: openlmis/dev-ui:9.0.1
     working_dir: /app
     volumes:
       - '.:/app'
@@ -34,47 +34,47 @@ services:
       - mw-dhis2-integration-ui
 
   auth-ui:
-    image: openlmis/auth-ui:6.2.1-RC2
+    image: openlmis/auth-ui:6.2.1
     volumes:
       - '/openlmis-auth-ui'
 
   fulfillment-ui:
-    image: openlmis/fulfillment-ui:6.0.4-RC2
+    image: openlmis/fulfillment-ui:6.0.4
     volumes:
       - '/openlmis-fulfillment-ui'
 
   referencedata-ui:
-    image: openlmis/referencedata-ui:5.6.0-RC2
+    image: openlmis/referencedata-ui:5.6.0
     volumes:
       - '/openlmis-referencedata-ui'
 
   stockmanagement-ui:
-    image: openlmis/stockmanagement-ui:2.0.4-RC2
+    image: openlmis/stockmanagement-ui:2.0.4
     volumes:
       - '/openlmis-stockmanagement-ui'
 
   cce-ui:
-    image: openlmis/cce-ui:1.0.4-RC2
+    image: openlmis/cce-ui:1.0.4
     volumes:
      - '/openlmis-cce-ui'
 
   report-ui:
-    image: openlmis/report-ui:5.2.1-RC2
+    image: openlmis/report-ui:5.2.1
     volumes:
       - '/openlmis-report-ui'
 
   requisition-ui:
-    image: openlmis/requisition-ui:7.0.0-RC2
+    image: openlmis/requisition-ui:7.0.0
     volumes:
       - '/openlmis-requisition-ui'
 
   ui-components:
-    image: openlmis/ui-components:7.2.0-RC2
+    image: openlmis/ui-components:7.2.0
     volumes:
       - '/openlmis-ui-components'
 
   ui-layout:
-    image: openlmis/ui-layout:5.1.4-RC2
+    image: openlmis/ui-layout:5.1.4
     volumes:
       - '/openlmis-ui-layout'
 
