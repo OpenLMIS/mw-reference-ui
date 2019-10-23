@@ -1,0 +1,91 @@
+<header>
+  <h2>
+    {{'stockCard.binCardName' | message: {'program': vm.stockCard.program.name} }}
+  </h2>
+
+  <button class="primary" ng-click="vm.print()">{{'stockCard.print' | message}}</button>
+</header>
+
+<aside class="stock-card-info">
+  <div class="product-name-header">
+    <span>{{vm.stockCard.orderable | productName}}</span>
+  </div>
+
+  <ul>
+    <li>
+      <strong>{{'stockCard.productCode'|message}}</strong>
+      {{vm.stockCard.orderable.productCode}}
+    </li>
+    <li>
+      <strong>{{'stockCard.facilityName' | message}}</strong>
+      {{vm.stockCard.facility.name}}
+    </li>
+    <li>
+      <strong>{{'stockCard.program' | message}}</strong>
+      {{vm.stockCard.program.name}}
+    </li>
+    <li align="right">
+      <strong>{{'stockCard.soh' | message}}</strong>
+      {{vm.stockCard.stockOnHand}}
+    </li>
+    <!-- Malawi starts here -->
+    <li ng-if="vm.ftaps[0].minPeriodsOfStock" align="right">
+      <strong>{{'stockCard.minTresholds' | message}}</strong>
+      {{vm.ftaps[0].minPeriodsOfStock}}
+    </li>
+    <li ng-if="vm.ftaps[0].maxPeriodsOfStock" align="right">
+      <strong>{{'stockCard.maxTresholds' | message}}</strong>
+      {{vm.ftaps[0].maxPeriodsOfStock}}
+    </li>
+    <!-- Malawi ends here -->
+    <li ng-if="vm.stockCard.lot">
+      <strong>{{'stockCard.lot' | message}}</strong>
+      {{vm.stockCard.lot.lotCode}}
+    </li>
+    <li ng-if="vm.stockCard.lot">
+      <strong>{{'stockCard.expiryDate' | message}}</strong>
+      {{vm.stockCard.lot.expirationDate | openlmisDate}}
+    </li>
+  </ul>
+</aside>
+
+<section class="openlmis-table-container">
+
+  <table>
+    <thead>
+    <tr>
+      <th>{{'stockCard.date' | message}}</th>
+      <th>{{'stockCard.from' | message}}</th>
+      <th>{{'stockCard.to' | message}}</th>
+      <th>{{'stockCard.reason' | message}}</th>
+      <th>{{'stockCard.adjustment' | message}}</th>
+      <th>{{'stockCard.soh' | message}}</th>
+      <th>{{'stockCard.signature' | message}}</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="lineItem in vm.displayedLineItems">
+      <td>{{lineItem.occurredDate | openlmisDate}}</td>
+      <td>
+        {{lineItem.sourceFreeText ? ('stockCard.srcDstAndFreeText' |
+        message: {name:lineItem.source.name, freeText: lineItem.sourceFreeText}) : lineItem.source.name}}
+      </td>
+      <td>
+        {{lineItem.destinationFreeText ? ('stockCard.srcDstAndFreeText' |
+        message: {name:lineItem.destination.name, freeText: lineItem.destinationFreeText}) : lineItem.destination.name}}
+      </td>
+      <td>
+        {{ vm.getReason(lineItem) }}
+      </td>
+      <td align="right">{{lineItem.quantity}}</td>
+      <td align="right">{{lineItem.stockOnHand}}</td>
+      <td>{{lineItem.signature}}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <openlmis-pagination
+    list="vm.stockCard.lineItems"
+    paged-list="vm.displayedLineItems">
+  </openlmis-pagination>
+</section>
