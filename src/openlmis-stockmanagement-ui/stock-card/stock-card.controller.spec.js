@@ -20,6 +20,7 @@ describe('StockCardController', function() {
 
     beforeEach(function() {
         module('stock-card');
+        module('referencedata-facility-type-approved-product');
 
         inject(function($injector) {
             $state = $injector.get('$state');
