@@ -57,8 +57,8 @@
                                 {{'requisitionBatchApproval.skipped' | message}}
                             </p>
                             <!-- Malawi: disable edit for requisitions in approval -->
-                            <p ng-if="!(vm.lineItems[requisition.id][productId].skipped) && vm.isInApproval(requisition)">
-                                {{vm.lineItems[requisition.id][productId].approvedQuantity}}
+                            <p ng-if="!(vm.lineItems[requisition.id][product.productId].skipped) && vm.isInApproval(requisition)">
+                                {{vm.lineItems[requisition.id][product.productId].approvedQuantity}}
                             </p>
                             <!-- ends here -->
                         </td>
