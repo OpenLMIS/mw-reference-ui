@@ -69,6 +69,5 @@
   "adminRoleForm.requisitionTemplatesManage": "Manage LMIS Form templates",
   "adminRoleForm.requisitionView": "View LMIS Form",
   "adminRoleForm.supervision.description": "Provides rights for managing LMIS Forms.",
-  "adminRoleForm.supervision.label": "LMIS Form",
-  "adminRoleForm.dhis2Management": "Manage DHIS2 integration"
+  "adminRoleForm.supervision.label": "LMIS Form"
 }

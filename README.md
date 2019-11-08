@@ -9,4 +9,3 @@ Multiple UI modules are compiled together with the OpenLMIS dev-ui to create the
 * [OpenLMIS Requisition UI](https://github.com/OpenLMIS/openlmis-requisition-ui)
 * [OpenLMIS UI Components](https://github.com/OpenLMIS/openlmis-ui-components)
 * [OpenLMIS UI Layout](https://github.com/OpenLMIS/openlmis-ui-layout)
-* [DHIS2 Integration UI](https://github.com//OpenLMIS-Malawi/mw-dhis2-integration-ui)
