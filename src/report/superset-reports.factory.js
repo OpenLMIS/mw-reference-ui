@@ -49,7 +49,9 @@
                 ADJUSTMENTS: createReport('adjustments',
                     'ADJUSTMENTS_REPORT_VIEW'),
                 ADMINISTRATIVE: createReport('administrative',
-                    'ADMINISTRATIVE_REPORT_VIEW')
+                    'ADMINISTRATIVE_REPORT_VIEW'),
+                REPORTS: createReport('reports',
+                    'REPORTS_REPORT_VIEW')
             };
             // --- ends here ---
         }
