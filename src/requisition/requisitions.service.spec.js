@@ -132,6 +132,9 @@ describe('requisitionService', function() {
                 .buildJson(),
             new this.RequisitionLineItemV2DataBuilder()
                 .fullSupplyForProgram(this.program)
+                .buildJson(),
+            new this.RequisitionLineItemV2DataBuilder()
+                .nonFullSupplyForProgram(this.program)
                 .buildJson()
         ];
 
@@ -189,6 +192,34 @@ describe('requisitionService', function() {
             ])
             .buildJson();
 
+        this.programOrderable = [
+            new this.ProgramOrderableDataBuilder()
+                .withProgramId(this.requisition.program.id)
+                .withFullSupply()
+                .buildJson(),
+            new this.ProgramOrderableDataBuilder()
+                .withProgramId(this.requisition.program.id)
+                .buildJson()
+        ];
+
+        this.orderablesFromLineItems = [
+            new this.OrderableDataBuilder()
+                .withId(this.lineItems[0].orderable.id)
+                .withVersionNumber(this.lineItems[0].orderable.versionNumber)
+                .withPrograms([this.programOrderable[0]])
+                .buildJson(),
+            new this.OrderableDataBuilder()
+                .withId(this.lineItems[1].orderable.id)
+                .withVersionNumber(this.lineItems[1].orderable.versionNumber)
+                .withPrograms([this.programOrderable[0]])
+                .buildJson(),
+            new this.OrderableDataBuilder()
+                .withId(this.lineItems[2].orderable.id)
+                .withVersionNumber(this.lineItems[2].orderable.versionNumber)
+                .withPrograms([this.programOrderable[1]])
+                .buildJson()
+        ];
+
         this.requisitionDto = new this.RequisitionDataBuilder()
             .withCreatedDate(this.createdDate)
             .withProcessingPeriod(this.period)
@@ -212,7 +243,7 @@ describe('requisitionService', function() {
         spyOn(this.requisitionCacheService, 'search').andReturn();
         spyOn(this.OrderableResource.prototype, 'getByVersionIdentities');
         spyOn(this.FacilityTypeApprovedProductResource.prototype, 'getByVersionIdentities')
-            .andReturn(this.approvedProducts);
+            .andReturn(this.$q.when(this.approvedProducts));
         spyOn(this.periodService, 'get').andReturn(this.requisition.processingPeriod);
         // MW-949: Added entire facility object to requisition
         spyOn(this.facilityService, 'get').andReturn(this.requisition.facility);
@@ -223,11 +254,11 @@ describe('requisitionService', function() {
 
         this.OrderableResource.prototype.getByVersionIdentities.andCallFake(function(identities) {
             if (JSON.stringify(identities) === JSON.stringify(context.availableProductsIdentities)) {
-                return context.orderables;
+                return context.$q.when(context.orderables);
             } else if (JSON.stringify(identities) === JSON.stringify(
                 convertLineItemsToIdentities(context.requisition.requisitionLineItems)
             )) {
-                return context.requisition.requisitionLineItems;
+                return context.$q.when(context.orderablesFromLineItems);
             }
         });
 
@@ -287,6 +318,30 @@ describe('requisitionService', function() {
             expect(data.id).toBe(this.requisition.id);
             expect(this.requisitionCacheService.cacheRequisition).toHaveBeenCalled();
             expect(this.statusMessagesStorage.put).toHaveBeenCalled();
+        });
+
+        it('should fetch FTAPs only for full supply orderables', function() {
+            this.$httpBackend
+                .expectGET(this.requisitionUrlFactory(getRequisitionUrl))
+                .respond(200, this.requisition, headers);
+            this.$httpBackend
+                .expectGET(this.requisitionUrlFactory(getStatusMessagesUrl))
+                .respond(200, [this.statusMessage]);
+
+            this.requisitionService.get(this.requisition.id);
+
+            this.$httpBackend.flush();
+            this.$rootScope.$apply();
+
+            expect(this.FacilityTypeApprovedProductResource.prototype.getByVersionIdentities).toHaveBeenCalledWith([
+                {
+                    id: this.lineItems[0].approvedProduct.id,
+                    versionNumber: this.lineItems[0].approvedProduct.versionNumber
+                }, {
+                    id: this.lineItems[1].approvedProduct.id,
+                    versionNumber: this.lineItems[1].approvedProduct.versionNumber
+                }
+            ]);
         });
 
         it('should get requisition by id from offline resources', function() {
