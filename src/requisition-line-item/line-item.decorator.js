@@ -87,6 +87,7 @@
          * @description
          * Updates column value in the line item based on column type and source.
          * Set 0 as default value of approved quantity.
+         * Set 0 if beginning balance value is null.
          *
          * @param {Object} column Requisition template column
          * @param {Object} requisition Requisition to which line item belongs
@@ -109,6 +110,9 @@
                         object[propertyName] = 0;
                     } else {
                         checkIfNullOrZero(object[propertyName]);
+                    }
+                    if (fullName == 'beginningBalance') {
+                        object.beginningBalance === null ? object[propertyName] = 0 : object[propertyName];
                     }
                     if (calculationFactory[fullName] && fullName != 'totalLossesAndAdjustments') {
                         this.difference[fullName] = object[propertyName] ? calculationFactory[fullName](this, requisition) - object[propertyName]
