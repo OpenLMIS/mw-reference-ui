@@ -111,8 +111,8 @@
                     } else {
                         checkIfNullOrZero(object[propertyName]);
                     }
-                    if (fullName == 'beginningBalance') {
-                        object.beginningBalance === null ? object[propertyName] = 0 : object[propertyName];
+                    if (fullName === 'beginningBalance') {
+                        object.beginningBalance === undefined ? object[propertyName] = 0 : object[propertyName];
                     }
                     if (calculationFactory[fullName] && fullName != 'totalLossesAndAdjustments') {
                         this.difference[fullName] = object[propertyName] ? calculationFactory[fullName](this, requisition) - object[propertyName]
