@@ -41,9 +41,11 @@
                     <th ng-show="vm.hasLot">{{vm.key('expiryDate') | message}}</th>
                     <th>{{vm.key('soh') | message}}</th>
                     <th ng-show="vm.srcDstAssignments">{{vm.key('srcDstLabel') | message}}</th>
-                    <!-- MALAWISUP-2452 -->
-                    <!-- <th ng-show="vm.srcDstAssignments">{{vm.key('srcDstComments') | message}}</th> -->
+                    <!-- MALAWISUP-2701 -->
+                    <th ng-show="vm.showSrcDstFreeText">{{vm.key('srcDstComments') | message}}</th>
+                    <!-- /MALAWISUP-2701 -->
                     <th ng-if="vm.showReasonDropdown">{{vm.key('reason') | message}}</th>
+                    <!-- MALAWISUP-2452 -->
                     <!-- <th ng-if="vm.showReasonDropdown">{{vm.key('reasonComments') | message}}</th> -->
                     <!-- /MALAWISUP-2452 -->
                     <th>{{vm.key('quantity') | message}}</th>
@@ -65,16 +67,18 @@
                             ng-options="assignment.name for assignment in vm.srcDstAssignments" autofocus>
                         </select>
                     </td>
-                    <!-- MALAWISUP-2452 -->
-                    <!-- <td ng-show="vm.srcDstAssignments">
+                    <!-- MALAWISUP-2701 -->
+                    <td ng-show="vm.showSrcDstFreeText">
                         <textarea ng-show="lineItem.assignment.isFreeTextAllowed" ng-model="lineItem.srcDstFreeText" rows="1" cols="15"></textarea>
-                    </td> -->
+                    </td>
+                    <!-- /MALAWISUP-2701 -->
                     <td ng-if="vm.showReasonDropdown" openlmis-invalid="{{lineItem.$errors.reasonInvalid ? 'openlmisForm.required' : '' | message}}" class="digit-cell">
                         <select ng-model="lineItem.reason"
                             ng-change="vm.validateReason(lineItem);vm.clearFreeText(lineItem, 'reasonFreeText')"
                             ng-options="reason as reason.name for reason in vm.reasons" autofocus>
                         </select>
                     </td>
+                    <!-- MALAWISUP-2452 -->
                     <!-- <td ng-if="vm.showReasonDropdown">
                         <input type="text" ng-show="lineItem.reason.isFreeTextAllowed" ng-model="lineItem.reasonFreeText" rows="1" cols="15"></input>
                     </td> -->
