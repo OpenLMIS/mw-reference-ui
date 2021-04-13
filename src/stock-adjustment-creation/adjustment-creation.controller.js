@@ -74,6 +74,19 @@
          */
         vm.showVVMStatusColumn = false;
 
+        // MALAWISUP-2701
+        /**
+         * @ngdoc property
+         * @propertyOf stock-adjustment-creation.controller:StockAdjustmentCreationController
+         * @name showSrcDstFreeText
+         * @type {boolean}
+         *
+         * @description
+         * Indicates if Remarks column should be visible.
+         */
+        vm.showSrcDstFreeText = false;
+        // --- ends here ---
+
         /**
          * @ngdoc property
          * @propertyOf stock-adjustment-creation.controller:StockAdjustmentCreationController
@@ -277,6 +290,25 @@
             obj[property] = null;
         };
 
+        // MALAWISUP-2701
+        /**
+         * @ngdoc method
+         * @methodOf stock-adjustment-creation.controller:StockAdjustmentCreationController
+         * @name setSrcDstFreeText
+         *
+         * @description
+         * Set showSrcDstFreeText to true when Private/Other option selected.
+         */
+        vm.setSrcDstFreeText = function() {
+            vm.showSrcDstFreeText = false;
+            vm.items.filter(function(item) {
+                if (item.assignment.name === 'Private' || item.assignment.name === 'Other') {
+                    vm.showSrcDstFreeText = true;
+                }
+            });
+        };
+        // --- ends here ---
+
         /**
          * @ngdoc method
          * @methodOf stock-adjustment-creation.controller:StockAdjustmentCreationController
@@ -460,9 +492,6 @@
             vm.facility = facility;
             vm.reasons = reasons;
             vm.showReasonDropdown = (adjustmentType.state !== ADJUSTMENT_TYPE.KIT_UNPACK.state);
-            // MALAWISUP-2701: 
-            vm.showSrcDstFreeText = (adjustmentType.state === ADJUSTMENT_TYPE.RECEIVE.state);
-            // --- ends here ---
             vm.srcDstAssignments = srcDstAssignments;
             vm.addedLineItems = $stateParams.addedLineItems || [];
             $stateParams.displayItems = displayItems;
