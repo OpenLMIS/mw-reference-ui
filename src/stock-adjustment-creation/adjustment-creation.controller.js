@@ -491,7 +491,7 @@
             vm.program = program;
             vm.facility = facility;
             vm.reasons = reasons;
-            vm.showReasonDropdown = (adjustmentType.state !== ADJUSTMENT_TYPE.KIT_UNPACK.state);
+            vm.showReasonDropdown = (adjustmentType.state !== ADJUSTMENT_TYPE.KIT_UNPACK.state && adjustmentType.state !== ADJUSTMENT_TYPE.RECEIVE.state);
             vm.srcDstAssignments = srcDstAssignments;
             vm.addedLineItems = $stateParams.addedLineItems || [];
             $stateParams.displayItems = displayItems;
