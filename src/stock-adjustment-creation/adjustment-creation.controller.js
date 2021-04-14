@@ -491,6 +491,7 @@
             vm.program = program;
             vm.facility = facility;
             vm.reasons = reasons;
+            // MALAWISUP-2702: Remove the "Reasons" field under "Receive"
             vm.showReasonDropdown = (adjustmentType.state !== ADJUSTMENT_TYPE.KIT_UNPACK.state && adjustmentType.state !== ADJUSTMENT_TYPE.RECEIVE.state);
             vm.srcDstAssignments = srcDstAssignments;
             vm.addedLineItems = $stateParams.addedLineItems || [];
