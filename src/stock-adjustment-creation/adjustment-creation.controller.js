@@ -62,6 +62,15 @@
          * @type {boolean}
          */
         vm.showReasonDropdown = true;
+    
+        //MALAWISUP-2703
+        /**
+         * @ngdoc property
+         * @propertyOf stock-adjustment-creation.controller:StockAdjustmentCreationController
+         * @name showReasonRemarks
+         * @type {boolean}
+         */
+         vm.showReasonRemark = false;
 
         /**
          * @ngdoc property
@@ -493,6 +502,8 @@
             vm.reasons = reasons;
             // MALAWISUP-2702: Remove the "Reasons" field under "Receive"
             vm.showReasonDropdown = (adjustmentType.state !== ADJUSTMENT_TYPE.KIT_UNPACK.state && adjustmentType.state !== ADJUSTMENT_TYPE.RECEIVE.state);
+            // MALAWISUP-2703: Allow displaying reason free text on the Adjustments screen
+            vm.showReasonRemarks = (adjustmentType.state === ADJUSTMENT_TYPE.ADJUSTMENT.state);
             vm.srcDstAssignments = srcDstAssignments;
             vm.addedLineItems = $stateParams.addedLineItems || [];
             $stateParams.displayItems = displayItems;

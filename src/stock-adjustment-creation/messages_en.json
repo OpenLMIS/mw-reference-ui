@@ -1,3 +1,4 @@
 {
-    "stockReceiveCreation.srcDstComments": "Remarks"
+    "stockReceiveCreation.srcDstComments": "Remarks",
+    "stockAdjustmentCreation.reasonComments": "Remarks"
 }
