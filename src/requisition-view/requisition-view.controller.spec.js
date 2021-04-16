@@ -28,6 +28,9 @@ describe('RequisitionViewController', function() {
         module('referencedata-facility');
         module('referencedata-program');
         module('referencedata-period');
+        module('requisition-rejection-reason');
+        module('admin-rejection-reason');
+        module('admin-rejection-reason-category');
 
         var RequisitionDataBuilder, RequisitionLineItemDataBuilder, ProgramDataBuilder;
         inject(function($injector) {
@@ -60,6 +63,9 @@ describe('RequisitionViewController', function() {
             this.facilityService = $injector.get('facilityService');
             this.programService = $injector.get('programService');
             this.periodService = $injector.get('periodService');
+            this.rejectionReasonService = $injector.get('rejectionReasonService');
+            this.rejectionReasonModalService = $injector.get('rejectionReasonModalService');
+            this.rejectionReasonCategoryService = $injector.get('rejectionReasonCategoryService');
             // Malawi: Disable skip button if there is data in user inputs
             this.COLUMN_SOURCES = $injector.get('COLUMN_SOURCES');
             // --- ends here ---
@@ -118,6 +124,7 @@ describe('RequisitionViewController', function() {
         spyOn(this.programService, 'getUserPrograms').andReturn(this.$q.resolve(this.program));
         spyOn(this.facilityService, 'get').andReturn(this.$q.resolve(this.facility));
         spyOn(this.periodService, 'get').andReturn(this.$q.resolve(this.period));
+        spyOn(this.rejectionReasonModalService, 'open');
         // Malawi: set all to 0 button
         spyOn(this.requisition.template, 'getColumn').andReturn({});
         // --- ends here ---
@@ -837,6 +844,25 @@ describe('RequisitionViewController', function() {
             expect(this.requisitionService.removeOfflineRequisition).toHaveBeenCalled();
         });
 
+    });
+
+    describe('loadRejectionReasonModal', function() {
+        beforeEach(function() {
+            this.initController();
+        });
+        it('should open rejection reason modal if enabled', function() {
+            this.rejectionReasonModalService.open.andReturn(this.$q.resolve());
+            this.requisition.template.rejectionReasonWindowVisible = true;
+            this.vm.loadRejectionReasonModal();
+            this.$rootScope.$apply();
+            expect(this.rejectionReasonModalService.open).toHaveBeenCalled();
+        });
+        it('should not open rejection reason modal if disabled', function() {
+            this.requisition.template.rejectionReasonWindowVisible = false;
+            this.vm.loadRejectionReasonModal();
+            this.$rootScope.$apply();
+            expect(this.rejectionReasonModalService.open).not.toHaveBeenCalled();
+        });
     });
 
     function initController() {
