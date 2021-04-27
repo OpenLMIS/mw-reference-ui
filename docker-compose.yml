@@ -86,7 +86,7 @@ services:
       - '/openlmis-offline-ui'
 
   mw-dhis2-integration-ui:
-    image: openlmismw/dhis2-integration-ui:1.0.1-SNAPSHOT
+    image: openlmismw/dhis2-integration-ui:1.0.0
     volumes:
       - '/mw-dhis2-integration-ui'
 
