@@ -33,7 +33,7 @@
         'notificationService', 'confirmService', 'offlineService', '$window', 'requisitionUrlFactory', '$filter',
         '$scope', 'RequisitionWatcher', 'accessTokenFactory', 'messageService', 'stateTrackerService',
         'RequisitionStockCountDateModal', 'localStorageFactory', 'canSubmit', 'canAuthorize', 'canApproveAndReject',
-        'canDelete', 'canSkip', 'canSync', 'program', 'facility', 'processingPeriod',
+        'canDelete', 'canSkip', 'canSync', 'program', 'facility', 'processingPeriod', 'rejectionReasonModalService', '$q',
         // Malawi: Display alternate warning message
         'REQUISITION_WARNING_PERIODS', 'REQUISITION_WARNING_PROGRAM_CODE',
         // Malawi: Disable skip button if there is data in user inputs
@@ -47,7 +47,7 @@
                                        RequisitionWatcher, accessTokenFactory, messageService, stateTrackerService,
                                        RequisitionStockCountDateModal, localStorageFactory, canSubmit, canAuthorize,
                                        canApproveAndReject, canDelete, canSkip, canSync,
-                                       program, facility, processingPeriod,
+                                       program, facility, processingPeriod, rejectionReasonModalService, $q,
         // Malawi: Display alternate warning message
                                        REQUISITION_WARNING_PERIODS, REQUISITION_WARNING_PROGRAM_CODE,
         // Malawi: Disable skip button if there is data in user inputs
@@ -235,6 +235,8 @@
         vm.getPrintUrl = getPrintUrl;
         vm.isFullSupplyTabValid = isFullSupplyTabValid;
         vm.isNonFullSupplyTabValid = isNonFullSupplyTabValid;
+        vm.close = close;
+        vm.loadRejectionReasonModal = loadRejectionReasonModal;
         // Malawi: display price info
         vm.displayPriceInfo = displayPriceInfo;
         // Malawi: set all to 0 button
@@ -559,21 +561,43 @@
                 return;
             }
             // --- end here ---
-            confirmService.confirmDestroy(
-                'requisitionView.reject.confirm',
-                'requisitionView.reject.label'
-            ).then(function() {
-                loadingModalService.open();
-                vm.requisition.$save()
-                    .then(function() {
-                        return vm.requisition.$reject();
-                    })
-                    .then(function() {
-                        watcher.disableWatcher();
-                        notificationService.success('requisitionView.reject.success');
-                        stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
-                    })
-                    .catch(loadingModalService.close);
+            loadRejectionReasonModal().then(function(rejectionReasons) {
+                confirmService.confirmDestroy(
+                    'requisitionView.reject.confirm',
+                    'requisitionView.reject.label'
+                ).then(function() {
+                    loadingModalService.open();
+                    vm.requisition.$save()
+                        .then(function() {
+                            return vm.requisition.$reject(rejectionReasons);
+                        })
+                        .then(function() {
+                            watcher.disableWatcher();
+                            notificationService.success('requisitionView.reject.success');
+                            stateTrackerService.goToPreviousState('openlmis.requisitions.approvalList');
+                        })
+                        .catch(loadingModalService.close);
+                });
+            });
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf requisition-view.controller:RequisitionViewController
+         * @name loadRejectionReasonModal
+         *
+         * @description
+         * Display rejection reason dialog if enabled.
+         */
+        function loadRejectionReasonModal() {
+            return $q(function(resolve)  {
+                if (vm.requisition.template.rejectionReasonWindowVisible) {
+                    rejectionReasonModalService.open().then(function(rejectionReasons) {
+                        resolve(rejectionReasons);
+                    });
+                } else {
+                    resolve();
+                }
             });
         }
 
