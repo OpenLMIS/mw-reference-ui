@@ -8,6 +8,7 @@
     "/openlmis-fulfillment-ui",
     "/openlmis-requisition-ui",
     "/openlmis-stockmanagement-ui",
+    "/openlmis-offline-ui",
     "/mw-dhis2-integration-ui"
   ],
   "REPORTING_SERVICES": "requisitions,malawi",
