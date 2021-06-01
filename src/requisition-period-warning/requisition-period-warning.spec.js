@@ -30,6 +30,10 @@ describe('RequisitionPeriodWarning', function () {
         $provide.service('accessTokenFactory', function() {
             return jasmine.createSpyObj('accessTokenFactory', ['addAccessToken']);
         });
+
+        $provide.service('rejectionReasonModalService', function() {
+            return jasmine.createSpyObj('rejectionReasonModalService', ['open']);
+        });
     }));
 
     beforeEach(function(){
